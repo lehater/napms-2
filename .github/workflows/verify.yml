@@ -1,0 +1,34 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Check bootstrap structure
+        run: |
+          test -s README.md
+          test -s AGENTS.md
+          test -f openspec/config.yaml
+          test -f .agents/skills/openspec-propose/SKILL.md
+      - name: Install OpenSpec
+        run: npm install --global @fission-ai/openspec@1.16.0
+      - name: Validate OpenSpec
+        run: |
+          openspec list --json
+          openspec validate --all --strict
