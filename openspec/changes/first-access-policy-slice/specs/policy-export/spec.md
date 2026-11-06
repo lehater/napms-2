@@ -47,11 +47,11 @@ Export SHALL use the current address realization at the evaluation moment and SH
 - **THEN** the second export displays the updated IP and a new evaluationAt while all domain identifiers and originating permission evidence remain stable
 
 ### Requirement: Coherent single evaluation
-Each export SHALL evaluate scoped grants, Rule effectiveness, current Endpoint realizations and provenance in one internally consistent database snapshot and report a server-selected UTC evaluationAt. Historical as-of evaluation is not supported in this slice.
+Each export SHALL evaluate scoped grants, Rule effectiveness, current Endpoint realizations and provenance in one internally consistent database snapshot and report one server-selected UTC `evaluationAt`. All time-dependent grant validity and Rule effectiveness checks SHALL use that same `evaluationAt`; their underlying facts SHALL come from the same snapshot. `evaluationAt` labels evaluation of a current committed snapshot, not an exact historical database commit version. Historical as-of evaluation and immediate revocation of already-running exports are not supported in this slice.
 
 #### Scenario: Consistent snapshot
-- **WHEN** current IP or Rule state is committed concurrently with an export
-- **THEN** every returned row and authority decision comes from the same committed database snapshot, not a mix of old and new facts
+- **WHEN** current IP, grants or Rule state are committed concurrently with an export
+- **THEN** every returned row and authority decision comes from the same pinned database snapshot, not a mix of old and new facts; all validity windows use the one reported evaluationAt
 
 #### Scenario: Client supplied historical evaluationAt
 - **WHEN** the client attempts to request an arbitrary historical evaluation timestamp
