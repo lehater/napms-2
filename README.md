@@ -14,3 +14,7 @@ The repository is currently at the tooling bootstrap stage; no product requireme
 Do not migrate its Git history, code or custom Harness.
 
 This repository is public: do not publish credentials or confidential infrastructure information.
+
+## Stage 1 verification
+
+The branch → PR → CI → squash merge workflow was verified during repository bootstrap.
