@@ -1,0 +1,8 @@
+schema: spec-driven
+created: 2026-11-06
+goal: Deliver a trusted request-to-decision-to-rule-to-vendor-neutral-export vertical slice
+affected_areas:
+  - access-requests
+  - access-decisions
+  - policy-export
+  - local-dev-runtime
