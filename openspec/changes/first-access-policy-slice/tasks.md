@@ -30,7 +30,7 @@
 
 - [x] 5.1 Run isolated FastAPI TestClient acceptance matrix AC-01..AC-08 from `docs/first-slice.md`, including authorization and forged-input negatives; verify 8/8 cases green, with no preapproved Rule.
 - [x] 5.2 Document demo init, loopback launch, bearer entry into Swagger, stable demo IDs, exact API examples and dev-only threat boundary. Warn explicitly against direct public-interface Uvicorn start, Docker port publishing, tunnels and WSL/host forwarding. Verify a fresh clone can reproduce request → ALLOWED → READY export and a separate DENIED.
-- [ ] 5.3 Add application test job to existing GitHub Actions `Verify` (keep existing strict OpenSpec validation) and run pytest/OpenSpec CI; verify all jobs pass before submitting the stage 3B implementation PR.
+- [x] 5.3 Add application test job to existing GitHub Actions `Verify` (keep existing strict OpenSpec validation) and run pytest/OpenSpec CI; verify all jobs pass before submitting the stage 3B implementation PR.
 
 ## Workflow follow-up
 
