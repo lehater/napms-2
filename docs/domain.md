@@ -1,0 +1,85 @@
+# NAPMS 2.0 — минимальная доменная модель
+
+**Статус:** REVIEW READY; **Confirmed** ниже означает подтверждение источниками NAPMS 1.0. Правило подачи заявки source-only и границы первого среза явно приняты для NAPMS 2.0 (2026-11-06).
+**Зафиксированный источник:** `lehater/napms@42481577fab7f795cf3a2118b7b6f1c3c075d066`.
+
+## Сущности и ответственность — Confirmed (исходный NAPMS)
+
+| Понятие | Ответственность и идентичность | Основные отношения |
+|---|---|---|
+| **Resource** | Стабильная логическая единица управления доступом; identity независима от IP; имеет immutable AuthorityScopeRef | Содержит логические Endpoint |
+| **ResourceEndpoint** | Логическое сетевое присутствие со стабильной identity, даже если адрес отсутствует | Принадлежит Resource; текущий HOST либо PREFIX |
+| **Application** | Многократно используемый **профиль сетевой коммуникации**, не конкретный программный продукт | Содержит роли Component |
+| **Component** | Роль участника коммуникации в пределах одного Application | Участвует в направленных Interaction |
+| **Interaction / InteractionRevision** | Устойчивая причина направленной связи; revision фиксирует неизменяемую traffic semantics | Source/destination Components одного Application; TrafficClause |
+| **ComponentDeployment** | Конкретный экземпляр размещённого Component на одном Resource | Ссылается на Component и Resource, независимо от IP |
+| **BusinessProcess** | Описывает бизнес-процесс и ответственность | Имеет ConnectivityNeed |
+| **ConnectivityNeed** | Обоснование потребности в коммуникации; не разрешение | Связывает Process, Interaction и participant Component, независимо от IP/deployment |
+| **AccessRequest / AccessSubject** | Конкретный запрос и неизменяемый предмет решения | Subject = source Deployment + destination Deployment + exact InteractionRevision |
+| **PolicyRule** | Единственная авторитетная текущая сущность доступа на один exact AccessSubject | Возникает только из ALLOWED; имеет состояние, окно эффективности, evidence и justification |
+| **AuthorityGrant / Effective Authority** | Право actor выполнить action в scope в конкретный момент | Проверяется отдельно от BusinessNeed, Resource responsibility и ALLOWED |
+| **Policy Export** | Производная, read-only материализация желаемой политики | Выбирает effective PolicyRule; соединяет идентичности, traffic, текущие адреса и provenance |
+
+Источник: [docs/model/strategic/bounded-contexts.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/strategic/bounded-contexts.yaml) и соответствующие доменные файлы:
+[docs/model/contexts/resource-catalogue/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/resource-catalogue/domain-model.yaml),
+[docs/model/contexts/application-communication-catalogue/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/application-communication-catalogue/domain-model.yaml),
+[docs/model/contexts/application-deployment/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/application-deployment/domain-model.yaml),
+[docs/model/contexts/business-connectivity/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/business-connectivity/domain-model.yaml),
+[docs/model/contexts/access-policy/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/access-policy/domain-model.yaml),
+[docs/model/contexts/authority-management/language.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/authority-management/language.yaml).
+
+Список отражает **предметные понятия**. Он не предписывает отдельный агрегат, модуль, сервис, таблицу или Bounded Context на каждую строку.
+
+## Минимальная цепочка смысла
+
+`Application → Component → Interaction@Revision` описывает **что и почему передаётся**.
+
+`ComponentDeployment → Resource → Endpoint → текущий AddressRealization` описывает **где это размещено сейчас**.
+
+`BusinessProcess → ConnectivityNeed` объясняет **зачем** нужна коммуникация.
+
+`AccessRequest → ALLOWED/DENIED → PolicyRule` фиксирует **кто запросил, что разрешено и какое желаемое состояние сохраняется**.
+
+`PolicyRule + current realization + traffic + authority + provenance → Export` отвечает **какая политика эффективна сейчас и насколько она технически материализована**.
+
+Это семантический путь; порядок и границы программных модулей отдельно не утверждены.
+
+## Бизнес-инварианты — Confirmed (источник)
+
+| ID | Правило, контрпример | Источник |
+|---|---|---|
+| D-01 | Resource/Endpoint identity переживают смену или отсутствие IP; нельзя пересоздавать Resource при смене адреса | REQ-RES-001..003 |
+| D-02 | Endpoint имеет не более одной текущей реализации HOST **или** PREFIX; ресурс может иметь несколько Endpoint только как одну логическую единицу | REQ-RES-003..004 |
+| D-03 | Application — профиль, Component — его роль, а Interaction соединяет только Components *одного* Application; межпрофильная связь недопустима | REQ-APP-001..002, REQ-INT-001 |
+| D-04 | Две независимые причины связи одной пары Components могут иметь разные Interaction; revision traffic неизменяем | REQ-INT-002..003; ACC domain |
+| D-05 | Deployment identity = конкретные Component и Resource; смена адреса не меняет placement identity | REQ-DEP-001 |
+| D-06 | ConnectivityNeed опирается на Process и Interaction, но не создаёт permission; уход Need не переписывает решения и автоматически не отбирает Rule | REQ-BUS-001..007 |
+| D-07 | Для NAPMS 2.0 **подача запроса** требует `access.request` на source Resource; право на destination для подачи не требуется. Проверка admission отдельно от ALLOWED/DENIED; отказ на admission не является DENIED | REQ-AUTH-001, REQ-PERM-001; решение 2.0 от 2026-11-06 |
+| D-08 | DENIED не создаёт Rule; ALLOWED для точного AccessSubject создаёт/разрешает **один** Rule; повторение не дублирует | REQ-PERM-003, REQ-RULE-001 |
+| D-09 | Изменение семантики AccessSubject требует нового решения; изменение адреса, Additional Need или operational state не меняет identity/историю Rule | REQ-PERM-002, REQ-RULE-003..005 |
+| D-10 | Effective export: только ALLOWED + Active + satisfied effective conditions на одном evaluation time; неэффективные Rule не дают строк | REQ-EXP-002..003, REQ-EXP-006 |
+| D-11 | Экспорт требует полномочий для выбранного scope; один согласованный снимок; результат сохраняет traffic, identities, provenance | REQ-AUTH-002, REQ-EXP-003..004, REQ-PROV-001 |
+| D-12 | Отсутствие текущего адреса у effective Rule даёт строку **INCOMPLETE** с идентичностью Resource и null адресом; нельзя молча убрать Rule или выдавать permit READY | REQ-EXP-005, REQ-EXP-007 |
+| D-13 | Ответственность OWNER/ADMINISTRATOR, Site или business criticality сами по себе **не** дают security authority | REQ-RES-005; RC domain; AM language |
+
+Ссылки на идентификаторы REQ: [docs/requirements/first-mvp-product-requirements.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/requirements/first-mvp-product-requirements.yaml). Дополнительная трактовка: [docs/model/use-cases/first-mvp-policy-export.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/use-cases/first-mvp-policy-export.yaml); [docs/model/strategic/context-relationships.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/strategic/context-relationships.yaml).
+
+## Принятые уточнения для NAPMS 2.0
+
+**Request authority — РЕШЕНО (P0, 2026-11-06).** Для создания AccessRequest сервер проверяет effective `access.request` на **исходный Resource** на момент приёма запроса. Полномочия `access.request` на destination Resource для подачи заявки не требуются. В `RequestAuthorityEvidence` фиксируются реально проверенные source-scope, actor и время. Это не разрешает сам сетевой доступ: отдельное решение ALLOWED/DENIED обязательно.
+
+Исходное `REQ-AUTH-001` и сквозной use case поддерживают source-only. В старой [Access Policy domain-model](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/access-policy/domain-model.yaml) по-прежнему есть противоречащее требование evidence для каждого участвующего Resource. Факт противоречия сохраняется как provenance; NAPMS 1.0 не изменяется.
+
+**Доверенные роли первого среза — принято на уровне границы.** Actor и grants устанавливаются сервером в изолированном локальном dev/test-профиле. Право создать заявку, право отдельно принять решение и право экспортировать выбранную политику проверяются независимо. Ни переданный клиентом идентификатор, ни `ALLOWED` без полномочий решающего субъекта не дают доступа.
+
+**Export authority:** `policy.export` должен охватывать требуемые scope выбранных Resources; решение source-only относится только к подаче заявки, не к экспорту.
+
+## Вопросы, оставшиеся для OpenSpec и реализации
+
+- **P1 — механизм доверенной идентификации в локальном профиле:** специфицировать конкретный серверный способ сопоставления удостоверения с субъектом и полномочиями; не расширять dev-профиль на сетевую или продуктивную эксплуатацию.
+- **P1 — snapshot:** определить реализацию одного согласованного состояния данных на `evaluationAt` без автоматического принятия прежних `PostgreSQL REPEATABLE READ` и `transaction_timestamp()`.
+- **P2 — объём adoption:** исторические требования, не включённые в [first-slice.md](first-slice.md), остаются источниками, а не обязательствами нового первого среза.
+
+## Исключено из переноса
+
+Старые Bounded Context boundaries, aggregate decomposition как обязательная структура приложения, persistence schema, API, OIDC integration, Harness Authority/Capability graph, workflow tooling и тестовые/миграционные механизмы. **Исключается привязка к реализации, а не необходимость соблюдения признанных доменных смыслов.**
