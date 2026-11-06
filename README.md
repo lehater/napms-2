@@ -7,7 +7,7 @@ FastAPI/Swagger UI, Pydantic, SQLite (WAL), Python 3.12+. Без ORM и frontend
 NAPMS 1.0 используется только как источник знаний; код и Harness не перенесены.
 
 **Дальнейший приоритет:** развитие SDLC/Harness и измеряемого качества разработки.
-[Roadmap и вход для нового чата](docs/engineering/sdlc-improvement-roadmap.md) · [первый шаг — Issue #7](https://github.com/lehater/napms-2/issues/7).
+[Roadmap и вход для нового чата](docs/engineering/sdlc-improvement-roadmap.md) · [SDLC-01 baseline](docs/engineering/quality-gates-baseline.md) · [Issue #7](https://github.com/lehater/napms-2/issues/7).
 
 ## Установка и запуск
 
