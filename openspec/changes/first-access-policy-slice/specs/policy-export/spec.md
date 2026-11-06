@@ -47,11 +47,22 @@ Export SHALL use the current address realization at the evaluation moment and SH
 - **THEN** the second export displays the updated IP and a new evaluationAt while all domain identifiers and originating permission evidence remain stable
 
 ### Requirement: Coherent single evaluation
-Each export SHALL evaluate scoped grants, Rule effectiveness, current Endpoint realizations and provenance in one internally consistent database snapshot and report one server-selected UTC `evaluationAt`. All time-dependent grant validity and Rule effectiveness checks SHALL use that same `evaluationAt`; their underlying facts SHALL come from the same snapshot. `evaluationAt` labels evaluation of a current committed snapshot, not an exact historical database commit version. Historical as-of evaluation and immediate revocation of already-running exports are not supported in this slice.
+Each export SHALL evaluate scoped grants, Rule effectiveness, current Endpoint realizations and provenance using one committed database snapshot. The authorization decision and exported rows SHALL use facts from that same snapshot.
 
 #### Scenario: Consistent snapshot
 - **WHEN** current IP, grants or Rule state are committed concurrently with an export
-- **THEN** every returned row and authority decision comes from the same pinned database snapshot, not a mix of old and new facts; all validity windows use the one reported evaluationAt
+- **THEN** every returned row and authority decision comes from one pinned snapshot, not a mix of old and new facts
+
+### Requirement: Consistent evaluation timestamp
+Each export SHALL report one server-selected UTC `evaluationAt` and use it for all time-dependent grant validity and Rule effectiveness checks. It denotes evaluation of a current committed snapshot, not an exact historical database version. An export already running when a grant is revoked MAY complete based on its earlier pinned snapshot.
+
+#### Scenario: Evaluation of time-bounded grants
+- **WHEN** an export checks grants with `valid_from` and `valid_until` boundaries
+- **THEN** every grant uses the same `evaluationAt`, with inclusive start and exclusive end boundaries
+
+#### Scenario: Revocation during export
+- **WHEN** a grant is revoked after the export has pinned its snapshot
+- **THEN** the in-progress export MAY complete using that snapshot and a subsequent export MUST see the committed revocation
 
 #### Scenario: Client supplied historical evaluationAt
 - **WHEN** the client attempts to request an arbitrary historical evaluation timestamp
