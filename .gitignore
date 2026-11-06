@@ -14,3 +14,7 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
+.coverage
+coverage.xml
+htmlcov/
+.ruff_cache/
