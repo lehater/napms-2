@@ -3,7 +3,7 @@
 **Статус:** ПРИНЯТО для первого среза NAPMS 2.0 (2026-11-06); REVIEW READY для merge. Реализации и OpenSpec change пока нет.
 **Source baseline:** `lehater/napms@42481577fab7f795cf3a2118b7b6f1c3c075d066`.
 
-## Рекомендация
+## Принятый сценарий
 
 **Заявка → доверенное ALLOWED/DENIED → правило (только для ALLOWED) → объяснимый vendor-neutral экспорт.**
 
@@ -43,7 +43,7 @@
 | AC-02 Missing address | Убрать текущий адрес destination Endpoint при сохранении identity и Rule | INCOMPLETE row с null address и тем же Rule; не исчезает из export |
 | AC-03 Denied | Подать тот же валидный предмет, завершить решением DENIED | Request/decision различимы; **новый** Rule не создаётся; DENIED не даёт export строки |
 | AC-04 Idempotent meaning | Повторить ALLOWED для того же exact AccessSubject | Второй Rule не возникает; основания/история объяснимы |
-| AC-05 Request authority | Убрать source `access.request` grant | Запрос отклонён до создания Request, это не DENIED |
+| AC-05 Request authority | При наличии `access.request` на source и отсутствии его на destination подать заявку; затем убрать source grant и повторить на новом Request | Первая заявка принимается без destination grant; вторая отклоняется до создания Request, это не DENIED |
 | AC-06 Export authority | Убрать `policy.export` grant для выбранного scope | Вывод не раскрывается |
 | AC-07 Current realization | Изменить адрес Endpoint между двумя согласованными export evaluations | Адрес вывода обновлён, identity Resource/Endpoint/Rule и старое permission evidence сохранены |
 | AC-08 Effectiveness | Перевести Rule в INACTIVE | Нет эффективной policy row; правило остаётся объяснимым как неэффективное |
