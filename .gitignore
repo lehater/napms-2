@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.cache/
+.vscode/
+.idea/
+.DS_Store
+*~
