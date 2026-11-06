@@ -1,6 +1,6 @@
 # NAPMS 2.0 — минимальная доменная модель
 
-**Статус:** REVIEW READY; **Confirmed** ниже означает подтверждение источниками NAPMS 1.0, не автоматическое принятие в 2.0.
+**Статус:** REVIEW READY; **Confirmed** ниже означает подтверждение источниками NAPMS 1.0. Правило подачи заявки source-only и границы первого среза явно приняты для NAPMS 2.0 (2026-11-06).
 **Зафиксированный источник:** `lehater/napms@42481577fab7f795cf3a2118b7b6f1c3c075d066`.
 
 ## Сущности и ответственность — Confirmed (исходный NAPMS)
@@ -54,7 +54,7 @@
 | D-04 | Две независимые причины связи одной пары Components могут иметь разные Interaction; revision traffic неизменяем | REQ-INT-002..003; ACC domain |
 | D-05 | Deployment identity = конкретные Component и Resource; смена адреса не меняет placement identity | REQ-DEP-001 |
 | D-06 | ConnectivityNeed опирается на Process и Interaction, но не создаёт permission; уход Need не переписывает решения и автоматически не отбирает Rule | REQ-BUS-001..007 |
-| D-07 | Право **подать запрос** по source-scope отдельно от последующего ALLOWED/DENIED; отказ на admission ещё не решение DENIED | REQ-AUTH-001, REQ-PERM-001 |
+| D-07 | Для NAPMS 2.0 **подача запроса** требует `access.request` на source Resource; право на destination для подачи не требуется. Проверка admission отдельно от ALLOWED/DENIED; отказ на admission не является DENIED | REQ-AUTH-001, REQ-PERM-001; решение 2.0 от 2026-11-06 |
 | D-08 | DENIED не создаёт Rule; ALLOWED для точного AccessSubject создаёт/разрешает **один** Rule; повторение не дублирует | REQ-PERM-003, REQ-RULE-001 |
 | D-09 | Изменение семантики AccessSubject требует нового решения; изменение адреса, Additional Need или operational state не меняет identity/историю Rule | REQ-PERM-002, REQ-RULE-003..005 |
 | D-10 | Effective export: только ALLOWED + Active + satisfied effective conditions на одном evaluation time; неэффективные Rule не дают строк | REQ-EXP-002..003, REQ-EXP-006 |
@@ -64,12 +64,21 @@
 
 Ссылки на идентификаторы REQ: [docs/requirements/first-mvp-product-requirements.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/requirements/first-mvp-product-requirements.yaml). Дополнительная трактовка: [docs/model/use-cases/first-mvp-policy-export.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/use-cases/first-mvp-policy-export.yaml); [docs/model/strategic/context-relationships.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/strategic/context-relationships.yaml).
 
-## Незакрытые вопросы и противоречия
+## Принятые уточнения для NAPMS 2.0
 
-- **P0 / Question — request authority scope.** `REQ-AUTH-001` требует `access.request` для **source Resource**, не destination. Но [docs/model/contexts/access-policy/domain-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/access-policy/domain-model.yaml) описывает `RequestAuthorityEvidence` как покрывающее «every participating Resource AuthorityScopeRef». Возможны разные чтения (все участники vs source-only). Утверждать второе как исправление источника **нельзя** без решения; приоритет в исследовании имеет принятое продуктовое требование, но требуется явное согласование перед реализацией.
-- **P1 / Question — доверенная permission decision.** Нужен договор о том, откуда возникает легитимный ALLOWED/DENIED и кто имеет право его зафиксировать. Старый first MVP не описывает механику внутреннего approval/review (она указана как non-goal).
-- **P1 / Question — инвариант snapshot.** Зафиксировать observable guarantee согласованного snapshot/evaluationAt; прежние `PostgreSQL REPEATABLE READ` и `transaction_timestamp()` относятся к старому дизайну, не к продуктовой модели.
-- **P1 / Candidate — объём adoption.** Полнота старого REQ набора не означает, что все его детали должны войти в первый вертикальный срез 2.0. Изменение области должно быть согласовано, не подменено молчаливым упрощением.
+**Request authority — РЕШЕНО (P0, 2026-11-06).** Для создания AccessRequest сервер проверяет effective `access.request` на **исходный Resource** на момент приёма запроса. Полномочия `access.request` на destination Resource для подачи заявки не требуются. В `RequestAuthorityEvidence` фиксируются реально проверенные source-scope, actor и время. Это не разрешает сам сетевой доступ: отдельное решение ALLOWED/DENIED обязательно.
+
+Исходное `REQ-AUTH-001` и сквозной use case поддерживают source-only. В старой [Access Policy domain-model](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/contexts/access-policy/domain-model.yaml) по-прежнему есть противоречащее требование evidence для каждого участвующего Resource. Факт противоречия сохраняется как provenance; NAPMS 1.0 не изменяется.
+
+**Доверенные роли первого среза — принято на уровне границы.** Actor и grants устанавливаются сервером в изолированном локальном dev/test-профиле. Право создать заявку, право отдельно принять решение и право экспортировать выбранную политику проверяются независимо. Ни переданный клиентом идентификатор, ни `ALLOWED` без полномочий решающего субъекта не дают доступа.
+
+**Export authority:** `policy.export` должен охватывать требуемые scope выбранных Resources; решение source-only относится только к подаче заявки, не к экспорту.
+
+## Вопросы, оставшиеся для OpenSpec и реализации
+
+- **P1 — механизм доверенной идентификации в локальном профиле:** специфицировать конкретный серверный способ сопоставления удостоверения с субъектом и полномочиями; не расширять dev-профиль на сетевую или продуктивную эксплуатацию.
+- **P1 — snapshot:** определить реализацию одного согласованного состояния данных на `evaluationAt` без автоматического принятия прежних `PostgreSQL REPEATABLE READ` и `transaction_timestamp()`.
+- **P2 — объём adoption:** исторические требования, не включённые в [first-slice.md](first-slice.md), остаются источниками, а не обязательствами нового первого среза.
 
 ## Исключено из переноса
 
