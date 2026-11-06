@@ -3,7 +3,7 @@
 Локальный первый продуктовый срез: `AccessRequest → ALLOWED/DENIED → PolicyRule → JSON/CSV`.
 FastAPI/Swagger UI, Pydantic, SQLite (WAL), Python 3.12+. Без ORM и frontend.
 Принятые требования: [первый срез](docs/first-slice.md),
-[дизайн](openspec/changes/first-access-policy-slice/design.md).
+[дизайн](openspec/changes/archive/2026-11-07-first-access-policy-slice/design.md).
 NAPMS 1.0 используется только как источник знаний; код и Harness не перенесены.
 
 ## Установка и запуск
@@ -138,4 +138,5 @@ openspec validate --all --strict
 конкурентные решения и snapshot при изменении IP, grants и Rule state, границы времени grants,
 JSON/CSV parity, отсутствие токенов в выводе. GitHub Actions Verify запускает pytest и строгую OpenSpec validation.
 Основные модули следуют D1: `http.py`, `use_cases.py`, `domain.py`, `storage.py`, `dev.py`.
-Change остаётся открытым до review; реализация не merge и не archive автоматически.
+Актуальные спецификации находятся в `openspec/specs/`. Завершённый change с 17/17 задачами
+сохранён в `openspec/changes/archive/2026-11-07-first-access-policy-slice/`.
