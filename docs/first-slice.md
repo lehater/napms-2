@@ -1,15 +1,15 @@
 # NAPMS 2.0 — первый вертикальный срез
 
-**Статус:** RECOMMENDED / REVIEW READY, **Candidate** для NAPMS 2.0; реализации и OpenSpec change пока нет.
+**Статус:** ПРИНЯТО для первого среза NAPMS 2.0 (2026-11-06); REVIEW READY для merge. Реализации и OpenSpec change пока нет.
 **Source baseline:** `lehater/napms@42481577fab7f795cf3a2118b7b6f1c3c075d066`.
 
 ## Рекомендация
 
-**Один разрешённый доступ → объяснимый vendor-neutral экспорт текущей политики.**
+**Заявка → доверенное ALLOWED/DENIED → правило (только для ALLOWED) → объяснимый vendor-neutral экспорт.**
 
 Пользовательская цель: на основании одного явно разрешённого сценария коммуникации получить пригодную для просмотра/передачи нормализованную строку желаемого доступа — с источником, назначением, протоколом, портами, происхождением решения и признаком готовности адресов.
 
-**Почему этот срез:** проверяет основную полезность NAPMS — независимое от firewall описание того, *что разрешено, почему и что технически известно* — без развёртывания полного каталожного UI, большого approval workflow и provider adapters. Это **предложенная часть** старого vendor-neutral export journey, а не автоматически утверждённый перенос прежнего «полного first MVP».
+**Почему этот срез:** проверяет основную полезность NAPMS — независимое от firewall описание того, *что разрешено, почему и что технически известно* — через постоянный HTTP-интерфейс, но без полного каталожного UI, большого approval workflow и provider adapters. Это **принятая ограниченная часть** старого vendor-neutral export journey, а не весь прежний MVP.
 
 Источники: [docs/discovery/first-mvp-hcd-user-needs.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/discovery/first-mvp-hcd-user-needs.yaml); [docs/model/tasks/policy-export-task-model.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/tasks/policy-export-task-model.yaml); [docs/model/use-cases/first-mvp-policy-export.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/model/use-cases/first-mvp-policy-export.yaml).
 
@@ -21,12 +21,12 @@
 | 2. Запрос и решение | Actor, source-scope `access.request` authority, конкретный AccessSubject и Need, затем **отдельное явное** ALLOWED/DENIED от доверенного решающего субъекта | Различить admission, permission и provenance; DENIED не создаёт Rule | Для ALLOWED один stable PolicyRule (initial Active); для DENIED — только решение |
 | 3. Экспорт | Выбранный Rule, actor с `policy.export` authority, логический evaluationAt и согласованный текущий набор Resource адресов | Проверить эффективность и права, соединить семантику с адресами, сохранить происхождение | Enriched vendor-neutral таблица и CSV: READY с адресами либо INCOMPLETE с null адресом |
 
-**Минимизация реализации:** по одному экземпляру существенных понятий, простой поддерживаемый путь ввода структурированного сценария, один проверяемый выход. Конкретный UI/API/CLI, физическая БД и framework пока не выбраны. **Нельзя** подменять доменный ввод прямым редактированием таблиц или создавать Rule как фиктивную seed-запись без решения. Решение и grants подаются через доверенную границу — её конкретизация блокирует продуктивную реализацию.
+**Минимизация реализации:** один демонстрационный набор связанных понятий и постоянный HTTP API на FastAPI, доступный при локальном запуске через Swagger UI. Точные JSON-схемы и хранение — ответственность OpenSpec change. Данные для демонстрации и тестов создаются явной и повторяемой инициализацией среды; **одобренный PolicyRule не появляется в предустановках**, а формируется только после доверенного ALLOWED. Ввод новых каталогов, CLI как пользовательский интерфейс и полноценный frontend не требуются.
 
 ## Обязательные правила в первом срезе
 
 1. `AccessSubject` основан на exact sourceDeployment + destinationDeployment + immutable InteractionRevision; IP не входит в identity.
-2. `access.request` на source scope проверяется до создания Request; право подать запрос ≠ ALLOWED (см. P0-вопрос в [domain.md](domain.md)).
+2. Для подачи AccessRequest сервер проверяет `access.request` **только на source Resource scope**; destination `access.request` не требуется. Право подать запрос ≠ ALLOWED (P0-решение 2026-11-06; см. [domain.md](domain.md)).
 3. `DENIED` даёт ноль Rule; `ALLOWED` создаёт или находит единственный Rule с тем же AccessSubject; initial state Active.
 4. `policy.export` проверяется до выдачи выбранных данных; выбранная политика оценивается в одном согласованном состоянии на один evaluationAt.
 5. Неэффективный Rule не материализуется; READY содержит полные адрес/протокол/порт, INCOMPLETE сохраняет Resource identity, nullable address, traffic и provenance и не считается готовым permit.
@@ -35,7 +35,7 @@
 
 Основные требования источника: [docs/requirements/first-mvp-product-requirements.yaml](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs/requirements/first-mvp-product-requirements.yaml), `REQ-AUTH-001..002`, `REQ-PERM-001..003`, `REQ-RULE-001..002`, `REQ-RULE-005`, `REQ-EXP-002..007`, `REQ-PROV-001`.
 
-## Проверяемые критерии приёмки (Candidate, для будущего OpenSpec)
+## Проверяемые критерии приёмки (утверждённая цель; технические схемы уточнит OpenSpec)
 
 | Тест | Действие | Ожидаемый результат |
 |---|---|---|
@@ -50,23 +50,47 @@
 
 Для `AC-03` используется отдельный новый AccessSubject или отдельное начальное состояние без ранее ALLOWED Rule; иначе DENIED последующего запроса не должен автоматически отменять ранее авторитетный Rule.
 
-## Исключено из первого среза (но не автоматически из продукта)
+## HTTP API — принятый интерфейс первого среза
 
-Полный UI для всех каталогов; произвольная множественность Resources/Endpoints/Interactions; управление Site и OWNER/ADMINISTRATOR; массовое редактирование и миграция; lifecycle множества Needs; EffectiveWindow beyond basic active state; vendor-specific config/render/apply/reconcile; развёртывание для многих пользователей; полноценная внешняя интеграция identity provider. Точный способ локального доверенного ввода actor/grants/permission ещё нуждается в решении.
+**Технологический выбор для первого среза:** FastAPI с OpenAPI и Swagger UI для локальной проверки. JSON — основной формат ответа, CSV — формат экспорта. Следующие маршруты — начальный контракт, точные имена и схемы уточняются в одном OpenSpec change.
 
-**Не сокращать путём удаления provenance, смешения permission/authority либо «исчезновения» отсутствующих адресов.**
+| Операция | Вход | Ответственность | Выход |
+|---|---|---|---|
+| `POST /access-requests` | Ссылки на предустановленные source/destination Deployments, InteractionRevision и Need | Проверить server-resolved actor, `access.request` source-only и инварианты AccessSubject | AccessRequest + admission evidence |
+| `POST /access-requests/{id}/decision` | Идентификатор заявки и ALLOWED/DENIED от отдельно уполномоченного субъекта | Проверить право принимать решение, связать с неизменяемым subject; для ALLOWED обеспечить один Rule | Decision + RuleRef только для ALLOWED |
+| `GET /policy/export` | Выбранный scope/Rule и желаемый JSON/CSV | Проверить `policy.export`, вычислить effective policy на согласованном `evaluationAt` | READY/INCOMPLETE rows, identifiers, traffic, provenance |
 
-## Продуктовые решения до OpenSpec (блокирующие)
+**Использование через браузер:** Swagger UI предоставляет готовые формы запросов и примеры с идентификаторами предустановленных объектов. Для подачи заявки не требуется пользовательский CLI, ручное редактирование БД или построение полного Web UI.
 
-- **P0:** согласовать объём этого среза вместо полного старого first-MVP. Выбор минимального масштаба **не равен** отказу от будущих возможностей.
-- **P0:** разрешить конфликт `REQ-AUTH-001` (source-only request authority) и AP domain-model (every participating scope evidence); не допускать расширения полномочий по умолчанию.
-- **P1:** определить доверенный способ ввода actor grants и ALLOWED/DENIED. Никаких самоподписанных клиентом «разрешено» для публичного/API сценария.
-- **P1:** определить минимальный интерфейс; локальный сквозной тест может предшествовать сетевому сервису, но не должен имитировать выполненную интеграцию безопасности.
-- **P1:** решить, как гарантировать one-time coherent snapshot и стабильную идентичность при смене адреса, не назначая заранее конкретную СУБД.
+### Локальные предустановки и доверенная граница
+
+- Явная повторяемая инициализация dev/test-данных: 2 Resource/Endpoint, 1 Application, 2 Component, 1 InteractionRevision/TrafficClause, 2 Deployments, 1 BusinessProcess/ConnectivityNeed, тестовые роли инициатора, решающего субъекта и экспортёра. Начальных разрешающих Rules **нет**.
+- Локальный dev/test-профиль слушает loopback, без публичного доступа. Сервер сопоставляет предъявленное dev-удостоверение с заранее назначенными actor и grants; значения `actor_id` и `grants`, присланные клиентом, не являются источником полномочий. Конкретный dev-механизм уточняется в OpenSpec; реальные секреты не сохраняются в репозитории.
+- ALLOWED/DENIED вводится только через отдельно авторизованную операцию принятия решения; наличие поля `ALLOWED` в запросе не означает доверия клиенту.
+- Для тестов отрицательных случаев и изменения адреса/активности допускаются изолированные программные fixtures или специальные dev-only сценарии; публичный CRUD ради тестов вводить не требуется.
+- Выход за пределы loopback/dev/test требует отдельной спецификации настоящей аутентификации/авторизации. Dev-профиль не объявляется production-ready.
+
+### Контракт согласованности экспорта
+
+При каждой операции экспорта решение об authority, effectiveness, текущие адреса и provenance вычисляются относительно **одного согласованного набора исходных фактов** на одном `evaluationAt`. Между двумя запросами адрес может измениться, но идентичность Resource/Endpoint/Rule и историческое решение сохраняются. Конкретный механизм (транзакция, snapshot, модель хранения) выбирается при проектировании, не наследуется автоматически из NAPMS 1.0.
+
+## Исключено из первого среза (не из продукта)
+
+Полный UI и массовое редактирование каталогов, произвольные каталоги и множественность сценариев, управление Site и OWNER/ADMINISTRATOR, сложные approval-процессы, lifecycle множества Needs, EffectiveWindow за пределами базового состояния ACTIVE/INACTIVE, vendor-specific rendering/apply/reconcile, multi-user deployment и внешний Identity Provider. История и idempotent semantics для одного subject остаются частью среза.
+
+**Запрещённые упрощения:** Rule в seed-данных без решения, самоназначение полномочий клиентом, подмена permission/authority, потеря provenance, исчезновение INCOMPLETE rows.
+
+## Решения для запуска первого OpenSpec change
+
+- **P0 — принято:** ограниченный сквозной API-сценарий заявка → доверенное решение → Rule → экспорт, вместо полного прежнего MVP.
+- **P0 — принято:** source-only `access.request` на подаче заявки; source/destination scopes для экспорта проверяются отдельно по выбранной политике.
+- **P1 — принято:** FastAPI/OpenAPI/Swagger UI, серверные demo-fixtures, локальный dev/test-профиль с независимыми ролями; никаких необоснованно доверенных клиентских утверждений.
+- **P1 — контракт утверждён:** одно согласованное состояние на `evaluationAt`; механизм остаётся предметом технического решения.
+- **Уточнить в OpenSpec:** точные маршруты/JSON-схемы, dev-аутентификацию и способ хранения. Не разрабатывать production security или всю архитектуру до появления требований.
 
 ## Альтернативы
 
 - **Полный бывший first-MVP export journey:** максимальное покрытие старых требований, но слишком широк для проверки ценности первой итерации.
 - **Только CRUD Resource или шаблонный CSV без permission provenance:** проще, но не проверяет основную предметную ценность и ключевые инварианты.
 
-**Рекомендация:** утвердить предложенный узкий vertical slice; сформировать **один** OpenSpec change с конкретным end-to-end acceptance, реализовать и проверить его через Codex → Tests → PR → CI, затем расширять по подтверждённым потребностям.
+**Следующий этап:** после merge создать **один** OpenSpec change с API-контрактом, минимальной реализацией и проверкой AC-01..AC-08 через Codex → Tests → PR → CI. Затем расширять по подтверждённым потребностям.
