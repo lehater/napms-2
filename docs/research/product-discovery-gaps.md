@@ -29,6 +29,14 @@
 | 14 | Enterprise systems / authoritative sources | optional seam [docs-legacy/requirements/enterprise-identity-authoritative-sources.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/enterprise-identity-authoritative-sources.md) | нет | Средняя как extensibility | CMDB/IdP sync не выбран и не работает |
 | 15 | Прочее: scoped inventory, traffic Checker, audit | historical contracts [docs-legacy/requirements/traffic-analysis-checker.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/traffic-analysis-checker.md) | нет | Высокая как UX-сценарий / средняя как реализация | historical claim «implemented» не подтверждён текущими nav routes |
 
+## Граница принятия после независимого review
+
+- **Будущая принятая модель/backend:** X01/X03 (lifecycle, смена traffic revision, отдельная задача «Запросить прекращение доступа») и X02 (general-purpose Endpoint/address materialization) остаются решениями владельца продукта. Exact-subject Rule, source-only request и оба scope для export уже приняты N2; Discovery не переоткрывает и не заменяет эти контракты. QREQ-CONS не вводят дедупликацию новых POST или TTL/exportId.
+- **Ограничения UX-0:** один Endpoint на Resource, host-only fixture, одна revision, current-only Checker; неподдерживаемая история — `Unknown` / `Historical data unavailable`. Сетевые данные/интеграции — MOCK, операции — SIMULATED; нет исполняемого revoke или переключения revision существующего Rule. Эти ограничения позволяют маркированный mock без предварительного разрешения X01/X02/X03 и не являются ограничениями всей будущей модели.
+- **Гипотезы пользовательской проверки:** resource-first/request-first entrypoint, 9 групп/19 workspaces, выбор согласующих, будущий lifecycle и историческая композиция. Они не становятся Accepted от наличия mock или документационной трассировки. Решения владельца и проверка пользовательской полезности остаются отдельными шагами.
+
+Основание: принятые N2 [requests](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/openspec/specs/access-requests/spec.md), [decisions](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/openspec/specs/access-decisions/spec.md), [export](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/openspec/specs/policy-export/spec.md); временная граница и candidate provenance — [J06](user-journeys.md#j06-начать-со-своего-resource-или-с-технического-tuple-connectivity--checker), различия CONS — [traceability](product-requirements-traceability.md#уточнения-qreq-cons-для-будущей-спецификации).
+
 ## Риски P0 — блокеры автоматического переноса модели и финального UX
 
 | ID | Риск и источник | Последствие | Требуемое решение |

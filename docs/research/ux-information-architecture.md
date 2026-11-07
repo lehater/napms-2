@@ -22,7 +22,7 @@
 | **Доступ / Заявки** | Создать, найти, просмотреть заявку | PENDING/ALLOWED/DENIED list, detail, create from chosen source, decision action; history/Need/Rule links | C13–C15 / J02 | N2 existing UI реальный (UUID form) |
 | **Доступ / Правила** | Показать authoritative desired PolicyRules | list/detail, state Active/Inactive, exact subject, provenance, history, transition drafts under review | C16 C17 / J02 J03 | N2 backend Rule read; UI candidate |
 | **Доступ / Эффективная политика** | Проверить, что должно быть разрешено | scope/subset selector, coherent snapshot table, READY/INCOMPLETE, JSON/CSV/export diagnostic | C18 / J04 | N2 backend реальный; UI candidate |
-| **Исследование / Проверка связи** | Найти контекст по IP/protocol/port/asOf | tuple form → tabs Attribution/Business/Policy/Network/Evidence; zero/many matches, UNKNOWN, ссылки | C20 / J06 | historical Checker; mock |
+| **Исследование / Проверка связи** | Найти контекст по IP/protocol/port; UX-0 current-only | tuple form → tabs Attribution/Business/Policy/Network/Evidence; zero/many matches, UNKNOWN, ссылки | C20 / J06 | historical Checker; mock |
 | **Исследование / Наблюдения** | Посмотреть, что именно получено из сети | Evidence sets, sources, time/freshness/completeness, Configured vs TrafficDerived vs Imported | C21–C24 / J05 | future; mock-only |
 | **Исследование / Обнаруженные связи** | Привязать наблюдения к бизнес-контексту | Recognized/ambiguous/unresolved list, candidate graph, action «атрибутировать Need», переход к запросу | C25 / J05 | future; mock-only |
 | **Сеть / Устройства и места применения** | Понять объекты enforcement и доказанность placement | Firewall/ACL candidate list; source snapshots, states, locators and uncertainty | C26 C27 / J06 J07 | future; mock-only |
@@ -36,7 +36,7 @@
 
 ## Поведение экранов и переходов
 
-- Общий shell: sidebar с группами, breadcrumbs, строка scope (только для соответствующего рабочего контекста), actor; в mock-режиме постоянная видимая метка **DEMO / НЕ ДАННЫЕ СЕТИ**, не подменять server authorization.
+- Общий shell: sidebar с группами, breadcrumbs, строка scope (только для соответствующего рабочего контекста), actor; в mock-режиме постоянная видимая метка **MOCK / FICTIONAL NETWORK DATA**, не подменять server authorization.
 - В каждом списке: условные search/filter, список связанных объектов, state/source/last observation time; empty и Unknown раздельно. В detail: primary identity, роли/владение, отношения, provenance, timeline, контекстные переходы.
 - От Resource → Deployments → Component → InteractionRevision; от Process → Need → Requests → Decisions → Rule → Export; от Evidence → Recognized candidate → Need/Request; от PolicyRule → comparison/target/source evidence → change operation → recheck.
 - Нельзя создавать fake success действий («применено к firewall») и скрытую реальную авторизацию: mock transition — визуализация предустановленного сценария. Действия без backend должны быть явно **Смоделировано**, логироваться локально в UX-стейте, после Reload исчезать либо сбрасываться с явным пояснением.
@@ -55,6 +55,8 @@
 | Deployments | `dep-order-1`: OrderClient→R1; `dep-ledger-1`: LedgerApi→R2 | Конкретные экземпляры; IP changes не меняют deployment IDs |
 | Process + Need | `Settlement`; `need-001`: OrderClient требуется Interaction OrderClient→LedgerApi для бухгалтерской операции; request отдельно выбирает `rev-1` | Бизнес-обоснование отдельно от разрешения |
 | Actors | `alice-orders` (requester), `bob-policy` (decider), `nina-network` (export+оператор) | Правомочность отдельно от Owners, роли — демонстрационная подача, backend не расширять |
+| Authority fixture | Alice: `access.request` только Scope A; Bob: отдельный trusted `access.decide` для demo-policy; Nina: `policy.export` Scope A **и** Scope B | Resource Owners Orders/Finance не получают decider grant автоматически; роли не заменяют server grants |
+| Authority negative cases | Alice без request grant Scope B подаёт Q1 успешно; без source grant — 403, без DENIED. Nina без export grant любой из сторон — 403 без строк/адресов/provenance | `access.request(source)` и `policy.export(source+destination)` — разные проверки по N2 [request](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/openspec/specs/access-requests/spec.md#L20) / [export](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/openspec/specs/policy-export/spec.md#L9) |
 | Request Q1 | `alice-orders` → PENDING → ALLOWED → Rule P1 ACTIVE | Базовая «желаемая политика» HTTPS |
 | Request Q2 | Отдельный повторный запрос exact subject → DENIED | Демонстрирует, что DENIED не создаёт второго Rule и не аннулирует P1 |
 | Export | P1 TCP/443 READY; при удалении адреса E2 → INCOMPLETE | Согласованный desired-view, не указывает firewall |
@@ -65,6 +67,8 @@
 | Recapture F3 (MOCK) | Effective permits 443 **и** 8443 | missing=0, excess=8443 → **по-прежнему Drift**, не ложная convergence |
 
 **Негативные/неоднозначные кейсы** в одном датасете: неизвестный адрес E2 (INCOMPLETE export и Unresolved target policy); неоднозначные два network candidates; evidence без Need и без авторизации; DENIED после ранее ALLOWED; устаревший capture/Unknown; mismatch scope grant; no auto removal of excess. Дополнительный необязательный ресурс `legacy-unattributed-01` нужен только если два Resource недостаточны для показа unmatched IP и нескольких возможных resource attributions; **не вводить третьего участника в базовый сценарий до UX проверки**.
+
+**Время Checker в UX-0:** только current-only MOCK; показывать время оценки и отдельные sourceTime/recordedAt/collectedAt. Исторический `asOf` — будущая гипотеза [Checker](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/traffic-analysis-checker.md#L100), несовместимая с молчаливой подстановкой current-only [NEP ADR-018](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/decisions/ADR-018-nep-firewall-current-state-candidate-model.md#L48). Неподдерживаемые исторические измерения — `Unknown` / `Historical data unavailable`; текущие candidates не являются историческим маршрутом. Все отсутствующие сетевые интеграции и их данные — **MOCK**, операции — **SIMULATED**. Executed/Applied и immediate Verified не доказывают сходимость: нужен отдельный APR recheck, как F3 с оставшимся excess.
 
 **Критическая оговорка:** mock данных не доказывает жизнеспособности нормализатора, API, исполнителя сети или конкретного firewall/ACL. Пример `fw-core-02` не выбирается для применения без независимого доказательства placement. Источники контракта: [docs-legacy/requirements/technical-access-evidence-core.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/technical-access-evidence-core.md), [docs-legacy/requirements/network-enforcement-placement-core.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/network-enforcement-placement-core.md), [docs-legacy/requirements/access-policy-realization-mvp.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/access-policy-realization-mvp.md), [docs-legacy/requirements/network-environment-operations.md](https://github.com/lehater/napms/blob/42481577fab7f795cf3a2118b7b6f1c3c075d066/docs-legacy/requirements/network-environment-operations.md).
 
@@ -88,7 +92,7 @@
 
 ## Границы UX-0 после содержательного аудита
 
-[Аудит 180/180](primary-source-content-audit.md) подтверждает ширину карты, но не product acceptance. **19 workspaces / 9 групп** остаются candidate navigation map. Первый прототип: shell, минимальные общие read-only templates и один dataset; несколько кликабельных переходов важнее наполнения всех 19 разделов. Необходимые состояния выбираются для J01→J02→J04 и J05→J06→J07; J03 только как отдельно маркированная hypothesis.
+[Аудит 180/180](primary-source-content-audit.md) подтверждает ширину карты, но не product acceptance. **19 workspaces / 9 групп** остаются candidate navigation map. Первый прототип: shell, минимальные общие read-only templates и один dataset; несколько кликабельных переходов важнее наполнения всех 19 разделов. Необходимые состояния выбираются для J01→J02→J04 и J05→J06→J07; J03 только как отдельно маркированная hypothesis, без исполняемого изменения Rule или сценария «Запросить прекращение доступа».
 
 При детализации использовать [AUD-013/014](product-requirements-traceability.md): list→detail, видимый query state, reset paging, loading/empty/404/error, field validation и conflict, keyboard/focus, narrow reflow. Mock filtering разрешён как локальная демонстрация явно полного mock dataset; он не доказывает backend query semantics. Historical checkboxes не вводят bulk mutation/saved views/Resource type. Введённые в макет external Person/Team references не становятся Actor grants.
 
