@@ -143,6 +143,25 @@ test('linked chain supports reload, browser back, unknown evidence and real-rout
   await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible()
 })
 
+test('ObjectTable headers match object, type, status and description cells', async ({ page }) => {
+  for (const [id, statusLabel] of [['mock-request-allowed', 'Состояние'], ['mock-need', 'Актуальность'], ['mock-application', '']] as const) {
+    const object = byId.get(id)!
+    await page.goto('/prototype/' + object.section)
+    const table = page.getByRole('table')
+    await expect(table.getByRole('columnheader')).toHaveText(['Объект', 'Тип', 'Состояние', 'Описание'])
+    const row = table.getByRole('row').filter({ has: page.getByRole('link', { name: object.name, exact: true }) })
+    const cells = row.getByRole('cell')
+    await expect(cells).toHaveCount(4)
+    await expect(cells.nth(0)).toHaveText(object.name)
+    await expect(cells.nth(1)).toHaveText(object.kind)
+    if (object.state) {
+      await expect(cells.nth(2)).toContainText(statusLabel)
+      await expect(cells.nth(2)).toContainText(object.state)
+    } else await expect(cells.nth(2)).toHaveText('—')
+    await expect(cells.nth(3)).toHaveText(object.summary)
+  }
+})
+
 test('Applications presents profile → interaction → revision with parent context and distinct properties', async ({ page }) => {
   const requests: string[] = []
   page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })

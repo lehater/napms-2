@@ -69,7 +69,7 @@ function ObjectTable({ rows }: { rows: readonly MockObject[] }) {
     </div>
     {visible.length ? <div className="overflow-x-auto"><table className="w-full text-left text-sm">
       <caption className="sr-only">Фиктивные объекты раздела</caption>
-      <thead className="bg-slate-50"><tr>{['Объект', 'Тип', 'Сводка', 'Контекст'].map(title => <th key={title} scope="col" className="border-y px-3 py-3 font-medium text-slate-600">{title}</th>)}</tr></thead>
+      <thead className="bg-slate-50"><tr>{['Объект', 'Тип', 'Состояние', 'Описание'].map(title => <th key={title} scope="col" className="border-y px-3 py-3 font-medium text-slate-600">{title}</th>)}</tr></thead>
       <tbody>{visible.map(row => <tr key={row.id} className="hover:bg-slate-50"><td className="min-w-40 border-b px-3 py-4"><Link className="font-medium text-sky-800" to={objectPath(row)}>{row.name}</Link></td><td className="max-w-48 break-words border-b px-3 py-4 text-xs text-slate-500">{row.kind}</td><td className="min-w-32 border-b px-3 py-4">{row.state ? <ObjectStatus object={row} /> : <span className="text-slate-400">—</span>}</td><td className="min-w-60 border-b px-3 py-4 text-slate-600">{row.summary}</td></tr>)}</tbody>
     </table></div> : <p>Нет совпадений. Измените поисковый запрос.</p>}
   </section>
