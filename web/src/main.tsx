@@ -1,6 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import App from './App'
+import Prototype from './prototype/Prototype'
 import './index.css'
-createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><App /></BrowserRouter></StrictMode>)
+createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><Routes>
+  <Route path="/prototype/:section?/:objectId?" element={<Prototype />} />
+  <Route path="/prototype/*" element={<Prototype />} />
+  <Route path="*" element={<App />} />
+</Routes></BrowserRouter></StrictMode>)
