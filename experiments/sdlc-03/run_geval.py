@@ -33,6 +33,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="SDLC-03 offline GEval pilot")
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--negative", type=Path, required=True)
+    parser.add_argument("--reference", type=Path, help="Optional independently verified positive control")
     parser.add_argument("--model", required=True, help="Explicit locally installed Ollama model")
     parser.add_argument("--out", type=Path, required=True, help="Local JSON output (not a repository path)")
     parser.add_argument("--repeats", type=int, default=3)
@@ -42,6 +43,8 @@ def main() -> int:
         parser.error("--repeats must be between 2 and 10")
     if not args.candidate.is_file() or not args.negative.is_file():
         parser.error("Both implementation files must exist")
+    if args.reference is not None and not args.reference.is_file():
+        parser.error("Reference implementation does not exist")
     if args.out.resolve().is_relative_to(Path.cwd().resolve()):
         parser.error("Write the result outside the working repository")
 
@@ -50,13 +53,18 @@ def main() -> int:
         "candidate_codex": args.candidate.read_bytes(),
         "negative_control_manual": args.negative.read_bytes(),
     }
-    if sources["candidate_codex"] == sources["negative_control_manual"]:
-        parser.error("Control and candidate must differ")
+    if args.reference is not None:
+        sources["positive_control_manual"] = args.reference.read_bytes()
+    if len(set(sources.values())) != len(sources):
+        parser.error("All supplied implementations must differ")
 
     # Imports are kept inside main so --help works in a clean checkout.
     from deepeval.metrics import GEval
     from deepeval.models import OllamaModel
     from deepeval.test_case import LLMTestCase, SingleTurnParams
+
+    if version("deepeval") != "4.3.3":
+        parser.error("This protocol requires deepeval==4.3.3")
 
     model = OllamaModel(
         model=args.model, base_url="http://localhost:11434", temperature=0
