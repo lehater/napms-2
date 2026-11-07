@@ -107,3 +107,36 @@ DEEPEVAL_DISABLE_DOTENV=1 DEEPEVAL_TELEMETRY_OPT_OUT=1 \
 - [DeepEval G-Eval](https://deepeval.com/docs/metrics-llm-evals)
 - [DeepEval Ollama](https://deepeval.com/integrations/models/ollama)
 - [DeepEval privacy and telemetry](https://deepeval.com/docs/data-privacy)
+
+
+## Первый контролируемый прогон — фактические результаты (2026-11-07)
+
+- **Codex candidate:** commit [4f09406](https://github.com/lehater/napms-2/commit/4f09406ceae0475bba5252b062ff12e3fd24e8e3), blob SHA policy_csv.py: 3521d511088939c02f68ce7523a7bcc7e6ad7d38.
+- **Из WSL2:** Codex CLI 0.166.0, Python 3.12.3, JSONL 15 событий; завершено 1 turn, неуспешных turns 0; input tokens 82 242, из них cached 71 936; output tokens 812, из них reasoning 124. Это не денежная стоимость. Public unittest 2/2 PASS.
+- **GitHub CI:** [Verify 42343053802](https://github.com/lehater/napms-2/actions/runs/42343053802) — success.
+- **Независимый post-run oracle:** [check_contract.py](../../experiments/sdlc-03/check_contract.py) опубликован только после commit Codex. Координатор восстановил точный Git blob 3521d511 (SHA совпал) и выполнил 12/12 проверок, PASS (Python 3.13.5).
+- **Ручной отрицательный контроль:** [negative_control.py](../../experiments/sdlc-03/negative_control.py) основан на том же коде, но без защиты formula-like CSV fields. Это **не вывод Codex**. В среде координатора public checks 2/2 PASS, post-run oracle 11/12 PASS, одна ошибка: test_formula_prefixes_all_exportable_text_fields.
+- Эти результаты **не являются DeepEval scores**. Истинные метки: candidate соответствует зафиксированному контракту; negative нарушает один конкретный пункт.
+
+### Воспроизведение следующего этапа в WSL2
+
+После обновления экспериментальной ветки выполняются:
+
+~~~bash
+python3 experiments/sdlc-03/check_contract.py experiments/sdlc-03/policy_csv.py
+# Ожидаемо 12/12 PASS
+python3 experiments/sdlc-03/check_contract.py experiments/sdlc-03/negative_control.py
+# Ожидаемо один FAIL, поскольку контроль заведомо дефектный
+python3 -m venv /tmp/napms-sdlc03-venv
+/tmp/napms-sdlc03-venv/bin/python -m pip install 'deepeval==4.3.3'
+DEEPEVAL_DISABLE_DOTENV=1 DEEPEVAL_TELEMETRY_OPT_OUT=1 \
+  /tmp/napms-sdlc03-venv/bin/python experiments/sdlc-03/run_geval.py \
+    --candidate experiments/sdlc-03/policy_csv.py \
+    --negative experiments/sdlc-03/negative_control.py \
+    --model 'gpt-oss:20b' \
+    --out /tmp/napms-sdlc03-geval.json
+~~~
+
+Делать три независимые оценки на образец (шесть model calls). Версия DeepEval 4.3.3 опубликована 2026-11-04. Сначала проверить выход JSON локально на чувствительные данные; публично фиксировать только релевантные scores/reasons/errors, версии, SHA образцов. Реальная совместимость локального Ollama gpt-oss:20b с этим GEval ещё **не проверена**.
+
+**Gate:** оценить, отличает ли GEval заведомо корректный файл от дефектного, фиксировать ложные срабатывания и нестабильность. При исключениях или отсутствии scores — зафиксировать blocker/defer. Никаких изменений продукта, Harness или обязательного CI; merge только после полного review.
