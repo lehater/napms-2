@@ -64,6 +64,7 @@ RULE
   sha256sum "$LAB/task.txt" "$LAB/candidate.txt"
   printf 'order=p1-a,p1-b,p2-b,p2-a,p3-a,p3-b\n'
 } > "$LAB/evidence/manifest.txt"
+sha256sum "$LAB/task.txt" "$LAB/candidate.txt" > "$LAB/evidence/frozen-inputs.sha256"
 ```
 
 No more shell-generated instructions or dynamic edits to these files are permitted. Freeze SHA-256 before fetching workspaces. Never show the agent `FIX`, reference correction, past trial logs or the evaluator checklist.
@@ -119,7 +120,7 @@ for trial in p1-a p1-b p2-b p2-a p3-a p3-b; do
   e="$LAB/evidence/$trial"
   echo "RUN $trial"
   date -u +%FT%TZ > "$e/start-utc.txt"
-  test "$(sha256sum "$LAB/task.txt" | cut -d" " -f1)" = "$(sha256sum "$LAB/task.txt" | cut -d" " -f1)"  # frozen file: no regeneration
+  sha256sum --check --status "$LAB/evidence/frozen-inputs.sha256" || { echo "BLOCKED: frozen input changed"; break; }
   set +e
   timeout --signal=TERM --kill-after=15s 900s     "$CODEX_BIN" exec -C "$d"     --model "$MODEL"     -c 'model_reasoning_effort="medium"'     -c 'web_search="disabled"'     -c 'sandbox_workspace_write.network_access=false'     --sandbox workspace-write --ask-for-approval never     --ignore-user-config --ephemeral --json     --output-last-message "$e/final.txt"     - < "$LAB/task.txt" > "$e/events.jsonl" 2> "$e/stderr.txt"
   agent_rc=$?
@@ -144,8 +145,10 @@ for trial in p1-a p1-b p2-b p2-a p3-a p3-b; do
     echo "STOP: AGENTS.md mutated by agent; guardrail violation"; break
   fi
   echo "Inspect this trial now: event chronology, exit/status, paths, diff, S1-S8 and secrets."
-  read -r -p "Type CONTINUE only if next trial remains authorized and no stop rule applies: " approval
-  [[ "$approval" == CONTINUE ]] || { echo "STOP: operator review"; break; }
+  if [[ "$trial" != p3-b ]]; then
+    read -r -p "Type CONTINUE only if next trial remains authorized and no stop rule applies: " approval
+    [[ "$approval" == CONTINUE ]] || { echo "STOP: operator review"; break; }
+  fi
 done
 ```
 
