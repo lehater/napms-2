@@ -1,0 +1,55 @@
+{
+  "protocol": "SDLC-03 GEval / final Python source only; not a Codex trajectory",
+  "timestamp_utc": "2026-11-07T05:39:29.960785+00:00",
+  "model": "gpt-oss:20b",
+  "temperature": 0,
+  "deepeval_version": "4.3.3",
+  "repeats": 3,
+  "metric": "GEval with fixed evaluation_steps",
+  "contract_sha256": "7d62d218bd7babe4e971fa58c7e393243e8d8732760b8d9e9cb3a960e0c7bed8",
+  "items": [
+    {
+      "label": "candidate_codex",
+      "sha256": "e228b3c033b04627b09c45dab02f86eb56ceaa1b7a466aaa44bca61fd5ce4eb4",
+      "trials": [
+        {
+          "trial": 1,
+          "error_type": "TimeoutError"
+        },
+        {
+          "trial": 2,
+          "error_type": "TimeoutError"
+        },
+        {
+          "trial": 3,
+          "error_type": "TimeoutError"
+        }
+      ]
+    },
+    {
+      "label": "negative_control_manual",
+      "sha256": "d510696e215d75c1943bb23157cabe15c72c52f5d9c65052882910f6d5d80dc0",
+      "trials": [
+        {
+          "trial": 1,
+          "score": 0.5,
+          "reason": "The implementation correctly writes the required header, preserves the fixed column order, sorts rows lexicographically by request_id, and uses csv.writer with a newline terminator, satisfying the format and newline requirements. It validates that each row is a Mapping, contains all four required keys, that all values are strings, and that decision is either ALLOW or DENY, raising generic ValueError messages without leaking raw values. It also ignores any additional keys, so no extraneous columns appear. However, it fails to meet the contract that any exported cell beginning with =, +, -, or @ must be prefixed with a single apostrophe; this omission violates the specified CSV-safety requirement. Because one contractual obligation is not met, the score is moderate rather than high."
+        },
+        {
+          "trial": 2,
+          "score": 0.5,
+          "reason": "The implementation correctly writes the header, preserves the required column order, sorts rows by request_id, validates that each row is a mapping with all required string fields and that decision is either ALLOW or DENY, and it does not expose raw values in error messages or include any additional keys. However, it fails to meet the contract requirement that any exported cell beginning with '=', '+', '-', or '@' (including request_id) must be prefixed with a single apostrophe to prevent spreadsheet formula interpretation. This omission is a clear violation of the specified behavior."
+        },
+        {
+          "trial": 3,
+          "score": 0.5,
+          "reason": "The implementation correctly writes the required header, preserves the fixed column order, sorts rows lexicographically by request_id, and uses csv.writer with a newline terminator, satisfying the format and newline requirements. It validates that each row is a Mapping, contains all four required keys, that all values are strings, and that decision is either ALLOW or DENY, raising generic ValueError messages without leaking raw values. It also ignores any additional keys, so no extraneous columns appear. However, it fails to meet the contract that any exported cell beginning with =, +, -, or @ must be prefixed with a single apostrophe; this omission violates the specified CSV-safety requirement. Because one contractual obligation is not met, the score is moderate rather than high."
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    "This is a transcription of user-supplied results. Newline escapes in the explanation are normalized in this record; numeric scores, types and SHA-256 fields are unchanged.",
+    "No raw Codex trace or sensitive data. The judge score has not been validated as a CI gate."
+  ]
+}
