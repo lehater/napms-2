@@ -1,6 +1,6 @@
 # NAPMS — карта пользователей и сквозных сценариев
 
-**Статус:** исследовательская реконструкция, PARTIAL; продуктовые процессы NAPMS 1.0 не автоматически приняты NAPMS 2.0. Ревизии N1 `42481577fab7f795cf3a2118b7b6f1c3c075d066`, N2 `9713c89bada6573bda2f60c97fb45deda48f5909`.
+**Статус:** исследовательская реконструкция, PARTIAL product acceptance; корпус источников проверен 180/180; продуктовые процессы NAPMS 1.0 не автоматически приняты NAPMS 2.0. Ревизии N1 `42481577fab7f795cf3a2118b7b6f1c3c075d066`, N2 `9713c89bada6573bda2f60c97fb45deda48f5909`.
 
 ## Роли, цели и границы
 
@@ -118,3 +118,18 @@
 - Сценарии **J01/J02/J04** образуют доказанный первый концептуальный контур и частично реализованы N2, но frontend N2 пока предоставляет только J02 через UUID-поля.
 - **J05/J06/J07** основаны на 1.0 target/historical contracts, а не на текущем живом сборе реальных данных.
 - **J03** ограничен P0 противоречием идентичности Rule. **J08** частично представляет возможность, частично будущую UX гипотезу. Отсутствие требования к BPMN или approval workflow не означает отсутствия Process и решения — это разные уровни.
+
+## Уточнения сценариев по завершённой проверке источников
+
+Число journeys остаётся **8**. Новые evidence встроены как ветви существующих задач; это candidate/historical уточнения из [AUD-001–018 и QREQ](product-requirements-traceability.md), без принятия N2.
+
+- **J01:** разделять server-owned IDs и ввод external correlation; terminal retirement/dependency blockers только historical hypothesis. Для detail показывать current/history, empty-current/404/error, field errors и stale conflict отдельно. Несколько Interaction reasons на одной паре допустимы в modern N1; старое one-per-pair не применять (X11).
+- **J02:** source-only admission остаётся N2 baseline, несмотря на найденные stale both-scopes clauses N1 (X09). Keyboard/focus/labels и состояния editor не должны зависеть от цвета. Mock не должен воспроизводить production identity из dev credentials.
+- **J03:** ограничение «один Pending на Rule» относится к historical pair-based aggregate, **не** к числу N2 AccessRequests. Не обещать in-place revision switch, автоматическое withdrawal/regrant или каталожный retirement до решения.
+- **J04:** distinguish coherent result completeness и row technical readiness. Historical immutable exportId/TTL и same-result CSV — отдельная гипотеза; не утверждать, что нынешний N2 её реализует.
+- **J05:** одинаковый source+capture retry сохраняет прежние IDs/time; duplicate source records сохраняются. Один unfaithful item исключает complete capture, empty capture не отсутствие доступа. NEP и TAE acquisition могут иметь разные capture time/schedules.
+- **J06:** trusted Resource base row остаётся при отказе enrichment с Unknown только в затронутой колонке; authority failure всё ещё закрывает protected read. Resource-group paging и bounded children явны. Current-only NEP результат нельзя выдавать за исторический asOf Checker.
+- **J07:** показывать все ECMP/VRF local branches, distinct ACL union и override reason. Include > Exclude > Routing — historical target, no current state означает skipped с diagnostic, а не доказанное отсутствие firewall. Prefix-to-target unresolved не раскрывать в hosts.
+- **J08:** recovery/health/diagnostics различают process alive и ready; source failure не business denial. NoneKnown justification отличается от Unknown. Нет доказательства monitoring KPI, production backup objectives или enterprise acceptance.
+
+Прямые первичные ссылки для каждой ветви находятся в AUD/QREQ и A001–A108; реализация и пользовательская успешность этих ветвей не заявляются.

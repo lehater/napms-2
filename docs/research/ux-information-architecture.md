@@ -53,7 +53,7 @@
 | Application Profile | `Order-to-Ledger HTTPS` | Один повторно используемый профиль взаимодействия, **не** CMDB-identity сервиса |
 | Components + Interaction | `OrderClient` → `LedgerApi`; Revision `rev-1` TCP destination **443** | Направленная семантика и traffic alternatives; source/dest одного профиля |
 | Deployments | `dep-order-1`: OrderClient→R1; `dep-ledger-1`: LedgerApi→R2 | Конкретные экземпляры; IP changes не меняют deployment IDs |
-| Process + Need | `Settlement`; `need-001`: OrderClient требуется `rev-1` для бухгалтерской операции | Бизнес-обоснование отдельно от разрешения |
+| Process + Need | `Settlement`; `need-001`: OrderClient требуется Interaction OrderClient→LedgerApi для бухгалтерской операции; request отдельно выбирает `rev-1` | Бизнес-обоснование отдельно от разрешения |
 | Actors | `alice-orders` (requester), `bob-policy` (decider), `nina-network` (export+оператор) | Правомочность отдельно от Owners, роли — демонстрационная подача, backend не расширять |
 | Request Q1 | `alice-orders` → PENDING → ALLOWED → Rule P1 ACTIVE | Базовая «желаемая политика» HTTPS |
 | Request Q2 | Отдельный повторный запрос exact subject → DENIED | Демонстрирует, что DENIED не создаёт второго Rule и не аннулирует P1 |
@@ -85,3 +85,13 @@
 5. Уровень подробности topology/placement graph: candidate relevance vs proven path.
 
 Решения согласовать после ревью [docs/domain.md](https://github.com/lehater/napms-2/blob/9713c89bada6573bda2f60c97fb45deda48f5909/docs/domain.md) и [gaps](product-discovery-gaps.md); не превращать этот документ в финальный контракт UI без исходной проверки.
+
+## Границы UX-0 после содержательного аудита
+
+[Аудит 180/180](primary-source-content-audit.md) подтверждает ширину карты, но не product acceptance. **19 workspaces / 9 групп** остаются candidate navigation map. Первый прототип: shell, минимальные общие read-only templates и один dataset; несколько кликабельных переходов важнее наполнения всех 19 разделов. Необходимые состояния выбираются для J01→J02→J04 и J05→J06→J07; J03 только как отдельно маркированная hypothesis.
+
+При детализации использовать [AUD-013/014](product-requirements-traceability.md): list→detail, видимый query state, reset paging, loading/empty/404/error, field validation и conflict, keyboard/focus, narrow reflow. Mock filtering разрешён как локальная демонстрация явно полного mock dataset; он не доказывает backend query semantics. Historical checkboxes не вводят bulk mutation/saved views/Resource type. Введённые в макет external Person/Team references не становятся Actor grants.
+
+В network detail нужны collectedAt, diagnostics skipped/missing routing state, все relevant local branches и override reason; не выдавать список кандидатов за полный маршрут или historical asOf. NEP/TAE могут иметь разную свежесть. В evidence сохранять source+capture retry/conflict, duplicate records, unknown source time и normalization failure. В Rule detail не превращать historical one-Pending/withdrawal модель в работающий N2 lifecycle. CSV/TTL exportId помечать hypothesis при отсутствии принятого API.
+
+Для UX-0 оставить строго **один Endpoint на каждый Resource и одну revision**. Mock network actions — **SIMULATED**. Реальные API, SQLite и demo credentials изолированы от mock. Принятый N2 request source-only grant не менять из-за stale current N1 security clauses (X09). Принятие final IA, production auth и future capability scope требует отдельного review.
