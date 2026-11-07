@@ -1,6 +1,6 @@
 # SDLC-03 — минимальная облачная проверка DeepEval через Codex CLI
 
-**Status:** first WSL2 smoke failed; CLI error classification added, retest pending. **Date:** 2026-11-07.  
+**Status:** cloud positive smoke PASS (2026-11-07), negative control pending. **Date:** 2026-11-07.  
 **Context:** [Issue #9](https://github.com/lehater/napms-2/issues/9); [first Ollama run](sdlc-03-geval-results.md) had 3 candidate timeouts and 3 negative-control scores at 0.5.
 
 ## Goal and responsibilities
@@ -78,7 +78,7 @@ WSL2 вернул `CodexCliInvocationError`, `error_category=output_schema_rejec
 
 По [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) все объекты, в том числе вложенные в `$defs`, должны содержать `additionalProperties: false` и `required` со всеми свойствами. Сырой `Pydantic.model_json_schema()` не гарантирует этого. Поэтому в `codex_cli_judge.py` добавлен `strict_output_schema()` перед передачей данных через `--output-schema`: рекурсивно закрыть объекты, сделать все поля обязательными, удалить `default`, сохранить `anyOf` и `$ref`. Результат модели после вызова всё ещё проходит исходную `schema.model_validate_json()`.
 
-[Офлайновые проверки](../../experiments/sdlc-03/check_judge_schema.py) проверяют nested objects, nullable, `$defs/$ref`, удаление `default` и запрет non-object root. Эквивалентное преобразование проверено координатором в отдельной среде с Pydantic 2.13.5 без облачных вызовов. Реальная совместимость схемы, порождённой конкретным DeepEval GEval, **ещё не проверена**.
+[Офлайновые проверки](../../experiments/sdlc-03/check_judge_schema.py) проверяют nested objects, nullable, `$defs/$ref`, удаление `default` и запрет non-object root. Эквивалентное преобразование проверено координатором в отдельной среде с Pydantic 2.13.5 без облачных вызовов. Реальная совместимость схемы **подтверждена одним успешным WSL2 positive smoke** (ниже).
 
 Сначала выполнить без сети и модели:
 
@@ -89,3 +89,23 @@ git pull --ff-only
 ~~~
 
 Только при PASS — один повтор положительного smoke с новым путём output (старые результаты не перезаписывать). Если вновь возникнет `output_schema_rejected`, остановить повторения и диагностировать точное ограничение по обезличенному сообщению CLI. Codex-разработчика и Ollama не перезапускать.
+
+
+## Smoke #3 — облачный Codex успешно оценил корректную реализацию
+
+Владелец подтвердил успешный вызов `GEval` с `--judge codex-cli --only candidate_codex --repeats 1` после исправления JSON Schema. [Результат](../../experiments/sdlc-03/results/2026-11-07-codex-cli-positive-pass.json): **score=1.0**, `elapsed_seconds=11.32`, reason корректно перечисляет требования контракта. Исходный код подтверждён независимым oracle **12/12 PASS**. Это один повтор и только положительный образец; нельзя утверждать устойчивость модели или низкую стоимость без реальных измерений.
+
+Следующий узкий эксперимент: **один** вызов для `negative_control_manual` (публичные проверки 2/2 PASS, oracle 11/12 PASS). Прежний `threshold=0.5` принимать как экспериментальную настройку, **не** одобренный CI gate. После отрицательного образца сравнить scores и текст причины, выявить ложное принятие и дать `adopt/defer/reject` для дальнейшего исследовательского использования.
+
+~~~bash
+cd /home/alex/projects/napms-2
+git pull --ff-only
+/tmp/napms-sdlc03-venv/bin/python experiments/sdlc-03/run_geval.py \
+  --judge codex-cli --model codex-cli --judge-timeout 120 \
+  --only negative_control_manual --repeats 1 \
+  --candidate experiments/sdlc-03/policy_csv.py \
+  --negative experiments/sdlc-03/negative_control.py \
+  --out /tmp/napms-sdlc03-geval-codex-negative.json
+~~~
+
+При ошибке остановиться, не запускать серию повторов. Сохранить output JSON локально; в публичный PR переносить лишь проверенные поля score/reason/error и ограничения. Основной продуктовый CI не меняется.
