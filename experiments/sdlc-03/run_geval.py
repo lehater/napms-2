@@ -172,6 +172,13 @@ def main() -> int:
                     "trial": trial_index + 1,
                     "error_type": type(exc).__name__,
                 }
+                # Only whitelisted diagnostic metadata, never raw exception text.
+                category = getattr(exc, "category", None)
+                if isinstance(category, str):
+                    trial["error_category"] = category
+                exit_code = getattr(exc, "exit_code", None)
+                if isinstance(exit_code, int):
+                    trial["cli_exit_code"] = exit_code
             trial["elapsed_seconds"] = round(perf_counter() - started, 2)
             result["trials"].append(trial)
         results["items"].append(result)
