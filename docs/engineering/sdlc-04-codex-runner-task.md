@@ -93,7 +93,7 @@ done
 sha256sum "$LAB/task.txt" "$LAB/candidate.txt" >> "$LAB/evidence/manifest.txt"
 ```
 
-These are six **independent working trees** with separate `.git` stores, not attached `git worktree` entries. This prevents access to the accepted fix through shared history. A/B differ only in the pre-injected root bullet. Agent workspaces cannot see each other's untracked files under the configured workspace sandbox. Check that sandbox access does not escape to `$LAB/evidence`; an exception is BLOCKED.
+These are six **independent working trees** with separate `.git` stores, not attached `git worktree` entries. This prevents access to the accepted fix through shared history. A/B differ only in the pre-injected root bullet. The six independent Git stores do **not** make the entire OS filesystem unreadable. Standard `workspace-write` limits writes but may permit read access elsewhere. Do not disclose evidence paths to the evaluated agent; monitor tool-command events for cross-run reads and stop as BLOCKED if observed. If a stronger isolation guarantee is required, obtain owner approval for an externally isolated environment instead of silently introducing one.
 
 ## 4. Pre-agent fixture check (no Codex call)
 
@@ -118,9 +118,12 @@ for trial in p1-a p1-b p2-b p2-a p3-a p3-b; do
   d="$LAB/runs/$trial"
   e="$LAB/evidence/$trial"
   echo "RUN $trial"
+  date -u +%FT%TZ > "$e/start-utc.txt"
+  test "$(sha256sum "$LAB/task.txt" | cut -d" " -f1)" = "$(sha256sum "$LAB/task.txt" | cut -d" " -f1)"  # frozen file: no regeneration
   set +e
   timeout --signal=TERM --kill-after=15s 900s     "$CODEX_BIN" exec -C "$d"     --model "$MODEL"     -c 'model_reasoning_effort="medium"'     -c 'web_search="disabled"'     -c 'sandbox_workspace_write.network_access=false'     --sandbox workspace-write --ask-for-approval never     --ignore-user-config --ephemeral --json     --output-last-message "$e/final.txt"     - < "$LAB/task.txt" > "$e/events.jsonl" 2> "$e/stderr.txt"
   agent_rc=$?
+  date -u +%FT%TZ > "$e/end-utc.txt"
   (cd "$d" && openspec validate --all --strict) > "$e/oracle.log" 2>&1
   oracle_rc=$?
   git -C "$d" diff --check > "$e/diff-check.txt" 2>&1
@@ -137,8 +140,12 @@ for trial in p1-a p1-b p2-b p2-a p3-a p3-b; do
   git -C "$d" hash-object openspec/changes/first-access-policy-slice/specs/policy-export/spec.md > "$e/policy-export-blob.txt"
   echo "$trial agent=$agent_rc strict=$oracle_rc diff=$diff_rc" | tee -a "$LAB/evidence/manifest.txt"
   if [[ "$agent_rc" -eq 124 || "$agent_rc" -eq 137 ]]; then echo "STOP: timeout; mark INCONCLUSIVE"; break; fi
-  # Operator MUST stop here if logs or changed paths show a P0/P1 stop condition.
-  # Review the new run before proceeding: NEVER use the next trial as a retry.
+  if ! cmp -s "$e/agents-before.sha256" "$e/agents-after.sha256"; then
+    echo "STOP: AGENTS.md mutated by agent; guardrail violation"; break
+  fi
+  echo "Inspect this trial now: event chronology, exit/status, paths, diff, S1-S8 and secrets."
+  read -r -p "Type CONTINUE only if next trial remains authorized and no stop rule applies: " approval
+  [[ "$approval" == CONTINUE ]] || { echo "STOP: operator review"; break; }
 done
 ```
 
