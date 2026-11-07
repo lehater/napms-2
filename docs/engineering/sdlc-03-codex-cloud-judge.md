@@ -70,3 +70,22 @@ Both samples produce a score and reason, and reasons correctly distinguish the f
 Из обновлённой ветки PR #15 повторить ровно тот же **один** smoke с другим именем выходного файла, сохранив исходный результат. Для поиска причины вывести только `error_category` и `cli_exit_code`. При `unclassified_cli_error` остановиться: тогда потребуется однократная локальная инспекция очищенного сообщения ошибки, а не повторные LLM-вызовы вслепую.
 
 Реальный Cloud-judge score пока **не получен**; запуск отрицательного контроля не обоснован. Harness, продукт и CI не изменять.
+
+
+## Smoke #2 — отклонение JSON Schema и исправление адаптера
+
+WSL2 вернул `CodexCliInvocationError`, `error_category=output_schema_rejected`, `cli_exit_code=1`, `elapsed_seconds=5.6`; оценка отсутствует. [Запись диагностики](../../experiments/sdlc-03/results/2026-11-07-codex-cli-schema-diagnostic.json). Подтверждён класс ошибки, но ещё не конкретное поле исходной схемы.
+
+По [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) все объекты, в том числе вложенные в `$defs`, должны содержать `additionalProperties: false` и `required` со всеми свойствами. Сырой `Pydantic.model_json_schema()` не гарантирует этого. Поэтому в `codex_cli_judge.py` добавлен `strict_output_schema()` перед передачей данных через `--output-schema`: рекурсивно закрыть объекты, сделать все поля обязательными, удалить `default`, сохранить `anyOf` и `$ref`. Результат модели после вызова всё ещё проходит исходную `schema.model_validate_json()`.
+
+[Офлайновые проверки](../../experiments/sdlc-03/check_judge_schema.py) проверяют nested objects, nullable, `$defs/$ref`, удаление `default` и запрет non-object root. Эквивалентное преобразование проверено координатором в отдельной среде с Pydantic 2.13.5 без облачных вызовов. Реальная совместимость схемы, порождённой конкретным DeepEval GEval, **ещё не проверена**.
+
+Сначала выполнить без сети и модели:
+
+~~~bash
+cd /home/alex/projects/napms-2
+git pull --ff-only
+/tmp/napms-sdlc03-venv/bin/python -m unittest discover -s experiments/sdlc-03 -p 'check_judge_schema.py' -v
+~~~
+
+Только при PASS — один повтор положительного smoke с новым путём output (старые результаты не перезаписывать). Если вновь возникнет `output_schema_rejected`, остановить повторения и диагностировать точное ограничение по обезличенному сообщению CLI. Codex-разработчика и Ollama не перезапускать.
