@@ -1,6 +1,6 @@
 # SDLC-03 — минимальная облачная проверка DeepEval через Codex CLI
 
-**Status:** cloud positive smoke PASS (2026-11-07), negative control pending. **Date:** 2026-11-07.  
+**Status:** two cloud-smoke samples completed (2026-11-07); technical integration works, automatic score threshold rejects neither sample. **Date:** 2026-11-07.  
 **Context:** [Issue #9](https://github.com/lehater/napms-2/issues/9); [first Ollama run](sdlc-03-geval-results.md) had 3 candidate timeouts and 3 negative-control scores at 0.5.
 
 ## Goal and responsibilities
@@ -109,3 +109,12 @@ git pull --ff-only
 ~~~
 
 При ошибке остановиться, не запускать серию повторов. Сохранить output JSON локально; в публичный PR переносить лишь проверенные поля score/reason/error и ограничения. Основной продуктовый CI не меняется.
+
+
+## Smoke #4 — подтверждён дефектный образец; итог сравнения
+
+[Результат отрицательного контроля](../../experiments/sdlc-03/results/2026-11-07-codex-cli-negative-pass.json): **score=0.7**, **elapsed=10.06 s**. Обоснование точно указывает нарушение formula-prefix при экспорте CSV. Независимый oracle ранее подтвердил 11/12 PASS, публичные тесты 2/2 PASS. Cloud positive: score=1.0 и 11.32 s.
+
+Оба ответа содержательно корректны, но при `threshold=0.5` отрицательный образец также классифицируется как PASS — **ложное принятие**. Поэтому эксперимент подтверждает только *техническую интеграцию и полезность текстового сигнала*, не пригодность для автоматического CI. Числа 1.0 / 0.7 нельзя переносить на другие задания, оценивать разницу как вероятность или ретроспективно подбирать порог.
+
+**Итог:** DeepEval+Codex CLI оставить как экспериментальный исследовательский адаптер; продвигаемый CI gate отложить. Следующее исследование — лишь при потребности в семантических оценках, с заранее размеченными положительными/отрицательными заданиями и несколькими повторами. [Детальный разбор](sdlc-03-geval-results.md).
