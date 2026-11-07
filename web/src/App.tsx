@@ -27,7 +27,7 @@ export default function App() {
     </div></header>
     <div className="mx-auto grid max-w-6xl gap-8 px-6 py-8 md:grid-cols-[220px_1fr]">
       <aside className="space-y-6">
-        <nav aria-label="Main navigation" className="flex flex-col gap-2"><Link to="/access-requests">Requests</Link><Link to="/access-requests/new">New request</Link></nav>
+        <nav aria-label="Main navigation" className="flex flex-col gap-2"><Link to="/access-requests">Requests</Link><Link to="/access-requests/new">New request</Link><Link to="/prototype">UX-0 prototype · MOCK</Link></nav>
         <section className="space-y-3 rounded-lg border bg-white p-4" aria-label="Demo credentials">
           <label className="text-sm font-medium" htmlFor="mode">Demo mode</label>
           <select id="mode" className="w-full rounded-md border p-2" value={mode} onChange={e => { clear(); setNotice(''); setMode(e.target.value as Mode) }}>

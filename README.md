@@ -43,6 +43,11 @@ napms-dev serve
 
 ## Web UI (локальный demo)
 
+Исследовательский [UX-0 прототип](docs/research/ux-0-prototype.md) доступен по
+<http://127.0.0.1:5173/prototype> без API и token после запуска Vite.
+Восемь read-only разделов используют только явно помеченный связанный mock fixture;
+настоящие заявки и credentials остаются в `/access-requests`.
+
 Нужны Python 3.12+ и Node.js 22.12+ (CI: Node 24). Сначала выполните установку,
 `napms-dev init-demo` и `napms-dev serve`, как описано выше. В другом терминале:
 
