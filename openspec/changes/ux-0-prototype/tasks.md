@@ -17,4 +17,6 @@ Evidence: Draft PR https://github.com/lehater/napms-2/pull/24. Typecheck/build P
 ## 3. ERD review corrections (#25/#26)
 
 - [x] 3.1 Correct Interaction/Need/revision, add Endpoint and TAE facts with computed/persistent labels, temporal RC and separate authority evidence; update walkthrough and graph/browser assertions, verifying all links and no prototype API calls.
-- [ ] 3.2 Run typecheck, build, full E2E, strict OpenSpec validation and diff check; update existing Draft PR #24 and wait for successful CI on the new HEAD.
+- [x] 3.2 Run typecheck, build, full E2E, strict OpenSpec validation and diff check; update existing Draft PR #24 and wait for successful CI on the new HEAD.
+
+ERD correction evidence: typecheck/build PASS; full E2E 9/9 (4 prototype + 5 unchanged real-flow checks); strict OpenSpec 6/6; diff check PASS. CI [Verify #89](https://github.com/lehater/napms-2/actions/runs/42424436980) passed all three jobs for implementation `5270a84999ec31c7964722e468dc3b3f7f1ad525`. Final handoff CI, including this tracking-only update, is recorded in PR #24.
