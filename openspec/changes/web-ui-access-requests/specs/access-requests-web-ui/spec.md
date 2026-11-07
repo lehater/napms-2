@@ -4,7 +4,7 @@
 
 Provide a minimal accessible local browser interface over the existing trusted NAPMS access-request API, preserving independent request and decision authority.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: Minimal navigable local interface
 The local web client SHALL provide a shared layout with links to a request list and request creation, stable list/new/detail routes, and visible loading, empty-data and API-error states. It SHALL use existing shadcn/ui components or native controls, without creating a reusable component-system project or unrelated administration screens.

@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Authenticated visible request collection
-The system SHALL expose `GET /access-requests` requiring a valid bearer credential and SHALL return only requests accessible under the same authorization semantics as `GET /access-requests/{requestId}`: an actor SHALL see their own submissions, and an actor with an effective server-held `access.decide` grant scoped to `demo-policy` SHALL see all requests. Authority SHALL be evaluated server-side at a single instant within the read transaction. No client-supplied role, actor, grant, or scope SHALL expand visibility.
+The system SHALL expose authenticated `GET /access-requests`. An actor SHALL see their own submissions, including after expiration of their former request-admission grant. An actor with an effective server-held `access.decide` grant for `demo-policy` SHALL see all requests. The server SHALL evaluate authority at one instant within the read transaction; caller-supplied actor, role, scope, or grant SHALL NOT expand visibility.
 
 #### Scenario: Requester owns two requests
 - **WHEN** an authenticated requester reads the collection after submitting two requests while another requester has also submitted a request
@@ -28,7 +28,7 @@ The system SHALL expose `GET /access-requests` requiring a valid bearer credenti
 - **THEN** the API returns 200 with an empty `items` array and no other actor's details
 
 ### Requirement: Bounded and deterministic request collection
-The collection SHALL respond with `{"items": [AccessRequest], "limit": integer, "offset": integer, "hasMore": boolean}`. It SHALL accept only optional `limit` (default 20, integer 1..100) and `offset` (default 0, nonnegative integer) query parameters, order authorized records by `submittedAt` descending then `requestId` descending, and paginate **after** applying server-side visibility. `hasMore` SHALL indicate a further authorized item beyond the returned page. It SHALL NOT expose a global total or unsupported filtering controls.
+The collection SHALL return `{"items": [AccessRequest], "limit": integer, "offset": integer, "hasMore": boolean}`. It SHALL accept only optional `limit` (integer 1..100; default 20) and `offset` (nonnegative integer; default 0). It SHALL order visible requests by `submittedAt` descending, then `requestId` descending, paginate after applying server-side visibility, and set `hasMore` when another authorized item follows. It SHALL not expose a global total or extra filters.
 
 #### Scenario: First page and next page
 - **WHEN** an authorized actor has more than the requested `limit` visible requests and requests `offset=0`
