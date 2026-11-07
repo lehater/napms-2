@@ -1,13 +1,14 @@
-"""Run the local DeepEval GEval pilot against saved implementation files.
+"""Evaluate saved synthetic implementations using DeepEval GEval.
 
-Usage (isolated venv, explicit installed Ollama model):
+Usage (isolated venv, explicit model and transport):
     python experiments/sdlc-03/run_geval.py \
         --candidate /path/to/policy_csv.py \
         --negative /path/to/known-defective-policy_csv.py \
         --model <installed-ollama-model> \
         --out /tmp/napms-sdlc03-geval.json
 
-This script does not execute either implementation or call any hosted LLM.
+This script never executes either implementation. Ollama uses a local server;
+--judge codex-cli invokes the cloud Codex service through the installed CLI.
 The negative control MUST be separately labeled; never pretend it was Codex output.
 """
 
@@ -31,7 +32,7 @@ def digest(content: bytes) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="SDLC-03 offline GEval pilot")
+    parser = argparse.ArgumentParser(description="SDLC-03 GEval feasibility pilot")
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--negative", type=Path, required=True)
     parser.add_argument("--reference", type=Path, help="Optional independently verified positive control")
