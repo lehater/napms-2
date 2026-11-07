@@ -1,6 +1,6 @@
 # SDLC-03 — минимальная облачная проверка DeepEval через Codex CLI
 
-**Status:** experimental integration, unverified on owner WSL2. **Date:** 2026-11-07.  
+**Status:** first WSL2 smoke failed; CLI error classification added, retest pending. **Date:** 2026-11-07.  
 **Context:** [Issue #9](https://github.com/lehater/napms-2/issues/9); [first Ollama run](sdlc-03-geval-results.md) had 3 candidate timeouts and 3 negative-control scores at 0.5.
 
 ## Goal and responsibilities
@@ -53,3 +53,20 @@ Both samples produce a score and reason, and reasons correctly distinguish the f
 - [Codex exec structured responses and saved authentication](https://learn.chatgpt.com/docs/non-interactive-mode)
 - [Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference)
 - [Separate ChatGPT and OpenAI API billing](https://help.openai.com/en/articles/9039756-managing-billing-for-chatgpt-and-the-api-platform)
+
+
+## Первый WSL2 smoke: 2026-11-07 05:59:04 UTC
+
+Владелец выполнил `run_geval.py --judge codex-cli --model codex-cli --judge-timeout 120 --only candidate_codex --repeats 1`. Файл `/tmp/napms-sdlc03-geval-codex-candidate.json` содержит **1 failed trial** с `RuntimeError` за **6.49 секунды**. `deepeval=4.3.3`; `judge=codex-cli`; candidate SHA-256 `e228b3c033b04627b09c45dab02f86eb56ceaa1b7a466aaa44bca61fd5ce4eb4`; `contract_sha256=7d62d218bd7babe4e971fa58c7e393243e8d8732760b8d9e9cb3a960e0c7bed8`.
+
+**Причина ещё не установлена**: первоначальный адаптер намеренно отбрасывал stderr и возвращал только `RuntimeError`. Это не свидетельствует о плохом качестве кода или DeepEval.
+
+### Исправление наблюдаемости
+
+Адаптер теперь классифицирует ненулевой exit code, не распространяя исходный stderr: `output_schema_rejected`, `cli_argument_rejected`, `authentication`, `usage_limit`, `model_unavailable`, `permission`, `connectivity`, `unclassified_cli_error`. В JSON сохраняются только `error_type`, `error_category` и `cli_exit_code`. **Возможная**, но пока не подтверждённая проблема — JSON Schema от Pydantic: Codex `--output-schema` использует строгий Structured Outputs, где объекты должны иметь `additionalProperties: false` и обязательные поля. Не исправлять схему до фактического подтверждения отказа.
+
+### Следующий минимальный шаг
+
+Из обновлённой ветки PR #15 повторить ровно тот же **один** smoke с другим именем выходного файла, сохранив исходный результат. Для поиска причины вывести только `error_category` и `cli_exit_code`. При `unclassified_cli_error` остановиться: тогда потребуется однократная локальная инспекция очищенного сообщения ошибки, а не повторные LLM-вызовы вслепую.
+
+Реальный Cloud-judge score пока **не получен**; запуск отрицательного контроля не обоснован. Harness, продукт и CI не изменять.
