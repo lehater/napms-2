@@ -28,7 +28,8 @@ test('fixture has one coherent allow-only communication with honest comparison e
   expect(need.links.some(link => byId.get(link.id)?.kind === 'InteractionRevision')).toBe(false)
   expect(need.fields.participantComponent).toBe(byId.get('mock-interaction-ledger')!.fields.sourceComponent + ' / sender')
   expect(byId.get('mock-revision')!.fields.interaction).toBe('mock-interaction-ledger')
-  expect(byId.get('mock-revision')!.state).toBe('Immutable')
+  expect(byId.get('mock-revision')!.state).toBeUndefined() // invariant, not lifecycle
+  expect(byId.get('mock-application')!.state).toBeUndefined() // read-only is UI mode
   for (const request of objects.filter(object => object.kind === 'AccessRequest')) {
     for (const kind of ['BusinessProcess', 'ConnectivityNeed', 'InteractionRevision']) {
       expect(request.links.some(link => byId.get(link.id)?.kind === kind)).toBe(true)
@@ -102,6 +103,7 @@ test('all eight sections, filtering and every object relation work without API r
   for (const object of objects) {
     await page.goto(objectPath(object))
     await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
+    await page.getByText('О данных', { exact: true }).click()
     await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText(natureLabel[dataNature[object.kind]])
     const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link')
     await expect(links).toHaveCount(object.links.length)
@@ -138,5 +140,52 @@ test('linked chain supports reload, browser back, unknown evidence and real-rout
   await expect(page.getByRole('heading', { name: 'Enter a demo credential' })).toBeVisible()
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
   await page.getByRole('link', { name: 'UX-0 prototype · MOCK', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Обзор', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible()
+})
+
+test('Applications presents profile → interaction → revision with parent context and distinct properties', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })
+  const application = byId.get('mock-application')!
+  const interaction = byId.get('mock-interaction-ledger')!
+  const revision = byId.get('mock-revision')!
+  for (const width of [1440, 800, 390]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/prototype/applications')
+    const nav = page.getByRole('navigation', { name: 'Prototype navigation', exact: true })
+    await expect(nav.getByRole('link', { name: 'Applications', exact: true })).toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByRole('link')).toHaveCount(8)
+    const table = page.getByRole('table')
+    await expect(table.getByRole('row')).toHaveCount(2)
+    await expect(table).not.toContainText('Immutable')
+    await expect(table).not.toContainText('Read-only')
+    await expect(table).not.toContainText(natureLabel.persistent)
+    await table.getByRole('link', { name: application.name, exact: true }).click()
+    await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('OrderClient')
+    await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('LedgerApi')
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).not.toContainText('Read-only')
+    await page.getByRole('region', { name: 'Interactions', exact: true }).getByRole('link', { name: interaction.name + ' →', exact: true }).click()
+    const communication = page.getByRole('region', { name: 'Communication', exact: true })
+    await expect(communication).toContainText('OrderClient')
+    await expect(communication).toContainText('LedgerApi')
+    await expect(communication).toContainText('Назначение: Запись проводки')
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Актуальность')
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Current')
+    await page.getByRole('region', { name: 'Interaction revisions', exact: true }).getByRole('link', { name: revision.name + ' →', exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(objectPath(revision) + '$'))
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Неизменяемость параметров')
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).not.toContainText('Immutable')
+    const crumbs = page.getByRole('navigation', { name: 'Breadcrumbs' })
+    await expect(crumbs.getByRole('link', { name: application.name, exact: true })).toBeVisible()
+    await expect(crumbs.getByRole('link', { name: interaction.name, exact: true })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    await page.reload()
+    await expect(page.getByRole('heading', { name: revision.name, exact: true })).toBeVisible()
+    await page.goBack()
+    await expect(page.getByRole('heading', { name: interaction.name, exact: true })).toBeVisible()
+    await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: application.name, exact: true }).click()
+    await expect(page.getByRole('heading', { name: application.name, exact: true })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  }
+  expect(requests).toEqual([])
 })

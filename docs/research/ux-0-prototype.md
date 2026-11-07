@@ -4,6 +4,8 @@ Issue [#23](https://github.com/lehater/napms-2/issues/23). Восемь комп
 
 ## Запуск и walkthrough
 
+UX-0.1 уточняет только представление существующей модели. Меню: Overview, Resources, Applications, Deployments, Business needs, Policies, Network evidence, Reconciliation. URL разделов и объектов сохранены.
+
 Из корня репозитория:
 
 ```bash
@@ -26,6 +28,12 @@ npm run dev
 Представления: Обзор; Ресурсы; Приложения и коммуникации; Размещения компонентов; Бизнес-процессы и ConnectivityNeed; Декларированная политика и PolicyRule; NST и фактическая конфигурация; Сопоставление политик. Общие таблицы с поиском и карточки со связанными объектами.
 
 ## Граница mock и evidence
+
+В Applications сначала показаны только Application-профили. Откройте `Order-to-Ledger HTTPS`: блок Components показывает роли OrderClient и LedgerApi, блок Interactions — направленную связь и назначение. Откройте Interaction → Interaction revisions → rev-1. Breadcrumbs содержат профиль и Interaction даже при прямом входе в revision; работают Back и reload. Application не является инсталляцией ПО, Component — роль участника, Interaction — устойчивая коммуникация, revision — её технические параметры.
+
+`Current` подписан как актуальность. Неизменяемость параметров revision описана отдельным инвариантом, а не статусом или флагом. Read-only обозначает доступность операций всего прототипа и не является состоянием Application. Существующие жизненные состояния Active/ALLOWED/DENIED сохранены. Длинные сведения о природе данных перенесены из строк таблицы в раскрываемый блок «О данных» каждой карточки.
+
+Review-артефакты UX-0.1 (только mock, без credentials): [Application и sidebar, 1440 px](assets/ux-0-1/application-desktop.png), [Interaction и revisions, 1440 px](assets/ux-0-1/interaction-desktop.png), [Revision, 390 px](assets/ux-0-1/revision-mobile.png). Walkthrough проверен Playwright на 1440/800/390 px, включая parent breadcrumbs, прямые URL, Back/reload и отсутствие page overflow.
 
 Все данные `/prototype` — единый детерминированный fixture `web/src/prototype/data.ts`, идентификаторы `mock-*`, документационные адреса. Одна revision, один Endpoint на Resource. Время оценки фиксировано: `2026-11-07T12:00:00Z`, не live-статус. Source time и collectedAt показаны отдельно.
 
