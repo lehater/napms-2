@@ -17,7 +17,47 @@ package "Resource Catalogue (RC)" {
     * endpointId : UUID <<PK>>
     --
     resourceId : UUID <<ref>>
-    currentAddress : HostAddress | Prefix | null
+  }
+  entity "EndpointAddressHistory" as AddressHistory {
+    * addressFactId : UUID <<PK>>
+    --
+    endpointId : UUID <<ref>>
+    addressKind : HOST | PREFIX
+    addressValue : string
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
+  }
+  entity "Site" as Site {
+    * siteId : UUID <<PK>>
+    --
+    name : string
+    description : string?
+  }
+  entity "ResourceSiteHistory" as SiteHistory {
+    * historyId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+    siteId : UUID? <<ref>>
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
+  }
+  entity "ResponsibilityGroup" as RespGroup {
+    * groupId : UUID <<PK>>
+    --
+    displayName : string
+    externalReference : string?
+  }
+  entity "ResourceResponsibilityHistory" as RespHistory {
+    * assignmentId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+    groupId : UUID <<ref>>
+    role : OWNER | ADMINISTRATOR
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
   }
 }
 
@@ -101,6 +141,16 @@ package "Access Policy (AP)" {
     requestedBy : ActorRef
     submittedAt : datetime
     state : PENDING | ALLOWED | DENIED
+  }
+  entity "RequestAuthorityEvidence" as RequestAuth {
+    * evidenceId : UUID <<PK>>
+    --
+    requestId : UUID <<ref>>
+    scopeRef : string
+    action : access.request
+    grantEffectiveFrom : datetime?
+    grantEffectiveUntil : datetime?
+    evaluatedAt : datetime
   }
   entity "AccessDecision (logical record)" as Decision {
     * decisionId : UUID <<PK>>
@@ -278,9 +328,38 @@ package "Network Enforcement Placement (NEP, N1 target model)" {
     It is NOT an authoritative route fact.
   end note
 }
+
+package "Network Environment Operations (NEO, future scope)" {
+  entity "NetworkOperation (conceptual aggregate)" as Operation {
+    * operationId : UUID <<PK>>
+    --
+    targetRef : opaque
+    comparisonScope : opaque
+    artifactDigest : string
+    rendererIdentity : string
+    actorRef : ActorRef
+    mutationAuthorityScope : ScopeRef
+    baseTargetCorrelation : string
+    expectedPreStateRevision : string?
+    orderedOperationEvents : Event[]
+    finalOutcome : Verified | Rejected | PreconditionFailed | Drift | Unknown | null
+  }
+
+  note bottom of Operation
+    Future NEO boundary from N1 tactical model.
+    Owned operation/event semantics only.
+    Durable database storage is NOT required
+    until an explicit N2 implementation slice.
+    No execution workflow or static NEP link.
+  end note
 }
 
 Resource ||--o{ Endpoint : contains
+Endpoint ||--o{ AddressHistory : address_facts
+Resource ||--o{ SiteHistory : site_assignments
+Site |o--o{ SiteHistory : assigned_site
+Resource ||--o{ RespHistory : responsibilities
+RespGroup ||--o{ RespHistory : responsible_group
 Resource ||--o{ Deployment : hosts
 Application ||--o{ Component : defines
 Component ||--o{ Interaction : source_role
@@ -296,6 +375,7 @@ Deployment ||--o{ Subject : destination
 Revision ||--o{ Subject : exact_revision
 Subject ||--o{ Request : submissions
 Need ||--o{ Request : requested_for
+Request ||--|{ RequestAuth : admission_provenance
 Request ||--o| Decision : terminal_outcome
 Subject ||--o| Rule : canonical_rule
 Rule ||--|{ AuthEvidence : authorizations
@@ -306,6 +386,20 @@ Rule ||--o{ History : changes
 
 Source ||--o{ EvidenceSet : captures
 EvidenceSet ||--o{ EvidenceEntry : stored_facts
+
+note bottom of AddressHistory
+  Address history is authoritative for address
+  realization; current address is the single
+  effective record if one exists.
+  This avoids duplicating currentAddress
+  as another stored column.
+end note
+
+note bottom of RequestAuth
+  Evidence of source-Resource request authority
+  at submission time, not ALLOWED permission.
+  Decision authority is evaluated separately.
+end note
 
 note bottom of Revision
   Immutable content by invariant.
@@ -346,6 +440,9 @@ legend bottom
   Cross-context refs do not imply DB FKs.
   No TAE-to-Policy or TAE-to-Firewall link.
   NEP stores latest successful routing and admin overrides.
+  RC stores temporal address/site/responsibility facts.
+  AP retains request authority provenance.
+  NEO is future conceptual scope, not N2 SQL.
   FirewallCandidate and LocalBranch are computed only.
   Matching and APR diff are computations.
 endlegend
