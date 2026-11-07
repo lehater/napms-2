@@ -71,8 +71,8 @@ git diff -- experiments/sdlc-03/policy_csv.py
 После реализации кода и независимого oracle координатор предоставляет путь к проверенному локальному отрицательному контролю, при необходимости — к положительному. Команды для запуска оценщика (в WSL2; `<installed-model>` заменить на точное имя из `ollama list`):
 
 ```bash
-python -m venv /tmp/napms-sdlc03-venv
-/tmp/napms-sdlc03-venv/bin/python -m pip install 'deepeval==4.3.3'
+python3 -m venv /tmp/napms-sdlc03-venv
+/tmp/napms-sdlc03-venv/bin/python -m pip install 'deepeval==4.3.3' 'ollama'
 DEEPEVAL_DISABLE_DOTENV=1 DEEPEVAL_TELEMETRY_OPT_OUT=1 \
   /tmp/napms-sdlc03-venv/bin/python experiments/sdlc-03/run_geval.py \
     --candidate experiments/sdlc-03/policy_csv.py \
@@ -82,6 +82,8 @@ DEEPEVAL_DISABLE_DOTENV=1 DEEPEVAL_TELEMETRY_OPT_OUT=1 \
 ```
 
 `--reference /tmp/napms-sdlc03-reference.py` указывать только при наличии отдельно проверенной корректной реализации. Не запускать без контролей и не публиковать сырые Codex-трассы или JSON с чувствительными данными. Устанавливать зависимости **только после preflight**, и не делегировать Codex исследования/выбор метрик.
+
+**Preflight dependency fix (2026-11-07):** реальная установка `deepeval==4.3.3` в отдельном venv прошла, но первый запуск `run_geval.py` завершился до оценки с `ModuleNotFoundError: No module named 'ollama'` (`DeepEvalError`). Python-библиотека `ollama` — отдельная необязательная зависимость адаптера DeepEval и не равна запущенному Ollama-серверу. Команды установки дополнены `pip install ollama` в том же venv. Исходный вызов **не создал ни одного GEval score**, повторный вызов после установки библиотеки пока не подтверждён. Версию установленного `ollama` зафиксировать через `python -m pip show ollama` при публикации результатов.
 
 ## Протокол сравнения / решение
 
@@ -128,7 +130,7 @@ python3 experiments/sdlc-03/check_contract.py experiments/sdlc-03/policy_csv.py
 python3 experiments/sdlc-03/check_contract.py experiments/sdlc-03/negative_control.py
 # Ожидаемо один FAIL, поскольку контроль заведомо дефектный
 python3 -m venv /tmp/napms-sdlc03-venv
-/tmp/napms-sdlc03-venv/bin/python -m pip install 'deepeval==4.3.3'
+/tmp/napms-sdlc03-venv/bin/python -m pip install 'deepeval==4.3.3' 'ollama'
 DEEPEVAL_DISABLE_DOTENV=1 DEEPEVAL_TELEMETRY_OPT_OUT=1 \
   /tmp/napms-sdlc03-venv/bin/python experiments/sdlc-03/run_geval.py \
     --candidate experiments/sdlc-03/policy_csv.py \
