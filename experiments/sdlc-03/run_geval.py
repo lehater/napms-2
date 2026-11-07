@@ -35,7 +35,15 @@ def main() -> int:
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--negative", type=Path, required=True)
     parser.add_argument("--reference", type=Path, help="Optional independently verified positive control")
-    parser.add_argument("--model", required=True, help="Explicit locally installed Ollama model")
+    parser.add_argument("--model", required=True, help="Ollama model name, or codex-cli")
+    parser.add_argument(
+        "--judge", choices=("ollama", "codex-cli"), default="ollama",
+        help="Judge transport (default: Ollama). Codex CLI uses saved login.",
+    )
+    parser.add_argument(
+        "--judge-timeout", type=int, default=120,
+        help="Per Codex CLI judge call timeout in seconds",
+    )
     parser.add_argument("--out", type=Path, required=True, help="Local JSON output (not a repository path)")
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument(
@@ -50,6 +58,10 @@ def main() -> int:
         parser.error("--repeats must be between 1 and 10")
     if args.repeats == 1 and args.only == "all":
         parser.error("Use --only for a single diagnostic trial")
+    if args.judge == "codex-cli" and args.model != "codex-cli":
+        parser.error("For --judge codex-cli use --model codex-cli")
+    if args.judge_timeout < 10 or args.judge_timeout > 600:
+        parser.error("--judge-timeout must be between 10 and 600 seconds")
     if not args.candidate.is_file() or not args.negative.is_file():
         parser.error("Both implementation files must exist")
     if args.reference is not None and not args.reference.is_file():
@@ -71,14 +83,21 @@ def main() -> int:
 
     # Imports are kept inside main so --help works in a clean checkout.
     from deepeval.metrics import GEval
-    from deepeval.models import OllamaModel
+    if args.judge == "ollama":
+        from deepeval.models import OllamaModel
+    else:
+        from codex_cli_judge import CodexCliJudge
     from deepeval.test_case import LLMTestCase, SingleTurnParams
 
     if version("deepeval") != "4.3.3":
         parser.error("This protocol requires deepeval==4.3.3")
 
-    model = OllamaModel(
-        model=args.model, base_url="http://localhost:11434", temperature=0
+    model = (
+        OllamaModel(
+            model=args.model, base_url="http://localhost:11434", temperature=0
+        )
+        if args.judge == "ollama"
+        else CodexCliJudge(timeout_seconds=args.judge_timeout)
     )
     steps = [
         "Read actual_output as the source code of render_policy_csv; analyze its executable behavior, not its docstrings or claims.",
@@ -91,7 +110,16 @@ def main() -> int:
         "protocol": "SDLC-03 GEval / final Python source only; not a Codex trajectory",
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "model": args.model,
-        "temperature": 0,
+        "temperature": 0 if args.judge == "ollama" else None,
+        "judge": args.judge,
+        "model_provenance": (
+            "explicit local Ollama model"
+            if args.judge == "ollama"
+            else "configured Codex CLI model; actual name and billing not verified"
+        ),
+        "codex_cli_call_timeout_seconds": (
+            args.judge_timeout if args.judge == "codex-cli" else None
+        ),
         "deepeval_version": version("deepeval"),
         "repeats": args.repeats,
         "metric": "GEval with fixed evaluation_steps",
