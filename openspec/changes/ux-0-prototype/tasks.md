@@ -6,7 +6,9 @@
 
 ## 2. Integration verification
 
-- [ ] 2.1 Run typecheck, build, full browser suite including unchanged real backend regression, and strict OpenSpec validation; record outcomes in Draft PR linked to #23.
+- [x] 2.1 Run typecheck, build, full browser suite including unchanged real backend regression, and strict OpenSpec validation; record outcomes in Draft PR linked to #23.
+
+Evidence: Draft PR https://github.com/lehater/napms-2/pull/24. Typecheck/build PASS; E2E 8/8 (existing WSL2 library path workaround); OpenSpec strict 6/6. CI outcomes are reported against final HEAD in the PR/handoff.
 
 ## Workflow follow-up
 
