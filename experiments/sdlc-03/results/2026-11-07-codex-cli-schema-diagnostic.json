@@ -1,0 +1,23 @@
+{
+  "protocol": "SDLC-03 GEval / cloud Codex judge diagnostic #2",
+  "source": "user-supplied diagnostic output; classification from local adapter",
+  "model": "codex-cli",
+  "sample_selection": "candidate_codex",
+  "repeats": 1,
+  "items": [
+    {
+      "label": "candidate_codex",
+      "trials": [
+        {
+          "trial": 1,
+          "error_type": "CodexCliInvocationError",
+          "error_category": "output_schema_rejected",
+          "cli_exit_code": 1,
+          "elapsed_seconds": 5.6
+        }
+      ]
+    }
+  ],
+  "interpretation": "Codex rejected supplied JSON Schema before returning a score. Exact offending field was not disclosed. This is an integration error, not a quality evaluation.",
+  "mitigation": "Normalize Pydantic JSON Schema: all object keys required, additionalProperties false recursively, strip default metadata. Offline regression included; not yet reverified with live Codex."
+}

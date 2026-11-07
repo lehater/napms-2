@@ -1,0 +1,31 @@
+{
+  "protocol": "SDLC-03 GEval / final Python source only; not a Codex trajectory",
+  "timestamp_utc": "2026-11-07T05:59:04.260887+00:00",
+  "model": "codex-cli",
+  "temperature": null,
+  "judge": "codex-cli",
+  "model_provenance": "configured Codex CLI model; actual name and billing not verified",
+  "codex_cli_call_timeout_seconds": 120,
+  "deepeval_version": "4.3.3",
+  "repeats": 1,
+  "metric": "GEval with fixed evaluation_steps",
+  "sample_selection": "candidate_codex",
+  "configured_threshold": 0.5,
+  "timeout_budget_seconds_override": null,
+  "retry_max_attempts_override": null,
+  "contract_sha256": "7d62d218bd7babe4e971fa58c7e393243e8d8732760b8d9e9cb3a960e0c7bed8",
+  "items": [
+    {
+      "label": "candidate_codex",
+      "sha256": "e228b3c033b04627b09c45dab02f86eb56ceaa1b7a466aaa44bca61fd5ce4eb4",
+      "trials": [
+        {
+          "trial": 1,
+          "error_type": "RuntimeError",
+          "elapsed_seconds": 6.49
+        }
+      ]
+    }
+  ],
+  "notes": "First failed WSL2 smoke output was reported by user; stderr was discarded by pre-diagnostic adapter. No score. Original JSON semantics preserved."
+}
