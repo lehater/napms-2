@@ -19,6 +19,40 @@ from pydantic import BaseModel
 
 
 
+
+def strict_output_schema(model: Type[BaseModel]) -> dict:
+    """Adapt a Pydantic object schema to Codex Structured Outputs' strict subset.
+
+    Keep original Pydantic validation after generation. Only remove JSON Schema
+    'default' annotations and close/require every object; do not transform
+    values or silently remove evaluation fields.
+    """
+
+    def normalize(value):
+        if isinstance(value, list):
+            return [normalize(item) for item in value]
+        if not isinstance(value, dict):
+            return value
+        result = {
+            key: normalize(item)
+            for key, item in value.items()
+            if key != "default"
+        }
+        if result.get("type") == "object" or "properties" in result:
+            properties = result.get("properties", {})
+            if not isinstance(properties, dict):
+                raise ValueError("Structured output has invalid properties")
+            result["type"] = "object"
+            result["additionalProperties"] = False
+            result["required"] = list(properties)
+        return result
+
+    raw = model.model_json_schema()
+    if raw.get("type") != "object":
+        raise ValueError("Structured output root must be a JSON object")
+    return normalize(raw)
+
+
 class CodexCliInvocationError(RuntimeError):
     """Expose only classified CLI failure metadata; never raw stderr."""
 
@@ -88,7 +122,7 @@ class CodexCliJudge(DeepEvalBaseLLM):
             if schema is not None:
                 schema_path = root / "schema.json"
                 schema_path.write_text(
-                    json.dumps(schema.model_json_schema()), encoding="utf-8"
+                    json.dumps(strict_output_schema(schema)), encoding="utf-8"
                 )
                 cmd += ["--output-schema", str(schema_path)]
             cmd.append("-")  # read user-supplied evaluation prompt from stdin
