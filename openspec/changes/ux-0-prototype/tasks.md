@@ -13,3 +13,8 @@ Evidence: Draft PR https://github.com/lehater/napms-2/pull/24. Typecheck/build P
 ## Workflow follow-up
 
 - Create Draft PR and hand off HEAD and CI evidence; do not merge or archive before review.
+
+## 3. ERD review corrections (#25/#26)
+
+- [x] 3.1 Correct Interaction/Need/revision, add Endpoint and TAE facts with computed/persistent labels, temporal RC and separate authority evidence; update walkthrough and graph/browser assertions, verifying all links and no prototype API calls.
+- [ ] 3.2 Run typecheck, build, full E2E, strict OpenSpec validation and diff check; update existing Draft PR #24 and wait for successful CI on the new HEAD.

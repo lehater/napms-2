@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { byId, evaluatedAt, objectPath, objects, sections, type MockObject } from './data'
+import { byId, dataNature, evaluatedAt, natureLabel, objectPath, objects, sections, type MockObject } from './data'
 
 function State({ value }: { value: string }) {
   const color = value === 'Drift' || value === 'DENIED' ? 'border-amber-300 bg-amber-50 text-amber-950'
@@ -22,7 +22,7 @@ function ObjectTable({ rows }: { rows: readonly MockObject[] }) {
     {visible.length ? <div className="overflow-x-auto"><table className="w-full text-left text-sm">
       <caption className="sr-only">Фиктивные объекты раздела</caption>
       <thead className="bg-slate-50"><tr>{['Объект', 'Тип', 'Состояние', 'Контекст'].map(title => <th key={title} scope="col" className="border-y px-3 py-3 font-medium text-slate-600">{title}</th>)}</tr></thead>
-      <tbody>{visible.map(row => <tr key={row.id} className="hover:bg-slate-50"><td className="border-b px-3 py-4"><Link className="font-medium text-sky-800" to={objectPath(row)}>{row.name}</Link></td><td className="border-b px-3 py-4 text-xs text-slate-500">{row.kind}</td><td className="border-b px-3 py-4"><State value={row.state} /></td><td className="min-w-60 border-b px-3 py-4 text-slate-600">{row.summary}</td></tr>)}</tbody>
+      <tbody>{visible.map(row => <tr key={row.id} className="hover:bg-slate-50"><td className="border-b px-3 py-4"><Link className="font-medium text-sky-800" to={objectPath(row)}>{row.name}</Link></td><td className="border-b px-3 py-4 text-xs text-slate-500">{row.kind}<span className="mt-1 block">{natureLabel[dataNature[row.kind]]}</span></td><td className="border-b px-3 py-4"><State value={row.state} /></td><td className="min-w-60 border-b px-3 py-4 text-slate-600">{row.summary}</td></tr>)}</tbody>
     </table></div> : <p>Нет совпадений. Измените поисковый запрос.</p>}
   </section>
 }
@@ -31,12 +31,14 @@ function ObjectCard({ object }: { object: MockObject }) {
   return <>
     <section className="panel space-y-5" aria-label="Карточка объекта">
       <div className="flex flex-wrap items-center gap-3"><h2>{object.kind}</h2><State value={object.state} /></div>
+      <p className="text-sm font-medium text-sky-900">{natureLabel[dataNature[object.kind]]}</p>
       <p className="text-slate-600">{object.summary}</p>
       <dl className="grid gap-5 text-sm sm:grid-cols-2">
         {Object.entries({ id: object.id, ...object.fields }).map(([label, value]) => <div key={label}><dt className="text-slate-500">{label}</dt><dd className="mt-1 break-words font-medium">{value}</dd></div>)}
       </dl>
     </section>
     <section className="panel space-y-4" aria-label="Связанные объекты"><h2>Связанные объекты</h2>
+      <p className="text-xs text-slate-500">UI-переходы и входы вычислений. Сама ссылка не задаёт постоянную связь ERD или SQL. Все данные — mock в памяти.</p>
       <ul className="divide-y">{object.links.map(link => {
         const target = byId.get(link.id)!
         return <li key={link.label} className="flex flex-wrap items-center justify-between gap-3 py-3"><span className="text-sm text-slate-500">{link.label}</span><Link className="text-sm font-medium text-sky-800" to={objectPath(target)}>{target.name} →</Link></li>
@@ -51,7 +53,7 @@ function Overview() {
       {[{ title: 'Декларировано', value: 'PERMIT TCP/443', link: 'mock-rule' }, { title: 'Расхождение', value: 'Drift · 443 / 8443', link: 'mock-drift' }, { title: 'Недостаточно данных', value: 'Uncomparable · ACL-CORE', link: 'mock-uncomparable' }].map(item => <Link className="panel space-y-2" key={item.link} to={objectPath(byId.get(item.link)!)}><p className="text-sm text-slate-500">{item.title}</p><p className="font-semibold">{item.value} →</p></Link>)}
     </div>
     <section className="panel space-y-4"><h2>Проследить одну коммуникацию</h2><p className="text-sm text-slate-600">Откройте ресурс и следуйте связям в карточках. Все идентификаторы принадлежат одному фиктивному сценарию.</p>
-      <ol className="flex flex-wrap gap-2 text-sm">{['mock-resource-order', 'mock-deployment-order', 'mock-revision', 'mock-need', 'mock-rule', 'mock-required', 'mock-configured', 'mock-drift'].map((id, index) => <li key={id}><Link className="inline-block rounded-md border bg-slate-50 px-3 py-2" to={objectPath(byId.get(id)!)}>{index + 1}. {byId.get(id)!.kind} →</Link></li>)}</ol>
+      <ol className="flex flex-wrap gap-2 text-sm">{['mock-resource-order', 'mock-deployment-order', 'mock-interaction-ledger', 'mock-need', 'mock-request-allowed', 'mock-rule', 'mock-required', 'mock-configured', 'mock-evidence-set-f2', 'mock-evidence-entry-f2', 'mock-drift'].map((id, index) => <li key={id}><Link className="inline-block rounded-md border bg-slate-50 px-3 py-2" to={objectPath(byId.get(id)!)}>{index + 1}. {byId.get(id)!.kind} →</Link></li>)}</ol>
     </section>
     <ObjectTable rows={objects.filter(object => object.kind === 'Reconciliation' || object.kind === 'AccessRequest')} />
   </>

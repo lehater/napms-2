@@ -22,6 +22,20 @@ The prototype SHALL use one deterministic fixture linking Resource, ComponentDep
 - **WHEN** a user follows the linked chain from Resource to Reconciliation
 - **THEN** the same communication and business justification remain identifiable, including ALLOWED provenance and a separate DENIED request that neither creates a rule nor revokes the existing one
 
+### Requirement: Research identity and authority distinctions
+The prototype SHALL link Need to stable Interaction and its participant, while each request selects the exact immutable revision. Current Endpoint address, Site and Responsibility SHALL be labeled as temporal-history readings. Source-only RequestAuthorityEvidence SHALL be distinct from ALLOWED, decision authority and RuleAuthorizationEvidence.
+
+#### Scenario: Inspect Need and request
+- **WHEN** a user opens the Need and follows its request
+- **THEN** the Need identifies Interaction and participant, the request identifies revision and source admission evidence, and the Rule identifies separate ALLOWED authorization evidence
+
+### Requirement: Logical facts and computed views
+Cards and lists SHALL distinguish persistent logical facts from computed results. TAE set/entry SHALL expose capture provenance and five normalized communication dimensions. Configured SHALL identify its input facts and interpretation limits. Required, Configured, Reconciliation and NST candidates SHALL be labeled computed; UI links SHALL NOT claim persistent TAE-to-AP/NEP relations or a physical SQL schema.
+
+#### Scenario: Drill down to technical facts
+- **WHEN** a user follows Configured to its evidence set and entry
+- **THEN** source, scope, times, reliability and five dimensions are visible independently of AP/NEP, evidence is not claimed to authorize access, and Unknown, Any and empty sets remain distinct
+
 ### Requirement: Honest network evidence
 The prototype SHALL show at least one required/configured mismatch and explicit Unknown and Uncomparable states for insufficient evidence. It SHALL distinguish request DENIED from NST DENY, identify candidate target uncertainty and fictional snapshot provenance, and SHALL NOT execute network changes, revoke access or switch revisions.
 
