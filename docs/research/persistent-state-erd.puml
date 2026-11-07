@@ -1,0 +1,450 @@
+@startuml NAPMS_Persistent_State
+!theme plain
+title NAPMS - Logical Persistent State ERD
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+left to right direction
+
+package "Resource Catalogue (RC)" {
+  entity "Resource" as Resource {
+    * resourceId : UUID <<PK>>
+    --
+    authorityScopeRef : ScopeRef
+    name : string
+  }
+  entity "ResourceEndpoint" as Endpoint {
+    * endpointId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+  }
+  entity "EndpointAddressHistory" as AddressHistory {
+    * addressFactId : UUID <<PK>>
+    --
+    endpointId : UUID <<ref>>
+    addressKind : HOST | PREFIX
+    addressValue : string
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
+  }
+  entity "Site" as Site {
+    * siteId : UUID <<PK>>
+    --
+    name : string
+    description : string?
+  }
+  entity "ResourceSiteHistory" as SiteHistory {
+    * historyId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+    siteId : UUID? <<ref>>
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
+  }
+  entity "ResponsibilityGroup" as RespGroup {
+    * groupId : UUID <<PK>>
+    --
+    displayName : string
+    externalReference : string?
+  }
+  entity "ResourceResponsibilityHistory" as RespHistory {
+    * assignmentId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+    groupId : UUID <<ref>>
+    role : OWNER | ADMINISTRATOR
+    effectiveFrom : datetime
+    effectiveTo : datetime?
+    changedBy : ActorRef
+  }
+}
+
+package "Application Communication Catalogue (ACC)" {
+  entity "Application" as Application {
+    * applicationId : UUID <<PK>>
+    --
+    name : string
+  }
+  entity "Component" as Component {
+    * componentId : UUID <<PK>>
+    --
+    applicationId : UUID <<ref>>
+    name : string
+  }
+  entity "Interaction" as Interaction {
+    * interactionId : UUID <<PK>>
+    --
+    sourceComponentId : UUID <<ref>>
+    destinationComponentId : UUID <<ref>>
+    purpose : string
+  }
+  entity "InteractionRevision" as Revision {
+    * revisionId : UUID <<PK>>
+    --
+    interactionId : UUID <<ref>>
+    revisionNumber : integer
+  }
+  entity "TrafficClause (owned value)" as Clause {
+    * revisionId : UUID <<ref>>
+    * clauseIndex : integer
+    --
+    ipProtocol : 0..255
+    sourcePorts : Any | Ranges | NotApplicable
+    destinationPorts : Any | Ranges | NotApplicable
+  }
+}
+
+package "Application Deployment (AD)" {
+  entity "ComponentDeployment" as Deployment {
+    * deploymentId : UUID <<PK>>
+    --
+    componentId : UUID <<ref>>
+    resourceId : UUID <<ref>>
+  }
+}
+
+package "Business Connectivity (BC)" {
+  entity "BusinessProcess" as Process {
+    * processId : UUID <<PK>>
+    --
+    name : string
+    description : string?
+  }
+  entity "ConnectivityNeed" as Need {
+    * needId : UUID <<PK>>
+    --
+    processId : UUID <<ref>>
+    interactionId : UUID <<ref>>
+    participantComponentId : UUID <<ref>>
+    businessBasis : string
+    status : ACTIVE | RETIRED
+  }
+}
+
+package "Access Policy (AP)" {
+  entity "AccessSubject (logical identity)" as Subject {
+    * subjectId : UUID <<PK>>
+    --
+    sourceDeploymentId : UUID <<ref>>
+    destinationDeploymentId : UUID <<ref>>
+    interactionRevisionId : UUID <<ref>>
+    --
+    UNIQUE(source, destination, revision)
+  }
+  entity "AccessRequest" as Request {
+    * requestId : UUID <<PK>>
+    --
+    subjectId : UUID <<ref>>
+    needId : UUID <<ref>>
+    requestedBy : ActorRef
+    submittedAt : datetime
+    state : PENDING | ALLOWED | DENIED
+  }
+  entity "RequestAuthorityEvidence" as RequestAuth {
+    * evidenceId : UUID <<PK>>
+    --
+    requestId : UUID <<ref>>
+    scopeRef : string
+    action : access.request
+    grantEffectiveFrom : datetime?
+    grantEffectiveUntil : datetime?
+    evaluatedAt : datetime
+  }
+  entity "AccessDecision (logical record)" as Decision {
+    * decisionId : UUID <<PK>>
+    --
+    requestId : UUID <<ref>>
+    decidedBy : ActorRef
+    result : ALLOWED | DENIED
+    decidedAt : datetime
+  }
+  entity "PolicyRule" as Rule {
+    * ruleId : UUID <<PK>>
+    --
+    subjectId : UUID <<ref, UNIQUE>>
+    state : ACTIVE | INACTIVE
+    effectiveFrom : datetime?
+    effectiveUntil : datetime?
+  }
+  entity "RuleAuthorizationEvidence" as AuthEvidence {
+    * evidenceId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    decisionId : UUID <<ref>>
+  }
+  entity "RuleJustification" as Justification {
+    * associationId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    needId : UUID <<ref>>
+  }
+  entity "RuleOperationalHistory" as History {
+    * historyId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    ruleVersion : integer
+    state : ACTIVE | INACTIVE
+    changedAt : datetime
+  }
+}
+
+package "Technical Access Evidence (TAE)" {
+  entity "EvidenceSource (candidate)" as Source {
+    * sourceId : UUID <<PK>>
+    --
+    namespace : string
+    sourceReference : string
+    sourceType : Device | Flow | File | Other
+  }
+  entity "TechnicalAccessEvidenceSet" as EvidenceSet {
+    * evidenceSetId : UUID <<PK>>
+    --
+    sourceId : UUID <<ref>>
+    captureReference : string
+    sourceScopeReference : string
+    kind : Configured | TrafficDerived | Imported
+    sourceTime : Unknown | Instant | Window
+    recordedAt : datetime
+  }
+  entity "TechnicalAccessEntry" as EvidenceEntry {
+    * evidenceEntryId : UUID <<PK>>
+    --
+    evidenceSetId : UUID <<ref>>
+    sourceAddresses : AddressConstraint
+    destinationAddresses : AddressConstraint
+    protocol : ProtocolSelector
+    sourcePorts : PortConstraint
+    destinationPorts : PortConstraint
+    --
+    action : Permit | Block | null
+    sourceEntryReference : string?
+    sourcePosition : integer?
+  }
+}
+
+package "Network Enforcement Placement (NEP, N1 target model)" {
+  entity "Firewall" as Firewall {
+    * firewallId : UUID <<PK>>
+    --
+    name : string
+    managementAddress : string
+    platformType : string
+    state : ACTIVE | INACTIVE
+    credentialRef : opaque
+    connectTimeout : duration
+    operationTimeout : duration
+    routingPollInterval : duration?
+    policyBindingPollInterval : duration?
+  }
+
+  entity "CandidateOverrideRule" as Override {
+    * ruleId : UUID <<PK>>
+    --
+    firewallId : UUID <<ref>>
+    state : ACTIVE | INACTIVE
+    effect : Include | Exclude
+    sourceAddressRange : Range?
+    destinationAddressRange : Range?
+    sourceInterfaceRef : ref?
+    destinationInterfaceRef : ref?
+  }
+
+  entity "CurrentRoutingState" as RoutingState {
+    * firewallId : UUID <<PK, ref>>
+    --
+    collectedAt : datetime
+    stateVersion : integer
+  }
+
+  entity "NetworkInterface (current fact)" as NetInterface {
+    * firewallId : UUID <<ref>>
+    * interfaceRef : string
+    --
+    name : string
+  }
+
+  entity "RoutingEntry (current fact)" as RouteEntry {
+    * firewallId : UUID <<ref>>
+    * entryIndex : integer
+    --
+    routingContextRef : VRF?
+    destinationRange : AddressRange
+    interfaceRef : string
+    routePreference : value?
+  }
+
+  entity "EffectiveReachabilitySegment (projection)" as ReachSegment {
+    * segmentId : UUID <<PK>>
+    --
+    firewallId : UUID <<ref>>
+    stateVersion : integer
+    routingContextRef : VRF?
+    addressFamily : IPv4 | IPv6
+    addressFrom : IP
+    addressTo : IP
+  }
+
+  entity "EffectiveReachabilityInterface (projection)" as ReachInterface {
+    * segmentId : UUID <<ref>>
+    * interfaceRef : string
+  }
+
+  entity "CurrentPolicyBindingState (optional)" as BindingState {
+    * firewallId : UUID <<PK, ref>>
+    --
+    collectedAt : datetime
+    stateVersion : integer
+    providerBindingData : opaque
+  }
+
+  Firewall ||--o{ Override : overrides
+  Firewall ||--o| RoutingState : current_routing
+  Firewall ||--o| BindingState : current_bindings
+  RoutingState ||--o{ NetInterface : interfaces
+  RoutingState ||--o{ RouteEntry : routes
+  RoutingState ||--o{ ReachSegment : projected_segments
+  ReachSegment ||--|{ ReachInterface : ecmp_interfaces
+
+  note bottom of Firewall
+    NEP owns stable Firewall identity
+    and administrative candidate overrides.
+    Profile holds connection/acquisition settings.
+    NOT a confirmed N2 implementation.
+  end note
+
+  note bottom of RoutingState
+    ONLY latest successful routing snapshot.
+    No historical snapshots in N1 target.
+    A failed refresh retains the previous state.
+    Replace source state and reachability
+    projection atomically after validation.
+  end note
+
+  note bottom of ReachSegment
+    Persisted, rebuildable read projection.
+    Preserve VRF and ECMP alternatives.
+    It is NOT an authoritative route fact.
+  end note
+}
+
+package "Network Environment Operations (NEO, future scope)" {
+  entity "NetworkOperation (conceptual aggregate)" as Operation {
+    * operationId : UUID <<PK>>
+    --
+    targetRef : opaque
+    comparisonScope : opaque
+    artifactDigest : string
+    rendererIdentity : string
+    actorRef : ActorRef
+    mutationAuthorityScope : ScopeRef
+    baseTargetCorrelation : string
+    expectedPreStateRevision : string?
+    orderedOperationEvents : Event[]
+    finalOutcome : Verified | Rejected | PreconditionFailed | Drift | Unknown | null
+  }
+
+  note bottom of Operation
+    Future NEO boundary from N1 tactical model.
+    Owned operation/event semantics only.
+    Durable database storage is NOT required
+    until an explicit N2 implementation slice.
+    No execution workflow or static NEP link.
+  end note
+}
+
+Resource ||--o{ Endpoint : contains
+Endpoint ||--o{ AddressHistory : address_facts
+Resource ||--o{ SiteHistory : site_assignments
+Site |o--o{ SiteHistory : assigned_site
+Resource ||--o{ RespHistory : responsibilities
+RespGroup ||--o{ RespHistory : responsible_group
+Resource ||--o{ Deployment : hosts
+Application ||--o{ Component : defines
+Component ||--o{ Interaction : source_role
+Component ||--o{ Interaction : destination_role
+Interaction ||--|{ Revision : versions
+Revision ||--|{ Clause : traffic_semantics
+Component ||--o{ Deployment : deployed_as
+Process ||--o{ Need : business_basis
+Interaction ||--o{ Need : interaction
+Component ||--o{ Need : participant
+Deployment ||--o{ Subject : source
+Deployment ||--o{ Subject : destination
+Revision ||--o{ Subject : exact_revision
+Subject ||--o{ Request : submissions
+Need ||--o{ Request : requested_for
+Request ||--|{ RequestAuth : admission_provenance
+Request ||--o| Decision : terminal_outcome
+Subject ||--o| Rule : canonical_rule
+Rule ||--|{ AuthEvidence : authorizations
+Decision ||--o| AuthEvidence : only_if_ALLOWED
+Rule ||--o{ Justification : reasons
+Need ||--o{ Justification : supports
+Rule ||--o{ History : changes
+
+Source ||--o{ EvidenceSet : captures
+EvidenceSet ||--o{ EvidenceEntry : stored_facts
+
+note bottom of AddressHistory
+  Address history is authoritative for address
+  realization; current address is the single
+  effective record if one exists.
+  This avoids duplicating currentAddress
+  as another stored column.
+end note
+
+note bottom of RequestAuth
+  Evidence of source-Resource request authority
+  at submission time, not ALLOWED permission.
+  Decision authority is evaluated separately.
+end note
+
+note bottom of Revision
+  Immutable content by invariant.
+  Traffic change creates a new revision.
+  TrafficClause is an owned value,
+  not necessarily a physical table.
+end note
+
+note bottom of Rule
+  Declared policy = effective ACTIVE Rules.
+  DENIED creates or revokes no Rule.
+  Explicit withdrawal is unresolved in N2.
+end note
+
+note bottom of EvidenceEntry
+  Five normalized traffic dimensions.
+  Ranges and Any are permitted where valid.
+  Unknown is not automatically Any.
+  Original duplicate records are retained.
+end note
+
+note bottom of EvidenceSet
+  Immutable source-qualified capture.
+  Source time is not recordedAt.
+  Empty set is not proof of absent access.
+end note
+
+note bottom of Source
+  Separate source catalogue is CANDIDATE.
+  N1 TAE source identifiers live on Set.
+  No permanent link to Firewall.
+end note
+
+legend bottom
+  Logical ERD, NOT approved physical SQL.
+  Solid edges: stable domain references
+  or owned persistent structures.
+  Cross-context refs do not imply DB FKs.
+  No TAE-to-Policy or TAE-to-Firewall link.
+  NEP stores latest successful routing and admin overrides.
+  RC stores temporal address/site/responsibility facts.
+  AP retains request authority provenance.
+  NEO is future conceptual scope, not N2 SQL.
+  FirewallCandidate and LocalBranch are computed only.
+  Matching and APR diff are computations.
+endlegend
+
+@enduml
