@@ -27,8 +27,8 @@ GIT_BIN="$(command -v git)"
 "$CODEX_BIN" --version
 "$OPENSPEC_BIN" --version
 "$GIT_BIN" --version
-"$CODEX_BIN" --version | grep -F '0.164.0'  # documented current workstation baseline
-"$OPENSPEC_BIN" --version | grep -F '1.16.0'
+test "$("$CODEX_BIN" --version)" = 'codex-cli 0.167.0'  # verified corrective preflight; exact pin for every run
+test "$("$OPENSPEC_BIN" --version)" = '1.16.0'
 "$CODEX_BIN" exec --help > /tmp/sdlc04-codex-exec-help.txt
 for flag in --model --json --ephemeral --ignore-user-config --output-last-message --sandbox --cd; do
   grep -F -- "$flag" /tmp/sdlc04-codex-exec-help.txt >/dev/null || { echo "BLOCKED unsupported: $flag"; exit 1; }
@@ -39,7 +39,23 @@ for doc in "$CH/AGENTS.md" "$CH/AGENTS.override.md"; do
 done
 ```
 
-The installed CLI help may list global flags separately: if the `--ask-for-approval` or `--config` options are not listed under `exec --help`, verify them in `codex --help` too. **If the exact planned invocation cannot be established without agent calls, BLOCKED.** No extra config files, cached user guidance or credentials in the workspaces. Do not alter global Codex authentication just to satisfy this task.
+Verify `--ask-for-approval` in `codex --help` and `--config` in `codex exec --help`. In 0.167.0, `--ask-for-approval never` must precede `exec`; placing it after `exec` is rejected. Check the complete planned option sequence with a final `--help` (no prompt/agent call). **If the exact planned invocation cannot be established without agent calls, BLOCKED.** No extra config files, cached user guidance or credentials in the workspaces. Do not alter global Codex authentication just to satisfy this task.
+
+## Corrective preflight evidence — 2026-11-07
+
+**PASS for non-agent preflight; execution NOT AUTHORIZED / NOT RUN.** This records the checks requested by [coordinating review](https://github.com/lehater/napms-2/pull/17#pullrequestreview-5810580978), not A/B observations or model inference evidence.
+
+| Check | Actual observation |
+| --- | --- |
+| Local environment | WSL2; `codex --version`: `codex-cli 0.167.0`; `openspec --version`: `1.16.0`; `git --version`: `git version 2.43.0` |
+| CLI surface | Required exec flags and `--config` present; global `--ask-for-approval` supports `never`. Complete corrected option sequence with final `--help` exits 0; original placement after `exec` is rejected. Help parsing establishes option support, not successful sandbox/inference execution. |
+| Authentication/model selection | `codex login status`: logged in using ChatGPT. Read-only local app-server `initialize` + `model/list` returns literal `gpt-6.1-sol`, visible, with supported `medium`; no further model page. Local model default is `low`, so explicit `-c 'model_reasoning_effort="medium"'` is required. No thread/turn, generation or fallback. Recheck availability before authorized execution. |
+| Seed-only Git fixture | One temporary independent shallow repo fetched only `adbb2cfb6a525fd8a7c15155cb57b76a80288bbf`; HEAD and both frozen blobs match §3; known fix object absent; working tree clean after validation. This is an operator smoke fixture, not one of six trials. |
+| Negative oracle | `openspec validate --all --strict` exits **1**, 0 passed / 1 failed; JSON diagnostic confirms the sole issue is `policy-export/spec.md`, ADDED `Coherent single evaluation`, requirement >500 characters. Expected negative fixture reproduced. |
+| Instruction/inventory check | Effective Codex home has no nonempty global `AGENTS.md` / `AGENTS.override.md`; four seed spec deltas retain 18 requirements / 39 scenarios (4/11, 4/8, 3/7, 7/13). No OS read-isolation claim. |
+| Frozen input integrity | UTF-8 heredoc bytes including final newline: task SHA-256 `f8cdc3a92b57eb29177c046a21f352fecf4b49dd8b6cb35a59e5f307f8cef29d`; candidate SHA-256 `d874b98840f4d9fa446e36b09872575b6c6c9fdb95c6c9028b411a7f43d832c6`. Neither text changed. |
+
+Only the environment pin and CLI argument placement are corrected. The sole treatment, task, M1/M2/M3, S1–S8, decision thresholds, serial order and proposed six × 900 s ceiling remain unchanged. Git separation still permits residual external-read contamination: pilot evidence only; inspect observed tool paths and stop on cross-trial/external reference reads. No A/B run, Harness edit, merge or budget increase occurred. Owner approval of model, ceiling and residual isolation risk remains a separate gate. No sandbox/inference success, costs or agent metrics are claimed by this preflight.
 
 ## 2. Freeze one task and one treatment
 
@@ -122,7 +138,7 @@ for trial in p1-a p1-b p2-b p2-a p3-a p3-b; do
   date -u +%FT%TZ > "$e/start-utc.txt"
   sha256sum --check --status "$LAB/evidence/frozen-inputs.sha256" || { echo "BLOCKED: frozen input changed"; break; }
   set +e
-  timeout --signal=TERM --kill-after=15s 900s     "$CODEX_BIN" exec -C "$d"     --model "$MODEL"     -c 'model_reasoning_effort="medium"'     -c 'web_search="disabled"'     -c 'sandbox_workspace_write.network_access=false'     --sandbox workspace-write --ask-for-approval never     --ignore-user-config --ephemeral --json     --output-last-message "$e/final.txt"     - < "$LAB/task.txt" > "$e/events.jsonl" 2> "$e/stderr.txt"
+  timeout --signal=TERM --kill-after=15s 900s     "$CODEX_BIN" --ask-for-approval never exec -C "$d"     --model "$MODEL"     -c 'model_reasoning_effort="medium"'     -c 'web_search="disabled"'     -c 'sandbox_workspace_write.network_access=false'     --sandbox workspace-write     --ignore-user-config --ephemeral --json     --output-last-message "$e/final.txt"     - < "$LAB/task.txt" > "$e/events.jsonl" 2> "$e/stderr.txt"
   agent_rc=$?
   date -u +%FT%TZ > "$e/end-utc.txt"
   (cd "$d" && openspec validate --all --strict) > "$e/oracle.log" 2>&1
