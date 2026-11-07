@@ -1,0 +1,255 @@
+@startuml NAPMS_Persistent_State
+!theme plain
+title NAPMS - Logical Persistent State ERD
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+left to right direction
+
+package "Resource Catalogue (RC)" {
+  entity "Resource" as Resource {
+    * resourceId : UUID <<PK>>
+    --
+    authorityScopeRef : ScopeRef
+    name : string
+  }
+  entity "ResourceEndpoint" as Endpoint {
+    * endpointId : UUID <<PK>>
+    --
+    resourceId : UUID <<ref>>
+    currentAddress : HostAddress | Prefix | null
+  }
+}
+
+package "Application Communication Catalogue (ACC)" {
+  entity "Application" as Application {
+    * applicationId : UUID <<PK>>
+    --
+    name : string
+  }
+  entity "Component" as Component {
+    * componentId : UUID <<PK>>
+    --
+    applicationId : UUID <<ref>>
+    name : string
+  }
+  entity "Interaction" as Interaction {
+    * interactionId : UUID <<PK>>
+    --
+    sourceComponentId : UUID <<ref>>
+    destinationComponentId : UUID <<ref>>
+    purpose : string
+  }
+  entity "InteractionRevision" as Revision {
+    * revisionId : UUID <<PK>>
+    --
+    interactionId : UUID <<ref>>
+    revisionNumber : integer
+  }
+  entity "TrafficClause (owned value)" as Clause {
+    * revisionId : UUID <<ref>>
+    * clauseIndex : integer
+    --
+    ipProtocol : 0..255
+    sourcePorts : Any | Ranges | NotApplicable
+    destinationPorts : Any | Ranges | NotApplicable
+  }
+}
+
+package "Application Deployment (AD)" {
+  entity "ComponentDeployment" as Deployment {
+    * deploymentId : UUID <<PK>>
+    --
+    componentId : UUID <<ref>>
+    resourceId : UUID <<ref>>
+  }
+}
+
+package "Business Connectivity (BC)" {
+  entity "BusinessProcess" as Process {
+    * processId : UUID <<PK>>
+    --
+    name : string
+    description : string?
+  }
+  entity "ConnectivityNeed" as Need {
+    * needId : UUID <<PK>>
+    --
+    processId : UUID <<ref>>
+    interactionId : UUID <<ref>>
+    participantComponentId : UUID <<ref>>
+    businessBasis : string
+    status : ACTIVE | RETIRED
+  }
+}
+
+package "Access Policy (AP)" {
+  entity "AccessSubject (logical identity)" as Subject {
+    * subjectId : UUID <<PK>>
+    --
+    sourceDeploymentId : UUID <<ref>>
+    destinationDeploymentId : UUID <<ref>>
+    interactionRevisionId : UUID <<ref>>
+    --
+    UNIQUE(source, destination, revision)
+  }
+  entity "AccessRequest" as Request {
+    * requestId : UUID <<PK>>
+    --
+    subjectId : UUID <<ref>>
+    needId : UUID <<ref>>
+    requestedBy : ActorRef
+    submittedAt : datetime
+    state : PENDING | ALLOWED | DENIED
+  }
+  entity "AccessDecision (logical record)" as Decision {
+    * decisionId : UUID <<PK>>
+    --
+    requestId : UUID <<ref>>
+    decidedBy : ActorRef
+    result : ALLOWED | DENIED
+    decidedAt : datetime
+  }
+  entity "PolicyRule" as Rule {
+    * ruleId : UUID <<PK>>
+    --
+    subjectId : UUID <<ref, UNIQUE>>
+    state : ACTIVE | INACTIVE
+    effectiveFrom : datetime?
+    effectiveUntil : datetime?
+  }
+  entity "RuleAuthorizationEvidence" as AuthEvidence {
+    * evidenceId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    decisionId : UUID <<ref>>
+  }
+  entity "RuleJustification" as Justification {
+    * associationId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    needId : UUID <<ref>>
+  }
+  entity "RuleOperationalHistory" as History {
+    * historyId : UUID <<PK>>
+    --
+    ruleId : UUID <<ref>>
+    ruleVersion : integer
+    state : ACTIVE | INACTIVE
+    changedAt : datetime
+  }
+}
+
+package "Technical Access Evidence (TAE)" {
+  entity "EvidenceSource (candidate)" as Source {
+    * sourceId : UUID <<PK>>
+    --
+    namespace : string
+    sourceReference : string
+    sourceType : Device | Flow | File | Other
+  }
+  entity "TechnicalAccessEvidenceSet" as EvidenceSet {
+    * evidenceSetId : UUID <<PK>>
+    --
+    sourceId : UUID <<ref>>
+    captureReference : string
+    sourceScopeReference : string
+    kind : Configured | TrafficDerived | Imported
+    sourceTime : Unknown | Instant | Window
+    recordedAt : datetime
+  }
+  entity "TechnicalAccessEntry" as EvidenceEntry {
+    * evidenceEntryId : UUID <<PK>>
+    --
+    evidenceSetId : UUID <<ref>>
+    sourceAddresses : AddressConstraint
+    destinationAddresses : AddressConstraint
+    protocol : ProtocolSelector
+    sourcePorts : PortConstraint
+    destinationPorts : PortConstraint
+    --
+    action : Permit | Block | null
+    sourceEntryReference : string?
+    sourcePosition : integer?
+  }
+}
+
+package "Network Enforcement Placement (NEP)" {
+  entity "Firewall (candidate)" as Firewall {
+    * firewallId : UUID <<PK>>
+    --
+    name : string
+    vendor : string?
+    platform : string?
+  }
+}
+
+Resource ||--o{ Endpoint : contains
+Resource ||--o{ Deployment : hosts
+Application ||--o{ Component : defines
+Component ||--o{ Interaction : source_role
+Component ||--o{ Interaction : destination_role
+Interaction ||--|{ Revision : versions
+Revision ||--|{ Clause : traffic_semantics
+Component ||--o{ Deployment : deployed_as
+Process ||--o{ Need : business_basis
+Interaction ||--o{ Need : interaction
+Component ||--o{ Need : participant
+Deployment ||--o{ Subject : source
+Deployment ||--o{ Subject : destination
+Revision ||--o{ Subject : exact_revision
+Subject ||--o{ Request : submissions
+Need ||--o{ Request : requested_for
+Request ||--o| Decision : terminal_outcome
+Subject ||--o| Rule : canonical_rule
+Rule ||--|{ AuthEvidence : authorizations
+Decision ||--o| AuthEvidence : only_if_ALLOWED
+Rule ||--o{ Justification : reasons
+Need ||--o{ Justification : supports
+Rule ||--o{ History : changes
+
+Source ||--o{ EvidenceSet : captures
+EvidenceSet ||--o{ EvidenceEntry : stored_facts
+
+note bottom of Revision
+  Immutable content by invariant.
+  Traffic change creates a new revision.
+  TrafficClause is an owned value,
+  not necessarily a physical table.
+end note
+
+note bottom of Rule
+  Declared policy = effective ACTIVE Rules.
+  DENIED creates or revokes no Rule.
+  Explicit withdrawal is unresolved in N2.
+end note
+
+note bottom of EvidenceEntry
+  Five normalized traffic dimensions.
+  Ranges and Any are permitted where valid.
+  Unknown is not automatically Any.
+  Original duplicate records are retained.
+end note
+
+note bottom of EvidenceSet
+  Immutable source-qualified capture.
+  Source time is not recordedAt.
+  Empty set is not proof of absent access.
+end note
+
+note bottom of Source
+  Separate source catalogue is CANDIDATE.
+  N1 TAE source identifiers live on Set.
+  No permanent link to Firewall.
+end note
+
+legend bottom
+  Logical ERD, NOT approved physical SQL.
+  Solid edges: stable domain references
+  or owned persistent structures.
+  Cross-context refs do not imply DB FKs.
+  No TAE-to-Policy or TAE-to-Firewall link.
+  Matching and APR diff are computations.
+endlegend
+
+@enduml
