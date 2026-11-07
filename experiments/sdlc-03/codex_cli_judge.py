@@ -18,6 +18,48 @@ from deepeval.models import DeepEvalBaseLLM
 from pydantic import BaseModel
 
 
+
+class CodexCliInvocationError(RuntimeError):
+    """Expose only classified CLI failure metadata; never raw stderr."""
+
+    def __init__(self, category: str, exit_code: int | None = None):
+        self.category = category
+        self.exit_code = exit_code
+        super().__init__(f"Codex CLI judge failure: {category}")
+
+
+def classify_failure(stderr: str) -> str:
+    text = stderr.lower()
+    if any(term in text for term in (
+        "invalid_json_schema", "invalid schema for response_format",
+        "additionalproperties", "text.format.schema",
+    )):
+        return "output_schema_rejected"
+    if any(term in text for term in (
+        "unexpected argument", "unrecognized option", "unknown option",
+        "invalid value for", "found argument",
+    )):
+        return "cli_argument_rejected"
+    if any(term in text for term in (
+        "usage limit", "rate limit", "quota exceeded", "insufficient quota",
+    )):
+        return "usage_limit"
+    if any(term in text for term in (
+        "unauthorized", "authentication", "not logged in",
+    )):
+        return "authentication"
+    if any(term in text for term in ("model_not_found", "model not found")):
+        return "model_unavailable"
+    if any(term in text for term in ("permission denied", "sandbox violation")):
+        return "permission"
+    if any(term in text for term in (
+        "connection refused", "connection failed", "proxy error",
+        "certificate verify failed", "tls handshake",
+    )):
+        return "connectivity"
+    return "unclassified_cli_error"
+
+
 class CodexCliJudge(DeepEvalBaseLLM):
     def __init__(self, timeout_seconds: int = 120):
         self.timeout_seconds = timeout_seconds
@@ -70,11 +112,14 @@ class CodexCliJudge(DeepEvalBaseLLM):
                     f"Codex CLI judge exceeded {self.timeout_seconds}s"
                 ) from exc
             if completed.returncode != 0:
-                raise RuntimeError(
-                    f"Codex CLI judge failed with exit code {completed.returncode}"
+                # Only a bounded category and numeric exit code leave this adapter.
+                # Stderr can include prompts, paths, tokens, or private config.
+                raise CodexCliInvocationError(
+                    classify_failure(completed.stderr),
+                    exit_code=completed.returncode,
                 )
             if not output.is_file():
-                raise RuntimeError("Codex CLI judge produced no final output file")
+                raise CodexCliInvocationError("missing_final_output")
             answer = output.read_text(encoding="utf-8")
             if schema is None:
                 return answer
