@@ -23,6 +23,7 @@ import json
 from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
+from time import perf_counter
 
 
 def digest(content: bytes) -> str:
@@ -37,10 +38,18 @@ def main() -> int:
     parser.add_argument("--model", required=True, help="Explicit locally installed Ollama model")
     parser.add_argument("--out", type=Path, required=True, help="Local JSON output (not a repository path)")
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument(
+        "--only",
+        choices=("all", "candidate_codex", "negative_control_manual"),
+        default="all",
+        help="Diagnose one saved source without repeating other samples",
+    )
     args = parser.parse_args()
 
-    if args.repeats < 2 or args.repeats > 10:
-        parser.error("--repeats must be between 2 and 10")
+    if not 1 <= args.repeats <= 10:
+        parser.error("--repeats must be between 1 and 10")
+    if args.repeats == 1 and args.only == "all":
+        parser.error("Use --only for a single diagnostic trial")
     if not args.candidate.is_file() or not args.negative.is_file():
         parser.error("Both implementation files must exist")
     if args.reference is not None and not args.reference.is_file():
@@ -57,6 +66,8 @@ def main() -> int:
         sources["positive_control_manual"] = args.reference.read_bytes()
     if len(set(sources.values())) != len(sources):
         parser.error("All supplied implementations must differ")
+    if args.only != "all":
+        sources = {args.only: sources[args.only]}
 
     # Imports are kept inside main so --help works in a clean checkout.
     from deepeval.metrics import GEval
@@ -84,6 +95,12 @@ def main() -> int:
         "deepeval_version": version("deepeval"),
         "repeats": args.repeats,
         "metric": "GEval with fixed evaluation_steps",
+        "sample_selection": args.only,
+        "configured_threshold": 0.5,
+        "timeout_budget_seconds_override": os.getenv(
+            "DEEPEVAL_PER_TASK_TIMEOUT_SECONDS_OVERRIDE"
+        ),
+        "retry_max_attempts_override": os.getenv("DEEPEVAL_RETRY_MAX_ATTEMPTS"),
         "contract_sha256": digest(contract.encode("utf-8")),
         "items": [],
     }
@@ -112,6 +129,7 @@ def main() -> int:
                 async_mode=False,
                 threshold=0.5,
             )
+            started = perf_counter()
             try:
                 metric.measure(case)
                 trial = {
@@ -126,6 +144,7 @@ def main() -> int:
                     "trial": trial_index + 1,
                     "error_type": type(exc).__name__,
                 }
+            trial["elapsed_seconds"] = round(perf_counter() - started, 2)
             result["trials"].append(trial)
         results["items"].append(result)
 
