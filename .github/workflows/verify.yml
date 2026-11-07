@@ -72,3 +72,34 @@ jobs:
         run: |
           openspec list --json
           openspec validate --all --strict
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install real backend
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install -e .
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+      - name: Typecheck and production build
+        working-directory: web
+        run: npm run build
+      - name: Install Chromium and system dependencies
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: Real FastAPI and SQLite browser tests
+        working-directory: web
+        run: npm run test:e2e

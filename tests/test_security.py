@@ -24,6 +24,7 @@ def test_openapi_docs_and_no_secrets(env, caplog, capsys):
     output = schema.text + caplog.text + str(capsys.readouterr())
     for credential in env[4].values():
         assert credential['token'] not in output
+        assert credential['token'] not in repr(env)
 
 
 @pytest.mark.parametrize('authorization', [None, 'Bearer invalid', 'Basic invalid'])

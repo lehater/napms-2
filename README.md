@@ -1,7 +1,7 @@
 # NAPMS 2.0
 
 Локальный первый продуктовый срез: `AccessRequest → ALLOWED/DENIED → PolicyRule → JSON/CSV`.
-FastAPI/Swagger UI, Pydantic, SQLite (WAL), Python 3.12+. Без ORM и frontend.
+FastAPI/Swagger UI, Pydantic, SQLite (WAL), Python 3.12+. React/TypeScript Web UI; без ORM.
 Принятые требования: [первый срез](docs/first-slice.md),
 [дизайн](openspec/changes/archive/2026-11-07-first-access-policy-slice/design.md).
 NAPMS 1.0 используется только как источник знаний; код и Harness не перенесены.
@@ -40,6 +40,52 @@ napms-dev serve
 для независимого сценария используйте новую пару путей DB/credentials в отдельной локальной директории.
 Остановка/перезапуск `serve` сохраняет данные в SQLite. Неизвестная версия схемы отклоняется;
 миграции пока не предусмотрены.
+
+## Web UI (локальный demo)
+
+Нужны Python 3.12+ и Node.js 22.12+ (CI: Node 24). Сначала выполните установку,
+`napms-dev init-demo` и `napms-dev serve`, как описано выше. В другом терминале:
+
+```bash
+cd web
+npm ci
+npm run dev
+```
+
+Открыть <http://127.0.0.1:5173>. Vite и FastAPI слушают только loopback;
+относительные `/access-requests` запросы проходят через Vite proxy к `127.0.0.1:8000`.
+Поддерживаемая конфигурация отклоняет non-loopback `--host`; backend использует порт 8000.
+Production build проверяется, но не является способом deployment или запуска API.
+
+Выберите requester и вручную введите его token из приватного `var/dev-credentials.json`
+в маскированное поле Bearer token. Создайте заявку с публичными demo UUID, откройте список
+и детали. Переключите mode на decider, заново введите соответствующий token и подтвердите
+ALLOWED или DENIED. После переключения на requester и повторного ввода token перечитайте
+статус. DENIED хранит `policyRuleId=null` и не отзывает ранее созданные Rules.
+
+Mode — только подсказка интерфейса: полномочия проверяет backend по token/grants.
+Смена mode или Clear credential удаляют token, отображённые данные и ожидающее подтверждение.
+Перезагрузка страницы требует повторного ввода token; SQLite сохраняет заявки и решения.
+Не используйте persistent browser storage, Vite env, URL, отчёты, снимки экрана или логи
+для токенов. Не публикуйте порты, не используйте forwarding, tunnels или внешний proxy.
+Это demo-only граница, не production IAM.
+
+Проверки frontend и браузерного сценария (из `web/`):
+
+```bash
+npm run typecheck
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+Перед E2E остановите ручные API/Vite: порты 8000 и 5173 должны быть свободны.
+Playwright запускает настоящий `napms.dev serve`, Vite и Chromium, создаёт временные
+SQLite/credentials вне репозитория и удаляет их после проверки. Mock/intercept API нет.
+По умолчанию используется `../.venv/bin/python`; для другой установки задайте
+`NAPMS_PYTHON=/absolute/path/to/python`. На чистом Linux для browser dependencies
+может потребоваться `npx playwright install --with-deps chromium`.
+Trace, video и screenshots отключены, чтобы не записывать credentials.
 
 ## Сценарий через Swagger UI
 
