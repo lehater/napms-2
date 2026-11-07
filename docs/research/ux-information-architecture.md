@@ -2,6 +2,12 @@
 
 **Статус:** DRAFT RESEARCH / не утверждённая navigation specification. **Без реализации:** не создавать код, компоненты frontend, backend или OpenSpec. Evidence baseline: N1 `42481577fab7f795cf3a2118b7b6f1c3c075d066`, N2 `9713c89bada6573bda2f60c97fb45deda48f5909`.
 
+**Направление интерфейса от владельца (RESEARCH / не утверждённая спецификация):** NetBox-подобная структура для связанных данных — постоянная боковая навигация, фильтруемые таблицы каталогов и состояний, подробные карточки с отношениями, provenance и переходами. Ориентир относится к организации информации, а не к копированию NetBox, его компонентов или визуального оформления. Задачи каталогизации, запроса, анализа и исправления — разные входы к общей модели.
+
+**Минимальная цепочка UX-0:** `Resource → Deployment → Interaction/Revision → BusinessProcess/Need → Request → Decision → PolicyRule → Declared → Required for NST → Configured → Reconciliation → SIMULATED operation → independent recheck`. BusinessProcess и ConnectivityNeed обязательны для намеренного запроса. DENIED заявки ≠ сетевой DENY; последний появляется только при NST-адаптации с эквивалентностью. Отзыв — отдельная **непринятая hypothesis**, не исполняемое действие N2.
+
+Расширять постепенно: общий shell, два reusable patterns (list/detail), несколько межраздельных переходов, один связанный mock dataset. **9 групп / 19 workspaces** — карта, а не план 19 готовых экранов. Future network data = **MOCK**, operations = **SIMULATED**, отсутствие данных = **Unknown/Uncomparable**, а не успех.
+
 ## Принцип декомпозиции
 
 **Продуктовая capability** — пользовательский outcome (например «найти неправильно реализованный доступ»). **Domain owner / Bounded Context** — место, где поддерживается авторитетная семантика (например Access Policy и APR). **UI workspace** — точка входа в пользовательскую работу (например «Проверка связи»); часто агрегирует данные нескольких владельцев. **Collector/renderer/adapter** — технические возможности, которым не обязательно нужен собственный главный экран. Три иерархии не должны совпадать.
