@@ -1,0 +1,23 @@
+{
+  "provenance": "Transcribed from user-reported WSL2 output; full JSON file not independently fetched",
+  "phase": "SDLC-03 first successful cloud judge positive sample",
+  "judge": "deepeval==4.3.3 -> Codex CLI (configured cloud model not independently identified)",
+  "sample": "candidate_codex",
+  "sample_commit": "4f09406ceae0475bba5252b062ff12e3fd24e8e3",
+  "oracle": "12/12 PASS (independent)",
+  "trials": [
+    {
+      "trial": 1,
+      "score": 1,
+      "reason": "The executable code satisfies the contract: exact fixed header and column order, lexicographic request_id sorting, LF terminators including the final newline, and standard csv.writer escaping. It validates all four required keys, string values, and ALLOW/DENY decisions with generic ValueError messages. Every exported cell, including request_id, receives one apostrophe when starting with =, +, -, or @. Extra keys are excluded, empty input returns only the header, and inputs are not mutated.",
+      "elapsed_seconds": 11.32
+    }
+  ],
+  "interpretation": "Cloud Codex CLI bridge successfully returned a structured DeepEval GEval result and correct explanation on a verified passing sample; single data point, no discrimination or stability established",
+  "limitations": [
+    "Only one positive trial",
+    "Exact active Codex model and token usage for judge not captured",
+    "No negative trial yet",
+    "Not a comparative cost/latency benchmark"
+  ]
+}
