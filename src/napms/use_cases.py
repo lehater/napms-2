@@ -66,6 +66,22 @@ class Service:
                 grant(c, actor, "access.decide", "demo-policy", self.clock())
             return request_view(c, r)
 
+    def list_requests(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            # Pin one snapshot before sampling time, including grants and decision evidence.
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            at = self.clock()
+            can_decide = any(effective(g, at) for g in c.execute(
+                "SELECT * FROM grants WHERE actor_id=? AND action='access.decide' AND scope='demo-policy'",
+                (actor,)))
+            rows = c.execute(
+                "SELECT * FROM access_requests WHERE (? OR actor_id=?) "
+                "ORDER BY submitted_at DESC,id DESC LIMIT ? OFFSET ?",
+                # SQLite binds signed 64-bit integers; any larger offset is beyond its row capacity.
+                (can_decide, actor, limit + 1, min(offset, 2**63 - 1))).fetchall()
+            return dict(items=[request_view(c, r) for r in rows[:limit]],
+                        limit=limit, offset=offset, hasMore=len(rows) > limit)
+
     def decide(self, actor, rid, outcome):
         with self.db.transaction(write=True) as c:
             at = self.clock()

@@ -18,3 +18,5 @@ dist/
 coverage.xml
 htmlcov/
 .ruff_cache/
+web/test-results/
+web/playwright-report/

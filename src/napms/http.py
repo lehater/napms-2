@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .dev import DEMO_REQUEST
 from .domain import Problem
@@ -35,6 +35,11 @@ class AccessInput(Strict):
 
 class DecisionInput(Strict):
     outcome: Literal["ALLOWED", "DENIED"]
+
+
+class ListQuery(Strict):
+    limit: int = Field(default=20, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
 
 
 class ExportQuery(Strict):
@@ -65,6 +70,13 @@ class AccessRequest(Strict):
     requesterActorId: UUID
     admission: Admission
     decision: Decision | None
+
+
+class RequestCollection(Strict):
+    items: list[AccessRequest]
+    limit: int
+    offset: int
+    hasMore: bool
 
 
 class Rule(Strict):
@@ -148,6 +160,11 @@ def create_app(db, credentials):
     @app.get("/access-requests/{requestId}", response_model=AccessRequest, dependencies=[Depends(no_query)])
     def get_request(requestId: UUID, who: Actor):
         return service.request(who, str(requestId))
+
+    @app.get("/access-requests", response_model=RequestCollection)
+    def list_requests(who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.list_requests(who, query.limit, query.offset)
 
     @app.post("/access-requests/{requestId}/decision", status_code=201, response_model=Decision, dependencies=[Depends(no_query)])
     def decide(requestId: UUID, data: DecisionInput, who: Actor):
