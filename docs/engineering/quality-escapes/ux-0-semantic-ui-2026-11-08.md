@@ -21,7 +21,7 @@
 
 ## 3. Исправление и предотвращение
 - Нормативный узкий контракт в `docs/contracts/ux-0-semantic-boundaries.{md,json}`; восемь верхних разделов сохраняются, исследовательская IA не объявляется принятой целиком.
-- `visibleCollection('policy')` включает только PolicyRule. Отдельные таблицы «Заявки» и «Результаты сопоставления» расположены на Overview; ссылки Need/Rule→AccessRequest и прежние object URLs сохранены.
+- `visibleCollection('policy')` включает только PolicyRule. Отдельные таблицы «Заявки» и «Результаты сопоставления» расположены на Overview; mock-заявки имеют канонический `/prototype/requests/…`, а старые адреса `/prototype/policy/mock-request-*` перенаправляются. Ссылки Need/Rule→AccessRequest сохранены.
 - Состояния запроса, правила и сравнения выводятся с разными подписями, а Read-only/Immutable перенесены в атрибуты.
 - `npm run test:semantic` — быстрый standalone validation на Node 24 и две deliberate negative mutation probes: request получает state `Active` и request ошибочно добавляется в policy catalogue. Оба нарушения обязаны детектироваться. `Verify / semantic-contract` автоматически блокирует каждый PR.
 - `web/e2e/semantic-contract.spec.ts` проверяет видимые browser-коллекции и смыслы статусов независимо от пройденных fixture checks; исполняется `Verify / web`.
