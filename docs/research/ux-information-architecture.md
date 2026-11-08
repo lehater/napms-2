@@ -6,7 +6,7 @@
 
 **Минимальная цепочка UX-0:** `Resource → Deployment → Interaction/Revision → BusinessProcess/Need → Request → Decision → PolicyRule → Declared → Required for NST → Configured → Reconciliation → SIMULATED operation → independent recheck`. BusinessProcess и ConnectivityNeed обязательны для намеренного запроса. DENIED заявки ≠ сетевой DENY; последний появляется только при NST-адаптации с эквивалентностью. Отзыв — отдельная **непринятая hypothesis**, не исполняемое действие N2.
 
-Расширять постепенно: общий shell, два reusable patterns (list/detail), несколько межраздельных переходов, один связанный mock dataset. **9 групп / 18 candidate workspaces** — карта, а не план 19 готовых экранов. Future network data = **MOCK**, operations = **SIMULATED**, отсутствие данных = **Unknown/Uncomparable**, а не успех.
+Расширять постепенно: общий shell, два reusable patterns (list/detail), несколько межраздельных переходов, один связанный mock dataset. **9 групп / 18 candidate workspaces** — карта, а не план 18 готовых экранов. Future network data = **MOCK**, operations = **SIMULATED**, отсутствие данных = **Unknown/Uncomparable**, а не успех.
 
 ## Принцип декомпозиции
 
@@ -37,7 +37,7 @@
 | **Администрирование / Полномочия** | Отличить Actor grants от Resource owners | Actors, action/scope/time authority, scope visibility, server-only authority explanation | C12 / J02 J08 | N2 demo grants, управление UI mock |
 | **Администрирование / Источники и интеграции** | Контролировать происхождение/сбор | catalogue external source, capture schedule/status, imported files, identity mappings | C21–C24 C37 C38 / J05 J08 | optional; mock-only |
 
-**Предварительная карта UX:** 18 candidate workspaces в 9 навигационных группах; «Заявки» уже имеют отдельный реальный UI N2. Это **не** 18 независимых доменов и не план реализации 18 backend/route. Отдельный workspace «Эффективная политика» исключён из текущей карты: C18 / J04 сохраняется как техническая способность вычисления и экспорта, а не пункт меню. Текущий UX-0 с восемью разделами остаётся самостоятельным исследовательским прототипом.
+**Предварительная карта UX:** 18 candidate workspaces в 9 навигационных группах; «Заявки» уже имеют отдельный реальный UI N2. Это **не** 18 независимых доменов и не план реализации 18 backend/route. Отдельный workspace «Эффективная политика» исключён из текущей карты: C18 и J04 остаются в карте возможностей и сценариев, но не требуют отдельного пункта меню. Текущий UX-0 с восемью разделами остаётся самостоятельным исследовательским прототипом.
 
 ## Access Policy: отдельные пользовательские реестры и вычисляемое представление
 
