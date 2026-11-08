@@ -72,6 +72,20 @@ jobs:
         run: |
           openspec list --json
           openspec validate --all --strict
+  semantic-contract:
+    name: semantic-contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Enforce the accepted UX-0 semantic boundary contract
+        working-directory: web
+        run: npm run test:semantic
   web:
     name: web
     runs-on: ubuntu-latest

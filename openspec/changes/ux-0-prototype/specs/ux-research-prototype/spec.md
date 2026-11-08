@@ -49,3 +49,31 @@ Browser checks SHALL verify navigation, linked fixture integrity and absence of 
 #### Scenario: Run browser checks
 - **WHEN** the frontend verification suite runs
 - **THEN** prototype navigation and real create/list/detail/ALLOWED/DENIED and authorization regressions are checked independently
+
+### Requirement: Independent request, policy and comparison presentation
+The prototype SHALL preserve the distinction between AccessRequest, PolicyRule and computed Reconciliation. The policy catalogue SHALL list PolicyRule only. Separate labelled mock request and reconciliation lists MAY appear on Overview; linked request provenance and all existing direct object URLs SHALL remain available.
+
+#### Scenario: Browse policies and requests
+- **WHEN** the user opens the policy catalogue and follows a related access request
+- **THEN** the policy list contains PolicyRule only while the request displays its own decision state and provenance
+
+### Requirement: Typed UI status semantics
+The prototype SHALL label request statuses PENDING/ALLOWED/DENIED, rule states Active/Inactive and Reconciliation results Drift/Uncomparable as distinct categories. Read-only UI mode and InteractionRevision immutability SHALL appear as attributes, never as lifecycle status. The normative presentation-only status domains SHALL be recorded in `docs/contracts/ux-0-semantic-boundaries.json`.
+
+#### Scenario: Inspect statuses and invariants
+- **WHEN** the user examines an ALLOWED or DENIED request, an Active rule, a Reconciliation result, Application or InteractionRevision
+- **THEN** status captions identify the relevant category, and UI read-only/immutable indicators are never shown as object status
+
+### Requirement: Automatic UX-0 semantic contract gate
+Every PR SHALL execute a blocking UX-0 semantic fixture check and browser rendering regression tests in GitHub Actions. The gate SHALL report the affected entity and violated rule. Failures SHALL enter SDLC-04 triage without automatic Harness changes.
+
+#### Scenario: Verify a changed prototype PR
+- **WHEN** a PR changes UX-0 fixtures, views or specifications
+- **THEN** GitHub Actions executes blocking semantic and browser regression checks and reports failed invariants
+
+### Requirement: Explicit status and browser coverage
+Every UX-0 Kind SHALL have a typed status domain or an explicit no-status decision. New Kind and top-level sections SHALL require an updated contract and browser coverage. These checks apply to the research prototype, not arbitrary UI or the real API.
+
+#### Scenario: Introduce a semantic regression
+- **WHEN** an AccessRequest is added to the PolicyRule catalogue or assigned a PolicyRule lifecycle status
+- **THEN** the semantic contract check fails before merge and identifies the violated invariant
