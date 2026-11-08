@@ -1,0 +1,53 @@
+{
+  "1440x900": {
+    "vp": 1440,
+    "screen": 1440,
+    "app": 1440,
+    "sidebar": 264,
+    "workspace": 1170,
+    "tabsScroll": 1114,
+    "tabsClient": 1114,
+    "tableScroll": 1112,
+    "tableClient": 1112
+  },
+  "1920x1080": {
+    "vp": 1920,
+    "screen": 1920,
+    "app": 1920,
+    "sidebar": 264,
+    "workspace": 1650,
+    "tabsScroll": 1594,
+    "tabsClient": 1594,
+    "tableScroll": 1592,
+    "tableClient": 1592
+  },
+  "keyboard_resize": {
+    "sidebar": 314,
+    "aria": "314"
+  },
+  "pointer_resize": {
+    "sidebar": 350,
+    "aria": "350"
+  },
+  "sidebar_max": {
+    "sidebar": 360,
+    "tableScroll": 1496,
+    "tableClient": 1496
+  },
+  "sidebar_min": {
+    "sidebar": 200,
+    "tableScroll": 1656,
+    "tableClient": 1656
+  },
+  "2560x1440": {
+    "vp": 2560,
+    "screen": 2560,
+    "app": 2560,
+    "sidebar": 264,
+    "workspace": 2290,
+    "tabsScroll": 2234,
+    "tabsClient": 2234,
+    "tableScroll": 2232,
+    "tableClient": 2232
+  }
+}
