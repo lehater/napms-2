@@ -1,13 +1,13 @@
 // Fictional research fixture only. Never seed SQLite or pass these IDs to api.ts.
 export const sections = [
-  { id: 'overview', group: 'Исследование UX-0', title: 'Обзор', description: 'Одна коммуникация: от ресурса до расхождения политики.' },
-  { id: 'resources', group: 'Каталоги', title: 'Ресурсы', description: 'Стабильная identity, один Endpoint на Resource. Ответственность не предоставляет полномочий.' },
-  { id: 'applications', group: 'Каталоги', title: 'Приложения и коммуникации', description: 'Профиль Order-to-Ledger и одна неизменяемая InteractionRevision.' },
-  { id: 'deployments', group: 'Каталоги', title: 'Размещения компонентов', description: 'Конкретные компоненты на ресурсах; адрес не является identity размещения.' },
-  { id: 'needs', group: 'Бизнес и доступ', title: 'Бизнес-процессы и ConnectivityNeed', description: 'Бизнес-обоснование потребности отдельно от разрешения доступа.' },
-  { id: 'policy', group: 'Бизнес и доступ', title: 'Декларированная политика и PolicyRule', description: 'Только разрешённые коммуникации. DENIED заявки не создаёт NST DENY и не отзывает Rule.' },
-  { id: 'network', group: 'Сеть', title: 'NST и фактическая конфигурация', description: 'Кандидаты мест применения и фиктивные снимки; реальный маршрут и доставка не доказаны.' },
-  { id: 'comparison', group: 'Сеть', title: 'Сопоставление политик', description: 'Требуемая и настроенная политика сравниваются только в явно выбранном scope.' },
+  { id: 'overview', group: 'Research', title: 'Overview', description: 'Одна коммуникация: от ресурса до расхождения политики.' },
+  { id: 'resources', group: 'Catalogues', title: 'Resources', description: 'Стабильная identity, один Endpoint на Resource. Ответственность не предоставляет полномочий.' },
+  { id: 'applications', group: 'Catalogues', title: 'Applications', description: 'Профиль Order-to-Ledger и одна неизменяемая InteractionRevision.' },
+  { id: 'deployments', group: 'Catalogues', title: 'Deployments', description: 'Конкретные компоненты на ресурсах; адрес не является identity размещения.' },
+  { id: 'needs', group: 'Business & access', title: 'Business needs', description: 'Бизнес-обоснование потребности отдельно от разрешения доступа.' },
+  { id: 'policy', group: 'Business & access', title: 'Policies', description: 'Только разрешённые коммуникации. DENIED заявки не создаёт NST DENY и не отзывает Rule.' },
+  { id: 'network', group: 'Network', title: 'Network evidence', description: 'Кандидаты мест применения и фиктивные снимки; реальный маршрут и доставка не доказаны.' },
+  { id: 'comparison', group: 'Network', title: 'Reconciliation', description: 'Требуемая и настроенная политика сравниваются только в явно выбранном scope.' },
 ] as const
 export type SectionId = typeof sections[number]['id'] | 'requests'
 export type Kind = 'Resource' | 'Endpoint' | 'Interaction' | 'TechnicalAccessEvidenceSet' | 'TechnicalAccessEntry' | 'Application' | 'ComponentDeployment' | 'InteractionRevision' | 'BusinessProcess' | 'ConnectivityNeed' | 'AccessRequest' | 'PolicyRule' | 'NST' | 'TargetRequiredPolicy' | 'ConfiguredEffectivePolicySnapshot' | 'Reconciliation'
@@ -21,28 +21,36 @@ export const dataNature: Record<Kind, 'persistent' | 'computed'> = {
   Reconciliation: 'computed',
 }
 export const natureLabel = { persistent: 'Устойчивое состояние (логическая модель)', computed: 'Вычисляемое представление' }
-// Each status belongs to its entity; never use a cross-entity lifecycle.
-export const statusCaptions: Partial<Record<Kind, string>> = {
-  AccessRequest: 'Статус заявки',
-  PolicyRule: 'Состояние правила',
-  Reconciliation: 'Результат сопоставления',
-  Interaction: 'Актуальность',
-  BusinessProcess: 'Актуальность',
-  ConnectivityNeed: 'Актуальность',
-  ComponentDeployment: 'Состояние размещения',
-}
-// The policy catalogue contains declared rules only; requests remain linked provenance.
-export function visibleCollection(section: SectionId): readonly MockObject[] {
-  return section === 'policy' ? objects.filter(item => item.kind === 'PolicyRule')
-    : objects.filter(item => item.section === section)
-}
+export const stateDefinitions = {
+  Resource: { label: "Наличие данных", values: ["Known"] },
+  Endpoint: { label: "Наличие данных", values: ["Known"] },
+  Application: { label: null, values: [] },
+  Interaction: { label: "Актуальность", values: ["Current"] },
+  InteractionRevision: { label: null, values: [] },
+  ComponentDeployment: { label: "Состояние размещения", values: ["Active"] },
+  BusinessProcess: { label: "Актуальность", values: ["Current"] },
+  ConnectivityNeed: { label: "Актуальность", values: ["Current"] },
+  AccessRequest: { label: "Статус заявки", values: ["PENDING","ALLOWED","DENIED"] },
+  PolicyRule: { label: "Состояние правила", values: ["Active","Inactive"] },
+  TechnicalAccessEvidenceSet: { label: "Происхождение данных", values: ["MOCK"] },
+  TechnicalAccessEntry: { label: "Интерпретация записи", values: ["Normalized (MOCK)"] },
+  NST: { label: "Определённость кандидата", values: ["Candidate","Unknown"] },
+  TargetRequiredPolicy: { label: "Происхождение проекции", values: ["MOCK"] },
+  ConfiguredEffectivePolicySnapshot: { label: "Полнота интерпретации", values: ["Complete (MOCK)","Unknown"] },
+  Reconciliation: { label: "Результат сопоставления", values: ["Drift","Uncomparable"] },
+} as const satisfies Record<Kind, { label: string | null; values: readonly string[] }>
+
 type Relation = { label: string; id: string }
-export type MockObject = {
-  id: string; kind: Kind; section: SectionId; name: string; state?: string
+type ObjectFields = {
+  id: string; section: SectionId; name: string
   summary: string; fields: Record<string, string>; links: Relation[]
   // Only explicit permits occur in policy projections; null means unknown, not empty.
   permits?: readonly number[] | null
 }
+// Discriminated union restricts each kind to its own semantic status domain.
+export type MockObject = { [K in Kind]: ObjectFields & {
+  kind: K; state?: (typeof stateDefinitions)[K]['values'][number]
+} }[Kind]
 export const evaluatedAt = '2026-11-07T12:00:00Z'
 export const objects: readonly MockObject[] = [
   { id: 'mock-resource-order', kind: 'Resource', section: 'resources', name: 'order-api-01', state: 'Known', summary: 'Исходный ресурс · Orders · DC-1', fields: { scope: 'orders-prod', responsibilityHistory: 'OWNER Orders · [2026-11-01T00:00:00Z, ∞) · не grant', siteHistory: 'DC-1 · [2026-11-01T00:00:00Z, ∞)', endpoint: 'mock-endpoint-order', currentAddressFromHistory: '192.0.2.10 / HOST · чтение EndpointAddressHistory на evaluationAt' }, links: [{ label: 'Endpoint', id: 'mock-endpoint-order' }, { label: 'Размещение', id: 'mock-deployment-order' }] },
@@ -50,10 +58,10 @@ export const objects: readonly MockObject[] = [
   { id: 'mock-endpoint-order', kind: 'Endpoint', section: 'resources', name: 'Endpoint · order-api-01', state: 'Known', summary: 'Стабильный Endpoint; текущий IP получается из истории адресов.', fields: { addressHistory: 'HOST 192.0.2.10 · [2026-11-01T00:00:00Z, ∞)', currentAddressFromHistory: '192.0.2.10 / HOST', evaluationAt: evaluatedAt }, links: [{ label: 'Resource', id: 'mock-resource-order' }] },
   { id: 'mock-endpoint-ledger', kind: 'Endpoint', section: 'resources', name: 'Endpoint · ledger-api-01', state: 'Known', summary: 'Стабильный Endpoint; текущий IP получается из истории адресов.', fields: { addressHistory: 'HOST 192.0.2.20 · [2026-11-01T00:00:00Z, ∞)', currentAddressFromHistory: '192.0.2.20 / HOST', evaluationAt: evaluatedAt }, links: [{ label: 'Resource', id: 'mock-resource-ledger' }] },
   { id: 'mock-interaction-ledger', kind: 'Interaction', section: 'applications', name: 'OrderClient → LedgerApi', state: 'Current', summary: 'Устойчивая коммуникация компонентов: передача бухгалтерской операции.', fields: { sourceComponent: 'OrderClient', destinationComponent: 'LedgerApi', purpose: 'Запись проводки' }, links: [{ label: 'Профиль', id: 'mock-application' }, { label: 'Точная версия параметров', id: 'mock-revision' }, { label: 'ConnectivityNeed', id: 'mock-need' }] },
-  { id: 'mock-application', kind: 'Application', section: 'applications', name: 'Order-to-Ledger HTTPS', summary: 'Повторно используемый профиль коммуникации, не инсталляция сервиса.', fields: { components: 'OrderClient → LedgerApi', uiMode: 'Read-only — режим исследовательского UI, не состояние Application' }, links: [{ label: 'Коммуникация', id: 'mock-interaction-ledger' }] },
+  { id: 'mock-application', kind: 'Application', section: 'applications', name: 'Order-to-Ledger HTTPS', summary: 'Повторно используемый профиль коммуникации, не инсталляция сервиса.', fields: { components: 'OrderClient → LedgerApi' }, links: [{ label: 'Коммуникация', id: 'mock-interaction-ledger' }] },
   { id: 'mock-deployment-order', kind: 'ComponentDeployment', section: 'deployments', name: 'dep-order-1', state: 'Active', summary: 'OrderClient на order-api-01', fields: { component: 'OrderClient' }, links: [{ label: 'Ресурс', id: 'mock-resource-order' }, { label: 'Профиль', id: 'mock-application' }, { label: 'Interaction', id: 'mock-interaction-ledger' }] },
   { id: 'mock-deployment-ledger', kind: 'ComponentDeployment', section: 'deployments', name: 'dep-ledger-1', state: 'Active', summary: 'LedgerApi на ledger-api-01', fields: { component: 'LedgerApi' }, links: [{ label: 'Ресурс', id: 'mock-resource-ledger' }, { label: 'Профиль', id: 'mock-application' }, { label: 'Interaction', id: 'mock-interaction-ledger' }] },
-  { id: 'mock-revision', kind: 'InteractionRevision', section: 'applications', name: 'OrderClient → LedgerApi / rev-1', summary: 'Передача бухгалтерской операции · TCP destination 443', fields: { interaction: 'mock-interaction-ledger', revision: 'rev-1 (единственная)', traffic: 'TCP / destination 443–443', parameterIntegrity: 'Immutable — инвариант параметров revision, не lifecycle' }, links: [{ label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }] },
+  { id: 'mock-revision', kind: 'InteractionRevision', section: 'applications', name: 'OrderClient → LedgerApi / rev-1', summary: 'Передача бухгалтерской операции · TCP destination 443', fields: { interaction: 'mock-interaction-ledger', revision: 'rev-1 (единственная)', traffic: 'TCP / destination 443–443' }, links: [{ label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }] },
   { id: 'mock-process', kind: 'BusinessProcess', section: 'needs', name: 'Settlement', state: 'Current', summary: 'Проведение заказов в бухгалтерском реестре.', fields: { responsible: 'Finance' }, links: [{ label: 'Потребность', id: 'mock-need' }] },
   { id: 'mock-need', kind: 'ConnectivityNeed', section: 'needs', name: 'need-001 · запись проводки', state: 'Current', summary: 'OrderClient требуется коммуникация с LedgerApi. Need сама по себе не разрешает доступ.', fields: { participantComponent: 'OrderClient / sender', reason: 'Бухгалтерская операция заказа' }, links: [{ label: 'BusinessProcess', id: 'mock-process' }, { label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'PolicyRule', id: 'mock-rule' }, { label: 'Основание разрешения', id: 'mock-request-allowed' }, { label: 'Отдельная отклонённая заявка', id: 'mock-request-denied' }] },
   { id: 'mock-request-allowed', kind: 'AccessRequest', section: 'requests', name: 'Q1 · разрешённая заявка', state: 'ALLOWED', summary: 'Предустановленная история, не реальная подача или решение.', fields: { requester: 'alice-orders', decider: 'bob-policy', submittedAt: '2026-11-07T09:00:00Z', decisionAt: '2026-11-07T10:00:00Z', RequestAuthorityEvidence: 'access.request · source Resource mock-resource-order only · scope orders-prod · grant [2026-11-01T00:00:00Z, ∞) · evaluatedAt 2026-11-07T09:00:00Z; не ALLOWED', decisionAuthority: 'access.decide · demo-policy · проверено отдельно', decisionId: 'mock-decision-allowed' }, links: [{ label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }, { label: 'Revision', id: 'mock-revision' }, { label: 'BusinessProcess', id: 'mock-process' }, { label: 'Need', id: 'mock-need' }, { label: 'Созданный Rule', id: 'mock-rule' }] },
@@ -71,3 +79,8 @@ export const objects: readonly MockObject[] = [
 ]
 export const byId = new Map(objects.map(object => [object.id, object]))
 export function objectPath(object: MockObject) { return `/prototype/${object.section}/${object.id}` }
+
+// A policy catalogue contains declared PolicyRule only; requests remain linked provenance.
+export function visibleCollection(section: SectionId): readonly MockObject[] {
+  return section === 'policy' ? objects.filter(o => o.kind === 'PolicyRule') : objects.filter(o => o.section === section)
+}

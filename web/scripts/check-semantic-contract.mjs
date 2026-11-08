@@ -1,62 +1,75 @@
-import { readFileSync } from 'node:fs'
-import { objects, objectPath, visibleCollection, statusCaptions } from '../src/prototype/data.ts'
+import { readFileSync, existsSync } from 'node:fs'
+import { objects, objectPath, visibleCollection, stateDefinitions, dataNature, sections } from '../src/prototype/data.ts'
 
 const contract = JSON.parse(readFileSync(new URL('../../docs/contracts/ux-0-semantic-boundaries.json', import.meta.url), 'utf8'))
+const enforced = contract.enforced
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const issue = (errors, message) => errors.push(message)
 
 function validate(items, policyRows) {
   const errors = []
-  if (contract.schemaVersion !== 1) errors.push('unsupported semantic contract schemaVersion')
-  for (const [kind, domain] of Object.entries(contract.statusDomains)) {
-    const matches = items.filter(item => item.kind === kind)
-    if (matches.length === 0) errors.push(`no fixture object for contracted kind ${kind}`)
-    if (domain.label !== null && statusCaptions[kind] !== domain.label) {
-      errors.push(`${kind}: UI caption ${JSON.stringify(statusCaptions[kind])} differs from contract ${JSON.stringify(domain.label)}`)
+  if (contract.schemaVersion !== 2 || !enforced || !contract.documentationOnly)
+    issue(errors, 'Contract schema v2 with enforced/documentationOnly is required')
+  const definitions = enforced?.statusDomains ?? {}
+  const kinds = Object.keys(dataNature)
+  for (const kind of kinds) {
+    const domain = definitions[kind]
+    const actual = stateDefinitions[kind]
+    if (!domain || !actual) {
+      issue(errors, kind + ': missing mandatory status-domain decision (including no-status)')
+      continue
     }
-    for (const item of matches) {
-      if (domain.values.length === 0 && item.state !== undefined) {
-        errors.push(`${item.id} (${kind}): ${JSON.stringify(item.state)} is a UI mode/invariant, not a status`)
-      } else if (domain.values.length > 0 && !domain.values.includes(item.state)) {
-        errors.push(`${item.id} (${kind}): invalid state ${JSON.stringify(item.state)}; expected ${domain.values.join(', ')}`)
-      }
-    }
-  }
-  for (const [kind, prefix] of Object.entries(contract.routes)) {
+    if (!same(domain, actual)) issue(errors, kind + ': status definition differs from normative contract')
+    if (domain.values.length && !domain.label) issue(errors, kind + ': status values require a semantic label')
+    if (!domain.values.length && domain.label !== null) issue(errors, kind + ': a no-status kind must have null label')
     for (const item of items.filter(obj => obj.kind === kind)) {
-      const actual = objectPath(item)
-      if (!actual.startsWith(prefix)) errors.push(`${item.id} (${kind}): route ${actual} must start with ${prefix}`)
+      if (domain.values.length === 0 && item.state !== undefined)
+        issue(errors, item.id + ' (' + kind + '): no-status kind has ' + JSON.stringify(item.state))
+      if (domain.values.length > 0 && !domain.values.includes(item.state))
+        issue(errors, item.id + ' (' + kind + '): unexpected value ' + JSON.stringify(item.state))
     }
   }
-  const allowedPolicyKinds = contract.catalogues.policy.allowedKinds
-  if (policyRows.length === 0) errors.push('policy catalogue is empty')
-  for (const item of policyRows) {
-    if (!allowedPolicyKinds.includes(item.kind)) {
-      errors.push(`policy catalogue contains ${item.id} (${item.kind}); only ${allowedPolicyKinds.join(', ')} allowed`)
+  for (const kind of Object.keys(definitions)) if (!kinds.includes(kind))
+    issue(errors, kind + ': unknown kind in statusDomains')
+  for (const item of items) if (!kinds.includes(item.kind))
+    issue(errors, item.id + ': kind missing from dataNature and status contract')
+  for (const [kind, prefix] of Object.entries(enforced?.routes ?? {}))
+    for (const item of items.filter(obj => obj.kind === kind)) {
+      const path = objectPath(item)
+      if (!path.startsWith(prefix)) issue(errors, item.id + ': wrong canonical route ' + path)
     }
+  const allowed = enforced?.catalogues?.policy?.allowedKinds ?? []
+  if (policyRows.length === 0) issue(errors, 'empty declared policy catalogue')
+  for (const row of policyRows)
+    if (!allowed.includes(row.kind)) issue(errors, 'policy catalogue contains ' + row.id + ' (' + row.kind + ')')
+  for (const request of items.filter(obj => obj.kind === 'AccessRequest' && obj.state === 'DENIED')) {
+    if (enforced.deniedRequest.mustHaveExplicitNullPolicyRuleId && request.fields.policyRuleId !== 'null')
+      issue(errors, request.id + ': DENIED must expose explicit null policyRuleId')
+    if (enforced.deniedRequest.mustHaveNoPolicyRuleLink && request.links.some(l => items.some(t => t.id === l.id && t.kind === 'PolicyRule')))
+      issue(errors, request.id + ': DENIED must not produce PolicyRule')
   }
-  const rejected = items.find(item => item.id === 'mock-request-denied')
-  if (!rejected || rejected.kind !== 'AccessRequest' || rejected.state !== 'DENIED'
-      || rejected.links.some(link => items.find(item => item.id === link.id)?.kind === 'PolicyRule')) {
-    errors.push('DENIED request must remain distinct from policy rules and must not create a rule')
-  }
+  const expectedSections = enforced?.coverage?.topLevelSectionIds
+  if (!same(sections.map(s => s.id), expectedSections))
+    issue(errors, 'top-level section coverage changed: update contract, browser tests and review')
+  for (const path of enforced?.coverage?.browserSuites ?? [])
+    if (!existsSync(new URL('../../' + path, import.meta.url))) issue(errors, 'missing browser suite: ' + path)
   return errors
 }
 
-const policy = visibleCollection('policy')
-const errors = validate(objects, policy)
-const allowed = objects.find(object => object.kind === 'AccessRequest')
-if (!allowed) errors.push('fixture must contain one AccessRequest for negative regression probes')
+const errors = validate(objects, visibleCollection('policy'))
+// Validator sentinels: these check detection branches, not an actual UI render mutation.
+const request = objects.find(o => o.kind === 'AccessRequest')
+if (!request) errors.push('missing AccessRequest fixture')
 else {
-  if (validate([...objects.filter(o => o.id !== allowed.id), { ...allowed, state: 'Active' }], policy).length === 0) {
-    errors.push('mutation sentinel did not detect request incorrectly assigned PolicyRule status')
-  }
-  if (validate(objects, [...policy, allowed]).length === 0) {
-    errors.push('mutation sentinel did not detect AccessRequest leaking into policy catalogue')
-  }
+  if (!validate(objects.map(o => o.id === request.id ? { ...o, state: 'Active' } : o), visibleCollection('policy')).length)
+    errors.push('validator sentinel missed incorrect request status')
+  if (!validate(objects, [...visibleCollection('policy'), request]).length)
+    errors.push('validator sentinel missed request leaking into policy catalogue')
 }
-
 if (errors.length) {
-  for (const error of errors) console.error(`SEMANTIC_CONTRACT_VIOLATION: ${error}`)
+  for (const err of errors) console.error('SEMANTIC_CONTRACT_VIOLATION: ' + err)
   process.exitCode = 1
 } else {
-  console.log(`SEMANTIC_CONTRACT_PASS: ${Object.keys(contract.statusDomains).length} status domains, policy catalogue, denial provenance, two mutation sentinels`)
+  console.log('SEMANTIC_CONTRACT_PASS: ' + Object.keys(enforced.statusDomains).length +
+    ' kinds, ' + sections.length + ' top-level sections, routes, denied provenance, 2 validator sentinels')
 }

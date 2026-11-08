@@ -1,60 +1,155 @@
 {
-  "schemaVersion": 1,
-  "scope": "UX-0 read-only fictional prototype; presentation semantics only, not the NAPMS domain schema",
-  "catalogues": {
-    "policy": {
-      "allowedKinds": [
-        "PolicyRule"
+  "schemaVersion": 2,
+  "scope": "UX-0 fictional fixture and its browser presentation only; not a universal NAPMS UI or API validator",
+  "enforced": {
+    "statusDomains": {
+      "Resource": {
+        "label": "Наличие данных",
+        "values": [
+          "Known"
+        ]
+      },
+      "Endpoint": {
+        "label": "Наличие данных",
+        "values": [
+          "Known"
+        ]
+      },
+      "Application": {
+        "label": null,
+        "values": []
+      },
+      "Interaction": {
+        "label": "Актуальность",
+        "values": [
+          "Current"
+        ]
+      },
+      "InteractionRevision": {
+        "label": null,
+        "values": []
+      },
+      "ComponentDeployment": {
+        "label": "Состояние размещения",
+        "values": [
+          "Active"
+        ]
+      },
+      "BusinessProcess": {
+        "label": "Актуальность",
+        "values": [
+          "Current"
+        ]
+      },
+      "ConnectivityNeed": {
+        "label": "Актуальность",
+        "values": [
+          "Current"
+        ]
+      },
+      "AccessRequest": {
+        "label": "Статус заявки",
+        "values": [
+          "PENDING",
+          "ALLOWED",
+          "DENIED"
+        ]
+      },
+      "PolicyRule": {
+        "label": "Состояние правила",
+        "values": [
+          "Active",
+          "Inactive"
+        ]
+      },
+      "TechnicalAccessEvidenceSet": {
+        "label": "Происхождение данных",
+        "values": [
+          "MOCK"
+        ]
+      },
+      "TechnicalAccessEntry": {
+        "label": "Интерпретация записи",
+        "values": [
+          "Normalized (MOCK)"
+        ]
+      },
+      "NST": {
+        "label": "Определённость кандидата",
+        "values": [
+          "Candidate",
+          "Unknown"
+        ]
+      },
+      "TargetRequiredPolicy": {
+        "label": "Происхождение проекции",
+        "values": [
+          "MOCK"
+        ]
+      },
+      "ConfiguredEffectivePolicySnapshot": {
+        "label": "Полнота интерпретации",
+        "values": [
+          "Complete (MOCK)",
+          "Unknown"
+        ]
+      },
+      "Reconciliation": {
+        "label": "Результат сопоставления",
+        "values": [
+          "Drift",
+          "Uncomparable"
+        ]
+      }
+    },
+    "catalogues": {
+      "policy": {
+        "allowedKinds": [
+          "PolicyRule"
+        ]
+      }
+    },
+    "routes": {
+      "AccessRequest": "/prototype/requests/",
+      "PolicyRule": "/prototype/policy/"
+    },
+    "deniedRequest": {
+      "mustHaveExplicitNullPolicyRuleId": true,
+      "mustHaveNoPolicyRuleLink": true
+    },
+    "coverage": {
+      "topLevelSectionIds": [
+        "overview",
+        "resources",
+        "applications",
+        "deployments",
+        "needs",
+        "policy",
+        "network",
+        "comparison"
       ],
-      "purpose": "Declared permit rules only; AccessRequest is provenance, never a policy rule"
+      "browserSuites": [
+        "web/e2e/prototype.spec.ts",
+        "web/e2e/semantic-contract.spec.ts"
+      ]
     }
   },
-  "statusDomains": {
-    "AccessRequest": {
-      "label": "Статус заявки",
-      "values": [
-        "PENDING",
-        "ALLOWED",
-        "DENIED"
-      ]
-    },
-    "PolicyRule": {
-      "label": "Состояние правила",
-      "values": [
-        "Active",
-        "Inactive"
-      ]
-    },
-    "Reconciliation": {
-      "label": "Результат сопоставления",
-      "values": [
-        "Drift",
-        "Uncomparable"
-      ]
-    },
-    "Application": {
-      "label": null,
-      "values": []
-    },
-    "InteractionRevision": {
-      "label": null,
-      "values": []
-    }
-  },
-  "distinctions": [
-    "ALLOWED/DENIED describe a request decision, not technical permit/deny",
-    "PolicyRule.Active describes rule lifecycle, not AccessRequest.ALLOWED",
-    "Read-only describes prototype UI mode, never Application lifecycle",
-    "Immutable describes revision parameter integrity, never revision lifecycle",
-    "Unknown/Uncomparable must not be interpreted as success"
-  ],
-  "authority": [
-    "openspec/specs/access-requests/spec.md",
-    "openspec/specs/access-requests-web-ui/spec.md",
-    "openspec/changes/ux-0-prototype/specs/ux-research-prototype/spec.md"
-  ],
-  "routes": {
-    "AccessRequest": "/prototype/requests/",
-    "PolicyRule": "/prototype/policy/"
+  "documentationOnly": {
+    "distinctions": [
+      "ALLOWED is not PolicyRule.Active or NST technical PERMIT",
+      "DENIED is not NST DENY or revocation",
+      "Read-only is prototype UI mode, not Application lifecycle",
+      "Immutable is an InteractionRevision invariant, not lifecycle",
+      "Unknown/Uncomparable must not be represented as success"
+    ],
+    "authority": [
+      "openspec/specs/access-requests/spec.md",
+      "openspec/specs/access-requests-web-ui/spec.md",
+      "openspec/changes/ux-0-prototype/specs/ux-research-prototype/spec.md"
+    ],
+    "excluded": [
+      "real /access-requests backend UI has separate E2E",
+      "future UI collections require a new normative mapping and browser tests"
+    ]
   }
 }

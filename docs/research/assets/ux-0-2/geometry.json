@@ -1,0 +1,46 @@
+[
+  {
+    "name": "resources-1920",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "sidebar": 264,
+    "workspace": 1650,
+    "pageWidth": 1920,
+    "mainWidth": 1650
+  },
+  {
+    "name": "resource-overview-1920",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "sidebar": 264,
+    "workspace": 1650,
+    "pageWidth": 1920,
+    "mainWidth": 1650
+  },
+  {
+    "name": "resource-endpoints-1440",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "sidebar": 264,
+    "workspace": 1170,
+    "pageWidth": 1440,
+    "mainWidth": 1170
+  },
+  {
+    "name": "resource-mobile-390",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "sidebar": 390,
+    "workspace": 390,
+    "pageWidth": 390,
+    "mainWidth": 390
+  }
+]

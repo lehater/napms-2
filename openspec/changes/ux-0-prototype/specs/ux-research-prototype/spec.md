@@ -64,8 +64,8 @@ The prototype SHALL label request statuses PENDING/ALLOWED/DENIED, rule states A
 - **WHEN** the user examines an ALLOWED or DENIED request, an Active rule, a Reconciliation result, Application or InteractionRevision
 - **THEN** status captions identify the relevant category, and UI read-only/immutable indicators are never shown as object status
 
-### Requirement: Automatic semantic contract gate
-Every PR SHALL execute a blocking fixture/domain semantic contract check and browser rendering regression checks in GitHub Actions. The check SHALL report the entity, expected type/state and violation. Failures SHALL be triaged through SDLC-04 rather than silently modifying Harness.
+### Requirement: Automatic UX-0 semantic contract gate
+Every PR SHALL execute blocking UX-0 fixture/domain semantic contract and browser rendering regression checks in GitHub Actions. For each existing Kind the contract SHALL explicitly define a typed status category or no-status decision, and new Kind or top-level sections SHALL require an updated contract and browser coverage before merge. These checks SHALL NOT be claimed as universal validation of other UI screens or the real API. Failures SHALL report the entity, expected type/state and violation and be triaged through SDLC-04 without automatic Harness changes.
 
 #### Scenario: Introduce a semantic regression
 - **WHEN** an AccessRequest is added to the PolicyRule catalogue or assigned a PolicyRule lifecycle status
