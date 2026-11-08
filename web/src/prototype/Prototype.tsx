@@ -71,7 +71,7 @@ export default function Prototype() {
   const { section = 'overview', objectId } = useParams()
   // Nested mock request workspace, not a ninth top-level sidebar section.
   const current = section === 'requests'
-    ? { id: 'requests', group: 'Бизнес и доступ', title: 'Заявки (MOCK)', description: 'Заявки на доступ и их решения, отдельно от PolicyRule.' }
+    ? { id: 'requests' as const, group: 'Бизнес и доступ', title: 'Заявки (MOCK)', description: 'Заявки на доступ и их решения, отдельно от PolicyRule.' }
     : sections.find(item => item.id === section)
   const object = objectId ? byId.get(objectId) : undefined
   const found = current && (!objectId || object?.section === current.id)
