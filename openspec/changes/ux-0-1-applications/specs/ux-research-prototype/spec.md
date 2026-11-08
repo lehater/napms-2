@@ -24,3 +24,17 @@ The sidebar SHALL use short consistent English labels, logical groups, a slightl
 #### Scenario: Browse at limited width
 - **WHEN** a user browses Applications and its cards in a narrow window
 - **THEN** the active section remains clear, content reflows or tables scroll locally, and persistent/computed semantics remain available in details
+
+### Requirement: Baseline fluid research shell
+The research prototype SHALL use the approved UI Baseline v0.1 fluid layout without a global workspace width limit, a dark sidebar initially 264px wide and adjustable from 200px to 360px using pointer and keyboard. Only the numeric sidebar preference MAY be persisted in localStorage. Eight sections, mock/API separation and narrow navigation SHALL remain usable without page overflow.
+
+#### Scenario: Resize and reload
+- **WHEN** a user adjusts the desktop sidebar and reloads
+- **THEN** its width is restored within bounds and the workspace fills remaining width at 1440, 1920 and 2560px
+
+### Requirement: Resource collection and contextual detail
+Resources SHALL list existing Resource fixture objects with subject-specific columns, working search, filters and pagination. Resource detail SHALL provide Overview, Endpoints, Deployments and History with direct tab URLs, breadcrumbs and Back. Nested collections SHALL share the table pattern and distinguish children, relations and interval history without invented facts. Existing application and real request scenarios SHALL remain functional.
+
+#### Scenario: Browse a resource
+- **WHEN** a user filters/pages Resources, opens a Resource, navigates its subject tabs and related objects, and returns
+- **THEN** the list context is retained, only fixture facts are displayed, and no research fetch/XHR or credentials/domain-data storage occurs

@@ -92,7 +92,7 @@ test('all eight sections, filtering and every object relation work without API r
   for (const section of sections) {
     await page.getByRole('navigation', { name: 'Prototype navigation', exact: true }).getByRole('link', { name: section.title, exact: true }).click()
     await expect(page.getByRole('heading', { name: section.title, exact: true })).toBeVisible()
-    await expect(page.getByText('MOCK / FICTIONAL NETWORK DATA', { exact: true })).toBeVisible()
+    await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
   }
   await page.goto('/prototype/resources')
   await page.getByLabel('Поиск объектов').fill('192.0.2.10')
@@ -105,20 +105,32 @@ test('all eight sections, filtering and every object relation work without API r
     await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
     await page.getByText('О данных', { exact: true }).click()
     await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText(natureLabel[dataNature[object.kind]])
-    const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link')
-    await expect(links).toHaveCount(object.links.length)
-    for (let index = 0; index < object.links.length; index++) {
-      await expect(links.nth(index)).toHaveAttribute('href', objectPath(byId.get(object.links[index].id)!))
+    if (object.kind === 'Resource') {
+      for (const [tab, kind] of [['Endpoints', 'Endpoint'], ['Deployments', 'ComponentDeployment']] as const) {
+        await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: new RegExp(tab) }).click()
+        const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('table').getByRole('link')
+        const targets = object.links.map(link => byId.get(link.id)!).filter(target => target.kind === kind)
+        await expect(links).toHaveCount(targets.length)
+        for (let index = 0; index < targets.length; index++) await expect(links.nth(index)).toHaveAttribute('href', objectPath(targets[index]))
+      }
+    } else {
+      const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link')
+      await expect(links).toHaveCount(object.links.length)
+      for (let index = 0; index < object.links.length; index++) await expect(links.nth(index)).toHaveAttribute('href', objectPath(byId.get(object.links[index].id)!))
     }
   }
   expect(apiRequests).toEqual([])
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveCount(0)
-  expect(await page.evaluate(() => [Object.keys(localStorage), Object.keys(sessionStorage), document.cookie])).toEqual([[], [], ''])
+  expect(await page.evaluate(() => ({
+    local: Object.entries(localStorage).filter(([key]) => key !== 'napms.prototype.sidebarWidth'),
+    validWidth: localStorage.getItem('napms.prototype.sidebarWidth') === null || /^(2\d\d|3[0-5]\d|360)$/.test(localStorage.getItem('napms.prototype.sidebarWidth')!), session: Object.keys(sessionStorage), cookie: document.cookie,
+  }))).toEqual({ local: [], validWidth: true, session: [], cookie: '' })
 })
 
 test('linked chain supports reload, browser back, unknown evidence and real-route boundary', async ({ page }) => {
   const chain = ['mock-resource-order', 'mock-deployment-order', 'mock-interaction-ledger', 'mock-need', 'mock-request-allowed', 'mock-rule', 'mock-required', 'mock-configured', 'mock-evidence-set-f2', 'mock-evidence-entry-f2', 'mock-configured', 'mock-drift']
   await page.goto(objectPath(byId.get(chain[0])!))
+  await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: /Deployments/ }).click()
   for (const id of chain.slice(1)) {
     const target = byId.get(id)!
     await page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link', { name: target.name + ' →', exact: true }).click()
@@ -242,4 +254,131 @@ test('Application Detail prioritizes communication above metadata without implyi
     await card.getByText('О данных', { exact: true }).click()
     await expect(card).toContainText(natureLabel.persistent)
   }
+})
+
+for (const [width, height] of [[1440, 900], [1920, 1080], [2560, 1440]]) {
+  test(`baseline fluid geometry and sidebar bounds at ${width}×${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto('/prototype/resources')
+    const separator = page.getByRole('separator', { name: 'Sidebar width' })
+    const measure = () => page.evaluate(() => ({
+      sidebar: document.querySelector('.ux-sidebar')!.getBoundingClientRect().width,
+      work: document.querySelector('.ux-workspace')!.getBoundingClientRect().width,
+      main: document.querySelector('main')!.getBoundingClientRect().width,
+      page: document.documentElement.scrollWidth,
+    }))
+    await expect(separator).toHaveAttribute('aria-valuenow', '264')
+    expect(await measure()).toEqual({ sidebar: 264, work: width - 270, main: width - 270, page: width })
+    await separator.focus()
+    for (const [key, expected] of [['Home', 200], ['ArrowLeft', 200], ['End', 360], ['ArrowRight', 360], ['ArrowLeft', 350], ['Shift+ArrowLeft', 300]] as const) {
+      await separator.press(key)
+      await expect(separator).toHaveAttribute('aria-valuenow', String(expected))
+      expect(await measure()).toEqual({ sidebar: expected, work: width - expected - 6, main: width - expected - 6, page: width })
+    }
+    const bounds = await separator.boundingBox()
+    await page.mouse.move(bounds!.x + 3, 300)
+    await page.mouse.down()
+    await page.mouse.move(330, 300)
+    await page.mouse.up()
+    await expect(separator).toHaveAttribute('aria-valuenow', '330')
+    await page.reload()
+    await expect(separator).toHaveAttribute('aria-valuenow', '330')
+    expect(await page.evaluate(() => Object.entries(localStorage))).toEqual([['napms.prototype.sidebarWidth', '330']])
+    for (const tab of ['overview', 'endpoints', 'deployments', 'history']) {
+      await page.goto('/prototype/resources/mock-resource-order?tab=' + tab)
+      expect((await measure()).main).toBe(width - 336)
+      expect((await measure()).page).toBe(width)
+      await expect(page.getByRole('navigation', { name: 'Resource tabs' })).toBeVisible()
+    }
+    await page.goto('/prototype/applications/mock-application')
+    expect((await measure()).main).toBe(width - 336)
+    expect((await measure()).page).toBe(width)
+  })
+}
+
+test('Resources collection filtering, pagination, tabs, direct URLs and return retain context', async ({ page }) => {
+  const requests: string[] = []
+  page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })
+  await page.goto('/prototype/resources')
+  const table = page.getByRole('table')
+  await expect(table.getByRole('columnheader')).toHaveText(['Resource', 'Scope', 'Текущий адрес / тип', 'Площадка', 'Ответственность'])
+  await expect(table.getByRole('row')).toHaveCount(3)
+  await expect(table).not.toContainText('Endpoint ·')
+  await page.getByLabel('Scope', { exact: true }).selectOption('orders-prod')
+  await expect(table.getByRole('row')).toHaveCount(2)
+  await expect(table).toContainText('order-api-01')
+  await page.getByLabel('Площадка', { exact: true }).selectOption('DC-2')
+  await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
+  await page.getByLabel('Scope', { exact: true }).selectOption('')
+  await expect(table).toContainText('ledger-api-01')
+  await page.getByLabel('Площадка', { exact: true }).selectOption('')
+  await page.getByLabel('Поиск объектов').fill('192.0.2.10')
+  await expect(table.getByRole('row')).toHaveCount(2)
+  await expect(table).toContainText('order-api-01')
+  await page.getByLabel('Поиск объектов').fill('')
+  await page.getByLabel('Строк на странице').selectOption('1')
+  await expect(table.getByRole('row')).toHaveCount(2)
+  await page.getByRole('button', { name: 'Следующая страница' }).click()
+  await expect(table).toContainText('ledger-api-01')
+  const listUrl = page.url()
+  await page.getByRole('link', { name: 'ledger-api-01', exact: true }).click()
+  const tabs = page.getByRole('navigation', { name: 'Resource tabs' })
+  await expect(tabs.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('192.0.2.20')
+  await expect(page.getByRole('region', { name: 'Связанные объекты' })).toHaveCount(0)
+  await tabs.getByRole('link', { name: /Endpoints/ }).click()
+  const endpointUrl = page.url()
+  await page.reload()
+  await expect(tabs.getByRole('link', { name: /Endpoints/ })).toHaveAttribute('aria-current', 'page')
+  await page.getByRole('table').getByRole('link', { name: 'Endpoint · ledger-api-01 →', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Endpoint · ledger-api-01', exact: true })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Breadcrumbs' })).toContainText('ledger-api-01')
+  await page.goBack()
+  await expect(page).toHaveURL(endpointUrl)
+  await tabs.getByRole('link', { name: /Deployments/ }).click()
+  await page.getByRole('table').getByRole('link', { name: 'dep-ledger-1 →' }).click()
+  await expect(page.getByRole('heading', { name: 'dep-ledger-1', exact: true })).toBeVisible()
+  await page.goBack()
+  await tabs.getByRole('link', { name: /History/ }).click()
+  await expect(page.getByText(/Предыдущие значения, авторы/)).toBeVisible()
+  await page.getByLabel('Тип факта').selectOption('Ответственность')
+  await expect(page.getByRole('table')).toContainText('OWNER Finance')
+  await expect(page.getByRole('table')).toContainText('[2026-11-01T00:00:00Z, ∞)')
+  await page.getByRole('link', { name: '← К списку Resources' }).click()
+  await expect(page).toHaveURL(listUrl)
+  await expect(page.getByRole('table')).toContainText('ledger-api-01')
+  await expect(page.getByLabel('Строк на странице')).toHaveValue('1')
+  await page.getByRole('button', { name: 'Предыдущая страница' }).click()
+  await expect(page.getByRole('table')).toContainText('order-api-01')
+  // Changing a filter on a later page resets pagination.
+  await page.getByRole('button', { name: 'Следующая страница' }).click()
+  await page.getByLabel('Scope', { exact: true }).selectOption('orders-prod')
+  await expect(page.getByRole('table')).toContainText('order-api-01')
+  await expect(page.getByRole('button', { name: 'Следующая страница' })).toBeDisabled()
+  expect(requests).toEqual([])
+})
+
+test('Resource slice stays usable at 390px and rejects invalid width preferences', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('napms.prototype.sidebarWidth', 'not-a-width'))
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/prototype/resources')
+  const nav = page.getByRole('navigation', { name: 'Prototype navigation', exact: true })
+  await expect(nav.getByRole('link')).toHaveCount(8)
+  await expect(nav.getByRole('link', { name: 'Resources', exact: true })).toBeVisible()
+  await page.getByRole('table').getByRole('link', { name: 'order-api-01', exact: true }).click()
+  for (const name of ['Overview', 'Endpoints', 'Deployments', 'History']) {
+    await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: new RegExp(name) }).click()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+    if (name !== 'Overview') {
+      await expect(page.getByRole('table')).toBeVisible()
+      await page.getByLabel('Поиск объектов').fill('no-such-object')
+      await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
+    }
+  }
+  await page.getByRole('link', { name: '← К списку Resources' }).click()
+  await expect(page.getByRole('heading', { name: 'Resources', exact: true })).toBeVisible()
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await expect(page.getByRole('separator', { name: 'Sidebar width' })).toHaveAttribute('aria-valuenow', '264')
+  await page.getByRole('separator', { name: 'Sidebar width' }).press('ArrowRight')
+  expect(await page.evaluate(() => [Object.entries(localStorage), Object.keys(sessionStorage), document.cookie])).toEqual([[['napms.prototype.sidebarWidth', '274']], [], ''])
 })

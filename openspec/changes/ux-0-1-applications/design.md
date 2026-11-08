@@ -22,3 +22,11 @@ See proposal.md. The current generic table flattens three ACC kinds; all links a
 - Hidden parent context from direct URL → derive breadcrumbs from existing graph.
 - Nature detail overlooked → clearly labeled disclosure available on every card.
 - Research roles mistaken for installations → explicitly describe reusable communication profile and participant roles.
+
+## UX-0.2 decisions
+
+UI Baseline v0.1 reference.html supersedes the Application 1200px constraint. Use full-height fluid workspace, dark 264px sidebar with pointer/keyboard range 200–360px, and persist only its numeric width preference. Narrow screens use grouped navigation above content; resizing is desktop-only.
+
+Resources list only the two existing Resource objects. Columns use name, scope, current address from history, site history and responsibility history. Search and scope/site filters operate on fixture values; page size 1 or 2 makes pagination verifiable without adding rows. URL query parameters preserve list selection across detail and breadcrumb return.
+
+Resource detail uses URL-addressable Overview, Endpoints, Deployments and History navigation. Endpoints are structural children, Deployments independent related placements, History contains existing address/site/responsibility interval facts only, not an event log. Nested collections share the same native table/search/filter/pagination presentation. Missing history and single-endpoint fixture limits are explicit. Preserve all fixture links on their applicable tabs and all original direct object URLs.

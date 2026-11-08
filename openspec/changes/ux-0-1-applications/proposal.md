@@ -24,3 +24,7 @@ None of the accepted product specs change.
 ## Impact
 
 Prototype presentation, fixture display properties, browser checks and research walkthrough only. No backend/API/SQLite, dependencies, new object identities or persistent relations.
+
+## UX-0.2 baseline implementation
+
+Continue this Draft PR with the approved UI Baseline v0.1: fluid shell, dark resizable sidebar and a bounded Resources collection/detail slice. Existing application semantics remain. Only research presentation requirements change; fixture, product specifications, backend and real API remain unchanged. Other detail compositions and Reconciliation Diff Viewer are deferred.

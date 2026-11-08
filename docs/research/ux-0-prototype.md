@@ -18,7 +18,7 @@ npm run dev
 
 1. Обзор: раздельные карточки декларированного разрешения, Drift и Uncomparable.
 2. Ресурсы: поиск по `192.0.2.10` → `order-api-01` → `dep-order-1`.
-3. В карточках следуйте `Interaction` → `need-001` → `Q1` → `P1` → `Required` → `Configured`. В Q1 отдельно откройте точную `InteractionRevision`; Need связан с Interaction и участником OrderClient, не с revision.
+3. В Resource откройте вкладку Deployments и размещение, затем следуйте `Interaction` → `need-001` → `Q1` → `P1` → `Required` → `Configured`. В Q1 отдельно откройте точную `InteractionRevision`; Need связан с Interaction и участником OrderClient, не с revision.
    В Configured откройте `TAE capture F2` → `TAE entry F2 / 1`, затем вернитесь через вычисленную интерпретацию в Configured → Reconciliation.
 4. В карточке Need откройте BusinessProcess Settlement и отдельные заявки Q1 ALLOWED/Q2 DENIED. У Q2 нет Rule; P1 остаётся Active.
 5. Сравнение ACL-APP: missing TCP/443, excess TCP/8443, common 0, Drift. У ACL-CORE нет capture и target adaptation: Unknown/Uncomparable.
@@ -45,7 +45,7 @@ RC показывает текущий адрес как чтение EndpointAd
 
 Существующие NST-карточки показывают вычисляемый FirewallCandidate, а не сохраняемый Firewall NEP. CurrentRoutingState означает последнее успешное состояние маршрутизации, EffectiveReachabilitySegment — сохраняемую перестраиваемую проекцию; они не реализованы и не имитируются в UX-0. Placement остаётся недоказанным. TAE и NEP независимы; NEO не входит в прототип.
 
-Приложение прототипа не получает API-клиент и credentials, не обращается к SQLite, ничего не сохраняет. Переход из реального UI в прототип размонтирует credential-owning App; при возврате token вводится заново. Нет новых API, сетевых операций, отзыва доступа, автоматической смены revision или имитации выполненного исправления. Настроенные permits и эквивалентность NST — только фиктивное допущение. Candidate placement не доказывает маршрут или доставку. Отсутствующий capture не интерпретируется как пустая политика.
+Приложение прототипа не получает API-клиент и credentials, не обращается к SQLite, не сохраняет credentials и предметные данные. Единственное browser preference UX-0.2 — числовая ширина Sidebar (`napms.prototype.sidebarWidth`). Переход из реального UI в прототип размонтирует credential-owning App; при возврате token вводится заново. Нет новых API, сетевых операций, отзыва доступа, автоматической смены revision или имитации выполненного исправления. Настроенные permits и эквивалентность NST — только фиктивное допущение. Candidate placement не доказывает маршрут или доставку. Отсутствующий capture не интерпретируется как пустая политика.
 
 ## Проверки
 
@@ -64,3 +64,7 @@ RC показывает текущий адрес как чтение EndpointAd
 Первая компоновка экрана (2026-11-08) сохранена в [UI Baseline v0.1](ui-baseline-v0.1/README.md). В том же каталоге находится [автономный интерактивный HTML-референс](ui-baseline-v0.1/reference.html).
 
 Baseline фиксирует визуальную основу для следующей mock-итерации: полноэкранный Fluid Layout, Sidebar с регулируемой шириной, Collection View и Object Detail с отдельными предметными вкладками для подчинённых и связанных коллекций. Он не изменяет доменную модель, контракт API, продуктовые требования или принятую навигационную архитектуру.
+
+## UX-0.2 — реализация согласованного baseline
+
+[Walkthrough, таблица Baseline → реализовано → отложено, проверки и четыре review-скриншота](ux-0-2-baseline.md). Общий Shell теперь fluid без глобального max-width, с тёмным регулируемым Sidebar. Resources показывает только Resource; Endpoint и Deployment доступны на предметных вкладках Detail. History содержит существующие интервальные факты fixture. Остальные внутренние Detail сохранены до review. Исторические кадры UX-0.1 выше показывают предыдущую композицию; текущие кадры находятся в UX-0.2.

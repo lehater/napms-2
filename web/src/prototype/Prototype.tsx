@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Link, NavLink, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Shell } from './Shell'
+import { Resources, ResourceDetail, resourceListPath } from './Resources'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { byId, dataNature, evaluatedAt, natureLabel, objectPath, objects, sections, type MockObject } from './data'
@@ -23,6 +25,7 @@ function linkedObjects(object: MockObject, kind: MockObject['kind']) {
 
 // Presentation context from existing fixture links, not new persistent relationships.
 function applicationParents(object: MockObject): MockObject[] {
+  if (object.kind === 'Endpoint' || object.kind === 'ComponentDeployment') return linkedObjects(object, 'Resource')
   if (object.kind === 'InteractionRevision') {
     const interaction = linkedObjects(object, 'Interaction')[0]
     return interaction ? [...applicationParents(interaction), interaction] : []
@@ -120,28 +123,17 @@ function Overview() {
 
 export default function Prototype() {
   const { section = 'overview', objectId } = useParams()
+  const [params] = useSearchParams()
   const current = sections.find(item => item.id === section)
   const object = objectId ? byId.get(objectId) : undefined
   const found = current && (!objectId || object?.section === current.id)
   const applicationDetail = object?.kind === 'Application'
-  return <div className="min-h-screen bg-slate-50 text-slate-950">
-    <header className="border-b bg-slate-950 text-white"><div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 lg:px-8"><Link to="/prototype" className="text-xl font-semibold tracking-tight text-white">NAPMS <span className="ml-2 text-sm font-normal text-slate-300">2.0 / UX-0</span></Link><span className="text-xs text-slate-300">Исследовательский прототип · read-only</span></div></header>
-    <div className="grid lg:min-h-[calc(100vh-61px)] lg:grid-cols-[220px_1fr]">
-      <aside className="border-b bg-slate-100 px-4 py-5 lg:border-r">
-        <nav aria-label="Prototype navigation" className="grid grid-cols-2 gap-5 sm:grid-cols-4 lg:block lg:space-y-5">
-          {Array.from(new Set(sections.map(item => item.group))).map(group => <div className="min-w-0" key={group}><p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{group}</p><ul className="space-y-1">{sections.filter(item => item.group === group).map(item => <li key={item.id}><NavLink end={item.id === 'overview'} to={item.id === 'overview' ? '/prototype' : `/prototype/${item.id}`} className={({ isActive }) => `block rounded-md border-l-2 px-3 py-2 text-sm ${isActive ? 'border-sky-600 bg-sky-100 font-semibold text-sky-950' : 'border-transparent text-slate-600 hover:bg-slate-200'}`}>{item.title}</NavLink></li>)}</ul></div>)}
-        </nav>
-        <nav aria-label="Real API navigation" className="mt-6 space-y-2 rounded-lg border border-slate-300 border-t-4 border-t-slate-600 bg-white p-3 text-sm"><p className="text-xs font-semibold uppercase tracking-wider text-slate-800">REAL API</p><Link className="block py-1" to="/access-requests">Заявки →</Link><Link className="block py-1" to="/access-requests/new">Новая заявка →</Link><p className="text-xs text-slate-600">Отдельные данные и credentials. Mock-объекты не переносятся.</p></nav>
-      </aside>
-      <main className={applicationDetail ? 'mx-auto w-full min-w-0 max-w-[1200px] space-y-4 p-4 sm:p-6' : 'min-w-0 space-y-6 p-5 lg:p-8'}>
-        {applicationDetail ? <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950"><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · read-only · без API и сетевых операций</span></div> : <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"><strong>MOCK / FICTIONAL NETWORK DATA</strong><p>Только выдуманные данные. API, SQLite и credentials не используются. Сетевые операции не выполняются. IA и будущие возможности — UX-гипотезы.</p></div>}
-        <nav aria-label="Breadcrumbs" className="flex flex-wrap gap-2 text-sm text-slate-500"><Link to="/prototype">UX-0</Link><span>/</span>{current && <Link to={current.id === 'overview' ? '/prototype' : `/prototype/${current.id}`}>{current.title}</Link>}{object && <>{applicationParents(object).map(parent => <span className="contents" key={parent.id}><span>/</span><Link to={objectPath(parent)}>{parent.name}</Link></span>)}<span>/</span><span aria-current="page">{object.name}</span></>}</nav>
+  return <Shell>
+        <nav aria-label="Breadcrumbs" className="flex flex-wrap gap-2 text-sm text-slate-500"><Link to="/prototype">UX-0</Link><span>/</span>{current && <Link to={current.id === 'overview' ? '/prototype' : current.id === 'resources' ? resourceListPath(params) : `/prototype/${current.id}`}>{current.title}</Link>}{object && <>{applicationParents(object).map(parent => <span className="contents" key={parent.id}><span>/</span><Link to={objectPath(parent)}>{parent.name}</Link></span>)}<span>/</span><span aria-current="page">{object.name}</span></>}</nav>
         {!found ? <section className="panel space-y-3"><h1>Объект не найден</h1><p>В фиктивном наборе нет такой ссылки.</p><Link to="/prototype">Вернуться к обзору</Link></section> : <>
-          <div><p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">{applicationDetail ? 'Application · communication profile' : 'UX-0 / ' + current.group}</p><h1>{object?.name ?? current.title}</h1><p className="mt-2 max-w-4xl text-sm text-slate-600">{applicationDetail ? object.summary : current.description}</p></div>
-          {object ? <ObjectCard object={object} /> : current.id === 'overview' ? <Overview /> : <ObjectTable key={current.id} rows={objects.filter(item => item.section === current.id && (current.id !== 'applications' || item.kind === 'Application'))} />}
+          <div className="ux-heading"><p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">{applicationDetail ? 'Application · communication profile' : object?.kind === 'Resource' ? 'Resource · Object Detail' : current.id === 'resources' && !object ? 'Resources · Collection View' : 'UX-0 / ' + current.group}</p><h1>{object?.name ?? current.title}</h1><p className="mt-2 max-w-4xl text-sm text-slate-600">{object?.kind === 'Resource' || applicationDetail ? object.summary : current.description}</p></div>
+          {object?.kind === 'Resource' ? <ResourceDetail object={object} /> : object ? <div className="ux-legacy"><ObjectCard object={object} /></div> : current.id === 'resources' ? <Resources /> : current.id === 'overview' ? <div className="ux-legacy"><Overview /></div> : <ObjectTable key={current.id} rows={objects.filter(item => item.section === current.id && (current.id !== 'applications' || item.kind === 'Application'))} />}
         </>}
         <footer className="border-t pt-4 text-xs text-slate-500">Фиксированная оценка: {evaluatedAt} · Не live-статус · Источник: единый UX-0 fixture</footer>
-      </main>
-    </div>
-  </div>
+  </Shell>
 }
