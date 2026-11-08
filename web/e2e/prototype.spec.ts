@@ -183,7 +183,7 @@ test('Applications presents profile → interaction → revision with parent con
     await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('OrderClient')
     await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('LedgerApi')
     await expect(page.getByRole('region', { name: 'Карточка объекта' })).not.toContainText('Read-only')
-    await page.getByRole('region', { name: 'Interactions', exact: true }).getByRole('link', { name: interaction.name + ' →', exact: true }).click()
+    await page.getByRole('region', { name: 'Interactions', exact: true }).getByRole('link', { name: 'Interaction details', exact: true }).click()
     const communication = page.getByRole('region', { name: 'Communication', exact: true })
     await expect(communication).toContainText('OrderClient')
     await expect(communication).toContainText('LedgerApi')
@@ -207,4 +207,39 @@ test('Applications presents profile → interaction → revision with parent con
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   }
   expect(requests).toEqual([])
+})
+
+test('Application Detail prioritizes communication above metadata without implying L7', async ({ page }) => {
+  const application = byId.get('mock-application')!
+  const revision = byId.get('mock-revision')!
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(objectPath(application))
+    await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
+    const interactions = page.getByRole('region', { name: 'Interactions', exact: true })
+    const components = interactions.getByRole('region', { name: 'Components', exact: true })
+    const purpose = interactions.getByLabel('Назначение коммуникации', { exact: true })
+    await expect(components).toContainText('OrderClient')
+    await expect(components).toContainText('LedgerApi')
+    await expect(interactions.getByLabel('Направление коммуникации')).toHaveText('→')
+    await expect(purpose).toHaveText('Назначение: Запись проводки')
+    await expect(interactions).toContainText('TCP/443 не подтверждает HTTPS')
+    await expect(interactions).toContainText(revision.fields.traffic)
+    await expect(interactions.getByRole('link', { name: /Revision ·/ })).toHaveAttribute('href', objectPath(revision))
+    // Navigation labels are separate from the communication direction.
+    for (const link of await interactions.getByRole('link').all()) await expect(link).not.toContainText('→')
+    if (width === 1440) {
+      await expect(page.getByRole('heading', { name: application.name, exact: true })).toBeInViewport({ ratio: 1 })
+      await expect(components).toBeInViewport({ ratio: 1 })
+      await expect(purpose).toBeInViewport({ ratio: 1 })
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    const card = page.getByRole('region', { name: 'Карточка объекта' })
+    await expect(card.getByText(application.id, { exact: true })).not.toBeVisible()
+    await card.getByText('Application · технические свойства', { exact: true }).click()
+    await expect(card.getByText(application.id, { exact: true })).toBeVisible()
+    await card.getByText('О данных', { exact: true }).click()
+    await expect(card).toContainText(natureLabel.persistent)
+  }
 })
