@@ -24,7 +24,8 @@ test('semantic contract: request outcomes are separate and retain provenance lin
   let card = page.getByRole('region', { name: 'Карточка объекта' })
   await expect(card.getByRole('status', { name: contract.statusDomains.AccessRequest.label! })).toContainText('ALLOWED')
   await expect(card.getByRole('status', { name: contract.statusDomains.PolicyRule.label! })).toHaveCount(0)
-  await page.goto('/prototype/policy/mock-request-denied')
+  await page.goto('/prototype/policy/mock-request-denied') // legacy bookmark
+  await expect(page).toHaveURL(/\\/prototype\\/requests\\/mock-request-denied$/)
   card = page.getByRole('region', { name: 'Карточка объекта' })
   await expect(card.getByRole('status', { name: contract.statusDomains.AccessRequest.label! })).toContainText('DENIED')
   await expect(card).toContainText('policyRuleId')
