@@ -194,3 +194,9 @@ JSON/CSV parity, отсутствие токенов в выводе. GitHub Act
 Основные модули следуют D1: `http.py`, `use_cases.py`, `domain.py`, `storage.py`, `dev.py`.
 Актуальные спецификации находятся в `openspec/specs/`. Завершённый change с 17/17 задачами
 сохранён в `openspec/changes/archive/2026-11-07-first-access-policy-slice/`.
+
+### Business-to-policy MOCK journey
+
+Run `npm run dev --prefix web` and open http://127.0.0.1:5173/prototype/processes (no backend needed).
+Open Settlement → Потребности → need-001 → Профиль → Order-to-Ledger HTTPS → Коммуникации → OrderClient → LedgerApi → Ревизии → rev-1 → Участники / Ресурс.
+On the Need or revision card, choose the named source/destination deployments and create a MOCK request. The default dep-order-2 → dep-ledger-1 creates a new subject; dep-order-1 reuses the historical subject. Enable «MOCK режим принятия решения», choose ALLOWED, then «Открыть PolicyRule». Object tabs link the subject, authorization provenance and business context. DENIED creates no rule. SPA navigation preserves the simulation; a full page reload resets it. This simulation does not authorize real access or call the API.

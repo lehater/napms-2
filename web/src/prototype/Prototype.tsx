@@ -1,14 +1,19 @@
+import { useSimulation } from './simulation'
+import { SimulationActions } from './SimulationActions'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { Shell } from './Shell'
 import { Resources, ResourceDetail, resourceListPath } from './Resources'
-import { ObjectCollection, ObjectDetail, related } from './Views'
-import { byId, evaluatedAt, objectPath, sections, legacySections, visibleCollection, type MockObject } from './data'
+import { ObjectCollection, ObjectDetail, ObjectIndex, related } from './Views'
+import { evaluatedAt, objectPath, sections, legacySections, type MockObject } from './data'
 function parents(object: MockObject): MockObject[] {
   if (object.kind === 'Endpoint' || object.kind === 'ComponentDeployment') return related(object, 'Resource')
   if (object.kind === 'InteractionRevision') { const interaction = related(object, 'Interaction')[0]; return interaction ? [...parents(interaction), interaction] : [] }
   return object.kind === 'Interaction' ? related(object, 'Application') : []
 }
 export default function Prototype() {
+  const { objects } = useSimulation()
+  const byId = new Map(objects.map(o => [o.id, o]))
+  const visibleCollection = (id: string) => objects.filter(o => { const collection = sections.find(s => s.id === id); return collection ? o.kind === collection.kind : o.section === id })
   const { section = 'overview', objectId } = useParams()
   const [params] = useSearchParams()
   const object = objectId ? byId.get(objectId) : undefined
@@ -17,13 +22,14 @@ export default function Prototype() {
   const found = current && (!objectId || object?.section === section)
   const listParams = new URLSearchParams(params); listParams.delete('tab')
   const listPath = current?.id === 'resources' ? resourceListPath(params) : `/prototype/${current?.id}` + (listParams.size ? '?' + listParams : '')
-  return <Shell section={current?.id}>
+  return <ObjectIndex.Provider value={byId}><Shell section={current?.id}>
     <nav aria-label="Breadcrumbs" className="ux-breadcrumbs"><Link to="/prototype">NAPMS</Link>{current && <><span>/</span><Link to={listPath}>{current.title}</Link></>}{object && <>{parents(object).map(parent => <span className="contents" key={parent.id}><span>/</span><Link to={objectPath(parent)}>{parent.name}</Link></span>)}<span>/</span><span aria-current="page">{object.name}</span></>}</nav>
     {!found ? <section className="ux-panel ux-panel-body"><h1>Объект не найден</h1><p>В фиктивном наборе нет такой ссылки.</p><Link to="/prototype">Вернуться к обзору</Link></section> : <>
       <div className="ux-heading"><p className="ux-eyebrow">{object ? object.kind + ' · Object Detail' : 'Collection View · MOCK'}</p><h1>{object?.name ?? current.title}</h1><p>{object?.summary ?? current.description}</p></div>
+      {object && <SimulationActions key={'simulation-' + object.id} object={object} />}
       {object?.kind === 'Resource' ? <ResourceDetail object={object} /> : object ? <ObjectDetail key={object.id} object={object} /> : current.id === 'resources' ? <Resources /> : current.id === 'overview' ? <section className="ux-panel"><h2>Бизнес-контекст → каталоги → управление доступом</h2><div className="ux-panel-body"><p>Семь предметных коллекций доступны в Sidebar. Все данные синтетические, интерфейс работает без API.</p><Link to="/prototype/processes">Открыть бизнес-процессы →</Link></div></section> : current.id === 'network' ? <div className="ux-tab-content">{[...new Set(visibleCollection(current.id).map(item => item.kind))].map(kind => <ObjectCollection key={kind} title={kind} rows={visibleCollection(current.id).filter(item => item.kind === kind)} />)}</div> : <ObjectCollection key={current.id} remote title={current.id === 'requests' ? 'Заявки на доступ (MOCK)' : current.title} rows={visibleCollection(current.id)} />}
       {current.id === 'policy' && <p className="ux-callout">Экспорт политики — вычисляемый результат GET /policy/export с серверной авторизацией и READY / INCOMPLETE. В MOCK экспорт не выполняется; Effective Policy не является отдельной сущностью.</p>}
     </>}
-    <footer className="ux-note">Фиксированная оценка: {evaluatedAt} · Не live-статус · Источник: единый UX-0 fixture</footer>
-  </Shell>
+    <footer className="ux-note">Фиксированная оценка: {evaluatedAt} · Не live-статус · Источник: единый UX-0 fixture · MOCK Simulation сбрасывается при полной перезагрузке</footer>
+  </Shell></ObjectIndex.Provider>
 }

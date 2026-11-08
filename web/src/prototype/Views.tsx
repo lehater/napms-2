@@ -1,12 +1,15 @@
+import { createContext, useContext } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Collection, type Row, type Column } from './Resources'
 import { byId, objectPath, stateDefinitions, dataNature, natureLabel, type MockObject, type Kind } from './data'
-export const related = (object: MockObject, ...kinds: Kind[]) => object.links.map(link => byId.get(link.id)!).filter(item => kinds.includes(item.kind))
+export const ObjectIndex = createContext(byId)
+export const related = (object: MockObject, ...kinds: Kind[]) => object.links.map(link => byId.get(link.id)).filter((item): item is MockObject => !!item && kinds.includes(item.kind))
+function useRelated() { const index = useContext(ObjectIndex); return (object: MockObject, ...kinds: Kind[]) => object.links.map(l => index.get(l.id)).filter((item): item is MockObject => !!item && kinds.includes(item.kind)) }
 export function ObjectStatus({ object }: { object: MockObject }) {
   const label = stateDefinitions[object.kind].label
   return object.state && label ? <span role="status" aria-label={label} className="ux-state" data-state={object.state}><small>{label}</small>{object.state}</span> : null
 }
-function relationLabel(parent: MockObject | undefined, object: MockObject): string {
+function relationLabel(related: ReturnType<typeof useRelated>, parent: MockObject | undefined, object: MockObject): string {
   if (!parent) return ''
   const direct = parent.links.find(link => link.id === object.id)?.label
   if (direct) return direct
@@ -18,13 +21,14 @@ function relationLabel(parent: MockObject | undefined, object: MockObject): stri
   }
   return ''
 }
-const names = (object: MockObject, ...kinds: Kind[]) => related(object, ...kinds).map(item => item.name).join('\n')
-function values(object: MockObject) {
-  return { name: object.name, summary: object.summary, state: object.state ?? '—', component: object.fields.component ?? '', components: object.fields.components?.split(' → ').join('\n') ?? '', interactions: names(object, 'Interaction'), resource: names(object, 'Resource'), application: names(object, 'Application'), responsible: object.fields.responsible ?? '', needs: names(object, 'ConnectivityNeed'), process: names(object, 'BusinessProcess'), participant: object.fields.participantComponent ?? '', requester: object.fields.requester ?? '', submittedAt: object.fields.submittedAt ?? 'Не указан в fixture', subject: object.fields.subject ?? related(object, 'ComponentDeployment', 'InteractionRevision').map(item => item.name).join('\n'), provenance: object.fields.RuleAuthorizationEvidence ?? '' }
+const names = (related: ReturnType<typeof useRelated>, object: MockObject, ...kinds: Kind[]) => related(object, ...kinds).map(item => item.name).join('\n')
+function values(object: MockObject, related: ReturnType<typeof useRelated>) {
+  return { name: object.name, summary: object.summary, state: object.state ?? '—', component: object.fields.component ?? '', components: object.fields.components?.split(' → ').join('\n') ?? '', interactions: names(related, object, 'Interaction'), resource: names(related, object, 'Resource'), application: names(related, object, 'Application'), responsible: object.fields.responsible ?? '', needs: names(related, object, 'ConnectivityNeed'), process: names(related, object, 'BusinessProcess'), participant: object.fields.participantComponent ?? '', requester: object.fields.requester ?? '', submittedAt: object.fields.submittedAt ?? 'Не указан в fixture', subject: object.fields.subject ?? related(object, 'ComponentDeployment', 'InteractionRevision').map(item => item.name).join('\n'), provenance: object.fields.RuleAuthorizationEvidence ?? '' }
 }
 const c = (key: string, title: string): Column => ({ key, title })
 const nameColumn: Column = { key: 'name', title: 'Объект', render: row => <><Link to={row.path!}>{row.values.name}</Link><small>{row.id}</small></> }
-const stateColumn: Column = { key: 'state', title: 'Состояние', render: row => <ObjectStatus object={byId.get(row.id)!} /> }
+function RowStatus({ id }: { id: string }) { return <ObjectStatus object={useContext(ObjectIndex).get(id)!} /> }
+const stateColumn: Column = { key: 'state', title: 'Состояние', render: row => <RowStatus id={row.id} /> }
 const columns: Partial<Record<Kind, Column[]>> = {
   Application: [c('components', 'Компоненты'), c('interactions', 'Коммуникации'), c('summary', 'Назначение')],
   ComponentDeployment: [c('component', 'Компонент'), c('application', 'Профиль приложения'), c('resource', 'Ресурс'), stateColumn],
@@ -34,15 +38,16 @@ const columns: Partial<Record<Kind, Column[]>> = {
   PolicyRule: [c('subject', 'Предмет разрешения'), stateColumn, c('provenance', 'Authorization provenance')],
 }
 export function ObjectCollection({ rows, title, remote = false, parent }: { parent?: MockObject; rows: readonly MockObject[]; title: string; remote?: boolean }) {
+  const related = useRelated()
   const [params] = useSearchParams()
   const context = new URLSearchParams(params); context.delete('tab')
-  return <Collection label={title} remote={remote} rows={rows.map(object => ({ id: object.id, kind: object.kind, path: objectPath(object) + (remote && context.size ? '?' + context : ''), values: { ...values(object), relation: relationLabel(parent, object) } }))} columns={[nameColumn, ...(parent ? [c('relation', 'Связь / роль')] : []), ...(columns[rows[0]?.kind] ?? [c('summary', 'Назначение'), stateColumn])]} filters={remote && rows.some(object => object.state) ? [{ key: 'state', title: 'Состояние' }] : []} />
+  return <Collection label={title} remote={remote} rows={rows.map(object => ({ id: object.id, kind: object.kind, path: objectPath(object) + (remote && context.size ? '?' + context : ''), values: { ...values(object, related), relation: relationLabel(related, parent, object) } }))} columns={[nameColumn, ...(parent ? [c('relation', 'Связь / роль')] : []), ...(columns[rows[0]?.kind] ?? [c('summary', 'Назначение'), stateColumn])]} filters={remote && rows.some(object => object.state) ? [{ key: 'state', title: 'Состояние' }] : []} />
 }
 function Properties({ fields }: { fields: Record<string, string> }) {
   return <dl className="ux-properties">{Object.entries(fields).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>
 }
 type Tab = { id: string; title: string; objects?: MockObject[]; fields?: Record<string, string>; rows?: Row[]; note?: string }
-function tabsFor(object: MockObject): Tab[] {
+function tabsFor(object: MockObject, related: ReturnType<typeof useRelated>, index: Map<string, MockObject>): Tab[] {
   const tabs: Tab[] = []
   const add = (id: string, title: string, ...kinds: Kind[]) => { const rows = related(object, ...kinds); if (rows.length) tabs.push({ id, title, objects: rows }) }
   const fields = (id: string, title: string, keys: string[]) => { const entries = Object.fromEntries(keys.filter(key => object.fields[key] !== undefined).map(key => [key, object.fields[key]])); if (Object.keys(entries).length) tabs.push({ id, title, fields: id === 'decision' ? { outcome: object.state!, ...entries } : entries }) }
@@ -54,7 +59,7 @@ function tabsFor(object: MockObject): Tab[] {
     case 'InteractionRevision': add('interaction', 'Коммуникация', 'Interaction'); add('deployments', 'Участники', 'ComponentDeployment'); break
     case 'ComponentDeployment': add('profile', 'Компонент и профиль', 'Application'); add('resource', 'Ресурс', 'Resource'); add('interactions', 'Коммуникации', 'Interaction'); break
     case 'BusinessProcess': add('needs', 'Потребности', 'ConnectivityNeed'); break
-    case 'ConnectivityNeed': add('communication', 'Коммуникация', 'Interaction'); add('process', 'Бизнес-процесс', 'BusinessProcess'); add('requests', 'Заявки', 'AccessRequest'); add('rules', 'Правила', 'PolicyRule'); break
+    case 'ConnectivityNeed': add('profile', 'Профиль', 'Application'); add('communication', 'Коммуникация', 'Interaction'); add('process', 'Бизнес-процесс', 'BusinessProcess'); add('requests', 'Заявки', 'AccessRequest'); add('rules', 'Правила', 'PolicyRule'); break
     case 'AccessRequest':
       add('subject', 'Предмет доступа', 'ComponentDeployment', 'InteractionRevision'); fields('decision', 'Решение и evidence', ['decisionId', 'decider', 'decisionAt', 'decisionAuthority', 'RequestAuthorityEvidence', 'policyRuleId']); add('need', 'Бизнес-основание', 'ConnectivityNeed', 'BusinessProcess'); add('rule', 'Результат разрешения', 'PolicyRule'); break
     case 'PolicyRule': {
@@ -65,13 +70,14 @@ function tabsFor(object: MockObject): Tab[] {
       if (allowed.length) tabs.push({ id: 'authorization', title: 'Основания разрешения', objects: allowed, fields: { RuleAuthorizationEvidence: object.fields.RuleAuthorizationEvidence } })
       add('needs', 'Бизнес-основание', 'ConnectivityNeed'); add('projection', 'Вычисляемая проекция', 'TargetRequiredPolicy'); break
     }
-    default: for (const kind of new Set(object.links.map(link => byId.get(link.id)!.kind))) add(kind, kind, kind)
+    default: for (const kind of new Set(object.links.map(link => index.get(link.id)!.kind))) add(kind, kind, kind)
   }
   return tabs
 }
 export function ObjectDetail({ object }: { object: MockObject }) {
+  const related = useRelated()
   const [params] = useSearchParams()
-  const tabs = tabsFor(object)
+  const tabs = tabsFor(object, related, useContext(ObjectIndex))
   const selected = tabs.find(tab => tab.id === params.get('tab'))
   const overview = !selected
   const isCommunication = object.kind === 'Application' || object.kind === 'Interaction'

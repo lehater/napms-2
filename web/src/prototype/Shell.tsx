@@ -35,7 +35,7 @@ export function Shell({ children, section }: { children: ReactNode; section?: st
       onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) resize(event.clientX) }}
       onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId) }}><span aria-hidden="true">⋮</span></div>
     <div className="ux-workspace">
-      <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · read-only · без API</span></header>
+      <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · Simulation · без API</span></header>
       <main className="ux-main">{children}</main>
     </div>
   </div>
