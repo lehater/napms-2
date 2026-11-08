@@ -52,3 +52,11 @@
 - Отдельный реальный API и физическая ERD не менялись.
 
 **Quality escape остаётся OPEN до независимого re-review и принятого merge.**
+
+## 7. Проверенное red/green свидетельство (2026-11-08)
+
+**Green, интегрированный продукт и quality gate:** [PR #31 / Verify #42519088770](https://github.com/lehater/napms-2/actions/runs/42519088770) на commit `8a07e13a77e22730607994985096bb762a1061c5`, с обоими родителями PR #31 и PR #27 в истории. Четыре jobs PASS: `semantic-contract` — 16 Kind, 8 top-level sections, type-specific statuses/route/denial; `web` — 21 Playwright PASS; `application` — 80 pytest PASS; `validate` — 7/7 OpenSpec PASS. Прототип сохранил Shell/Resources/ResourceDetail и полный UX-0.2 E2E. Это доказывает совместимость в этом интеграционном дереве, а не автоматически в будущих PR.
+
+**Red, реальная намеренная UI-регрессия:** [test-only PR #32](https://github.com/lehater/napms-2/pull/32), [Verify #42519051142](https://github.com/lehater/napms-2/actions/runs/42519051142). В `Prototype.tsx` изменена только выборка **отрисованных** policy rows, из-за чего в каталоге PolicyRule оказались две AccessRequest. Fast `semantic-contract` сохранил PASS (fixture и `visibleCollection` не изменялись), но browser gate `web/e2e/semantic-contract.spec.ts` воспроизводимо завершился FAIL: expected 1, received 3. Остальные 20 E2E прошли. В том probe прежний `validate` также падал из-за требования OpenSpec до его исправления; этот независимый сбой **не** используется как evidence semantic gate. PR #32 закрыт без merge.
+
+**Вывод:** это ограниченное, но воспроизводимое доказательство `bad UI rendering → failing browser regression → corrected implementation → PASS`. Проверка произвольных новых страниц и истинности естественно-языковых текстов остаётся задачей контрактов и архитектурного review при расширении scope.

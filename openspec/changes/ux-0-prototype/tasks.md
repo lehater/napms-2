@@ -26,9 +26,10 @@ ERD correction evidence: typecheck/build PASS; full E2E 9/9 (4 prototype + 5 unc
 - [x] 4.1 Define normative UX-0 presentation contract; keep original eight sections, object identity and mock/API boundary.
 - [x] 4.2 Separate PolicyRule collection from AccessRequest and Reconciliation, make state captions entity-specific, move read-only/immutable to attributes.
 - [x] 4.3 Add fast blocking CI contract check, mutation sentinels and browser-visible semantic regression tests.
-- [ ] 4.4 Verify CI on the final integrated PR HEAD, capture RCA evidence and complete owner review; do not merge automatically.
+- [x] 4.4 Verify CI on integrated HEAD and capture RCA evidence; 4/4 jobs PASS at Verify #42519088770. Owner review and merge remain separate.
 
 Systemic RCA and acceptance: `docs/engineering/quality-escapes/ux-0-semantic-ui-2026-11-08.md`, Issue #30.
 
 - [x] 4.5 Address independent review P1/P2: all Kind status/no-status decisions, typed UI model, data-driven browser cases, independent documentation.
-- [ ] 4.6 Show negative UI mutation → failing browser check and recheck integrated PR #27 + #31 CI on same HEAD.
+- [x] 4.6 Show negative UI mutation → failing browser check (PR #32, Verify #42519051142) and integrated PR #27 + #31 positive CI (Verify #42519088770).
+- [ ] 4.7 Obtain independent re-review and owner acceptance before squash merge; keep Issue #30 open until accepted.
