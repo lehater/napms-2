@@ -6,7 +6,7 @@
 
 **Минимальная цепочка UX-0:** `Resource → Deployment → Interaction/Revision → BusinessProcess/Need → Request → Decision → PolicyRule → Declared → Required for NST → Configured → Reconciliation → SIMULATED operation → independent recheck`. BusinessProcess и ConnectivityNeed обязательны для намеренного запроса. DENIED заявки ≠ сетевой DENY; последний появляется только при NST-адаптации с эквивалентностью. Отзыв — отдельная **непринятая hypothesis**, не исполняемое действие N2.
 
-Расширять постепенно: общий shell, два reusable patterns (list/detail), несколько межраздельных переходов, один связанный mock dataset. **9 групп / 19 workspaces** — карта, а не план 19 готовых экранов. Future network data = **MOCK**, operations = **SIMULATED**, отсутствие данных = **Unknown/Uncomparable**, а не успех.
+Расширять постепенно: общий shell, два reusable patterns (list/detail), несколько межраздельных переходов, один связанный mock dataset. **9 групп / 18 candidate workspaces** — карта, а не план 19 готовых экранов. Future network data = **MOCK**, operations = **SIMULATED**, отсутствие данных = **Unknown/Uncomparable**, а не успех.
 
 ## Принцип декомпозиции
 
@@ -27,7 +27,6 @@
 | **Потребности / Коммуникационные потребности** | Обосновать связь без разрешения | Need list/detail, Interaction, participant perspective, Current/Retired, attribution, история, запросить доступ | C10 C11 / J01 J02 | historical; N2 mock |
 | **Доступ / Заявки** | Создать, найти, просмотреть заявку | PENDING/ALLOWED/DENIED list, detail, create from chosen source, decision action; history/Need/Rule links | C13–C15 / J02 | N2 existing UI реальный (UUID form) |
 | **Доступ / Правила** | Показать authoritative desired PolicyRules | list/detail, state Active/Inactive, exact subject, provenance, history, transition drafts under review | C16 C17 / J02 J03 | N2 backend Rule read; UI candidate |
-| **Доступ / Эффективная политика** | Проверить, что должно быть разрешено | scope/subset selector, coherent snapshot table, READY/INCOMPLETE, JSON/CSV/export diagnostic | C18 / J04 | N2 backend реальный; UI candidate |
 | **Исследование / Проверка связи** | Найти контекст по IP/protocol/port; UX-0 current-only | tuple form → tabs Attribution/Business/Policy/Network/Evidence; zero/many matches, UNKNOWN, ссылки | C20 / J06 | historical Checker; mock |
 | **Исследование / Наблюдения** | Посмотреть, что именно получено из сети | Evidence sets, sources, time/freshness/completeness, Configured vs TrafficDerived vs Imported | C21–C24 / J05 | future; mock-only |
 | **Исследование / Обнаруженные связи** | Привязать наблюдения к бизнес-контексту | Recognized/ambiguous/unresolved list, candidate graph, action «атрибутировать Need», переход к запросу | C25 / J05 | future; mock-only |
@@ -38,7 +37,17 @@
 | **Администрирование / Полномочия** | Отличить Actor grants от Resource owners | Actors, action/scope/time authority, scope visibility, server-only authority explanation | C12 / J02 J08 | N2 demo grants, управление UI mock |
 | **Администрирование / Источники и интеграции** | Контролировать происхождение/сбор | catalogue external source, capture schedule/status, imported files, identity mappings | C21–C24 C37 C38 / J05 J08 | optional; mock-only |
 
-**Предлагаемый UX baseline:** 19 пользовательских workspaces в 9 навигационных группах, из них один («Заявки») уже реально существует в N2. Это **не** 19 независимых доменов и не предложение реализовать сразу 19 backend/route. Для широкого прототипа допускается одна кликабельная оболочка с 19 разделами на mock data, без претензии на действующую функциональность.
+**Предварительная карта UX:** 18 candidate workspaces в 9 навигационных группах; «Заявки» уже имеют отдельный реальный UI N2. Это **не** 18 независимых доменов и не план реализации 18 backend/route. Отдельный workspace «Эффективная политика» исключён из текущей карты: C18 / J04 сохраняется как техническая способность вычисления и экспорта, а не пункт меню. Текущий UX-0 с восемью разделами остаётся самостоятельным исследовательским прототипом.
+
+## Access Policy: отдельные пользовательские реестры и вычисляемое представление
+
+**Предметный источник истины:** [доменная модель](../domain.md), [логическая ERD](persistent-state-erd.md) (исследовательский статус) и принятые N2 OpenSpec: [access-requests](../../openspec/specs/access-requests/spec.md), [access-decisions](../../openspec/specs/access-decisions/spec.md), [policy-export](../../openspec/specs/policy-export/spec.md). Разделение сущностей уже определено; это уточнение IA, а не изменение модели.
+
+- **Access Requests** — самостоятельный пользовательский реестр заявок на доступ с состояниями PENDING/ALLOWED/DENIED, предметом запроса, BusinessProcess/ConnectivityNeed, evidence подачи и результатом решения. DENIED относится к заявке/решению, а не к PolicyRule. Правила видимости реальных заявок задаёт сервер, а не mock-переключатель scope.
+- **Policy Rules** — самостоятельный пользовательский реестр сохраняемых авторитетных разрешающих правил PolicyRule, в том числе ACTIVE и INACTIVE, с точным AccessSubject, обоснованием и provenance ALLOWED-решений. Для одного AccessSubject существует максимум одно каноническое правило: ALLOWED создаёт либо повторно использует его; DENIED не создаёт и не отзывает правило. Состояние ACTIVE/INACTIVE относится к Rule, не к заявке.
+- **Effective Policy / декларированная эффективная политика** — вычисляемая на момент оценки совокупность эффективных ACTIVE PolicyRule, предназначенная для последующих вычислений (включая построение TargetRequiredPolicy для выбранных сетевых кандидатов). Это **не** самостоятельный доменный контейнер Policy, не новая ERD-таблица и **не отдельный UI workspace на текущем этапе**. Принятый `policy/export` остаётся серверным контрактом получения vendor-neutral представления, в котором READY/INCOMPLETE характеризует адресную материализацию, а не состояние заявки или Rule.
+
+**Последствие для UX:** заявки и правила должны быть различимы в навигации и пользовательских списках по их ответственности. Расположение пунктов ещё подлежит UI-review; не требуется автоматически расширять восемь разделов UX-0, вводить отдельный экран Effective Policy или изменять [UI Baseline v0.1](ui-baseline-v0.1/README.md). Допустимы контекстные ссылки Request → Rule и Rule → authorization provenance, сохраняющие различие сущностей. Q1 ALLOWED связывается с P1 ACTIVE, Q2 DENIED не создаёт новое правило и не изменяет P1.
 
 ## Поведение экранов и переходов
 
@@ -98,7 +107,7 @@
 
 ## Границы UX-0 после содержательного аудита
 
-[Аудит 180/180](primary-source-content-audit.md) подтверждает ширину карты, но не product acceptance. **19 workspaces / 9 групп** остаются candidate navigation map. Первый прототип: shell, минимальные общие read-only templates и один dataset; несколько кликабельных переходов важнее наполнения всех 19 разделов. Необходимые состояния выбираются для J01→J02→J04 и J05→J06→J07; J03 только как отдельно маркированная hypothesis, без исполняемого изменения Rule или сценария «Запросить прекращение доступа».
+[Аудит 180/180](primary-source-content-audit.md) подтверждает ширину карты, но не product acceptance. **18 workspaces / 9 групп** остаются candidate navigation map. Первый прототип: shell, минимальные общие read-only templates и один dataset; несколько кликабельных переходов важнее наполнения всех 18 разделов. Необходимые состояния выбираются для J01→J02→J04 и J05→J06→J07; J03 только как отдельно маркированная hypothesis, без исполняемого изменения Rule или сценария «Запросить прекращение доступа».
 
 При детализации использовать [AUD-013/014](product-requirements-traceability.md): list→detail, видимый query state, reset paging, loading/empty/404/error, field validation и conflict, keyboard/focus, narrow reflow. Mock filtering разрешён как локальная демонстрация явно полного mock dataset; он не доказывает backend query semantics. Historical checkboxes не вводят bulk mutation/saved views/Resource type. Введённые в макет external Person/Team references не становятся Actor grants.
 
