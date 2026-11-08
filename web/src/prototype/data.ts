@@ -21,9 +21,24 @@ export const dataNature: Record<Kind, 'persistent' | 'computed'> = {
   Reconciliation: 'computed',
 }
 export const natureLabel = { persistent: 'Устойчивое состояние (логическая модель)', computed: 'Вычисляемое представление' }
+// Each status belongs to its entity; never use a cross-entity lifecycle.
+export const statusCaptions: Partial<Record<Kind, string>> = {
+  AccessRequest: 'Статус заявки',
+  PolicyRule: 'Состояние правила',
+  Reconciliation: 'Результат сопоставления',
+  Interaction: 'Актуальность',
+  BusinessProcess: 'Актуальность',
+  ConnectivityNeed: 'Актуальность',
+  ComponentDeployment: 'Состояние размещения',
+}
+// The policy catalogue contains declared rules only; requests remain linked provenance.
+export function visibleCollection(section: SectionId): readonly MockObject[] {
+  return section === 'policy' ? objects.filter(item => item.kind === 'PolicyRule')
+    : objects.filter(item => item.section === section)
+}
 type Relation = { label: string; id: string }
 export type MockObject = {
-  id: string; kind: Kind; section: SectionId; name: string; state: string
+  id: string; kind: Kind; section: SectionId; name: string; state?: string
   summary: string; fields: Record<string, string>; links: Relation[]
   // Only explicit permits occur in policy projections; null means unknown, not empty.
   permits?: readonly number[] | null
@@ -35,10 +50,10 @@ export const objects: readonly MockObject[] = [
   { id: 'mock-endpoint-order', kind: 'Endpoint', section: 'resources', name: 'Endpoint · order-api-01', state: 'Known', summary: 'Стабильный Endpoint; текущий IP получается из истории адресов.', fields: { addressHistory: 'HOST 192.0.2.10 · [2026-11-01T00:00:00Z, ∞)', currentAddressFromHistory: '192.0.2.10 / HOST', evaluationAt: evaluatedAt }, links: [{ label: 'Resource', id: 'mock-resource-order' }] },
   { id: 'mock-endpoint-ledger', kind: 'Endpoint', section: 'resources', name: 'Endpoint · ledger-api-01', state: 'Known', summary: 'Стабильный Endpoint; текущий IP получается из истории адресов.', fields: { addressHistory: 'HOST 192.0.2.20 · [2026-11-01T00:00:00Z, ∞)', currentAddressFromHistory: '192.0.2.20 / HOST', evaluationAt: evaluatedAt }, links: [{ label: 'Resource', id: 'mock-resource-ledger' }] },
   { id: 'mock-interaction-ledger', kind: 'Interaction', section: 'applications', name: 'OrderClient → LedgerApi', state: 'Current', summary: 'Устойчивая коммуникация компонентов: передача бухгалтерской операции.', fields: { sourceComponent: 'OrderClient', destinationComponent: 'LedgerApi', purpose: 'Запись проводки' }, links: [{ label: 'Профиль', id: 'mock-application' }, { label: 'Точная версия параметров', id: 'mock-revision' }, { label: 'ConnectivityNeed', id: 'mock-need' }] },
-  { id: 'mock-application', kind: 'Application', section: 'applications', name: 'Order-to-Ledger HTTPS', state: 'Read-only', summary: 'Повторно используемый профиль коммуникации, не инсталляция сервиса.', fields: { components: 'OrderClient → LedgerApi' }, links: [{ label: 'Коммуникация', id: 'mock-interaction-ledger' }] },
+  { id: 'mock-application', kind: 'Application', section: 'applications', name: 'Order-to-Ledger HTTPS', summary: 'Повторно используемый профиль коммуникации, не инсталляция сервиса.', fields: { components: 'OrderClient → LedgerApi', uiMode: 'Read-only — режим исследовательского UI, не состояние Application' }, links: [{ label: 'Коммуникация', id: 'mock-interaction-ledger' }] },
   { id: 'mock-deployment-order', kind: 'ComponentDeployment', section: 'deployments', name: 'dep-order-1', state: 'Active', summary: 'OrderClient на order-api-01', fields: { component: 'OrderClient' }, links: [{ label: 'Ресурс', id: 'mock-resource-order' }, { label: 'Профиль', id: 'mock-application' }, { label: 'Interaction', id: 'mock-interaction-ledger' }] },
   { id: 'mock-deployment-ledger', kind: 'ComponentDeployment', section: 'deployments', name: 'dep-ledger-1', state: 'Active', summary: 'LedgerApi на ledger-api-01', fields: { component: 'LedgerApi' }, links: [{ label: 'Ресурс', id: 'mock-resource-ledger' }, { label: 'Профиль', id: 'mock-application' }, { label: 'Interaction', id: 'mock-interaction-ledger' }] },
-  { id: 'mock-revision', kind: 'InteractionRevision', section: 'applications', name: 'OrderClient → LedgerApi / rev-1', state: 'Immutable', summary: 'Передача бухгалтерской операции · TCP destination 443', fields: { interaction: 'mock-interaction-ledger', revision: 'rev-1 (единственная)', traffic: 'TCP / destination 443–443' }, links: [{ label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }] },
+  { id: 'mock-revision', kind: 'InteractionRevision', section: 'applications', name: 'OrderClient → LedgerApi / rev-1', summary: 'Передача бухгалтерской операции · TCP destination 443', fields: { interaction: 'mock-interaction-ledger', revision: 'rev-1 (единственная)', traffic: 'TCP / destination 443–443', parameterIntegrity: 'Immutable — инвариант параметров revision, не lifecycle' }, links: [{ label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }] },
   { id: 'mock-process', kind: 'BusinessProcess', section: 'needs', name: 'Settlement', state: 'Current', summary: 'Проведение заказов в бухгалтерском реестре.', fields: { responsible: 'Finance' }, links: [{ label: 'Потребность', id: 'mock-need' }] },
   { id: 'mock-need', kind: 'ConnectivityNeed', section: 'needs', name: 'need-001 · запись проводки', state: 'Current', summary: 'OrderClient требуется коммуникация с LedgerApi. Need сама по себе не разрешает доступ.', fields: { participantComponent: 'OrderClient / sender', reason: 'Бухгалтерская операция заказа' }, links: [{ label: 'BusinessProcess', id: 'mock-process' }, { label: 'Interaction', id: 'mock-interaction-ledger' }, { label: 'PolicyRule', id: 'mock-rule' }, { label: 'Основание разрешения', id: 'mock-request-allowed' }, { label: 'Отдельная отклонённая заявка', id: 'mock-request-denied' }] },
   { id: 'mock-request-allowed', kind: 'AccessRequest', section: 'policy', name: 'Q1 · разрешённая заявка', state: 'ALLOWED', summary: 'Предустановленная история, не реальная подача или решение.', fields: { requester: 'alice-orders', decider: 'bob-policy', submittedAt: '2026-11-07T09:00:00Z', decisionAt: '2026-11-07T10:00:00Z', RequestAuthorityEvidence: 'access.request · source Resource mock-resource-order only · scope orders-prod · grant [2026-11-01T00:00:00Z, ∞) · evaluatedAt 2026-11-07T09:00:00Z; не ALLOWED', decisionAuthority: 'access.decide · demo-policy · проверено отдельно', decisionId: 'mock-decision-allowed' }, links: [{ label: 'Источник', id: 'mock-deployment-order' }, { label: 'Получатель', id: 'mock-deployment-ledger' }, { label: 'Revision', id: 'mock-revision' }, { label: 'BusinessProcess', id: 'mock-process' }, { label: 'Need', id: 'mock-need' }, { label: 'Созданный Rule', id: 'mock-rule' }] },
