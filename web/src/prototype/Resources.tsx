@@ -2,8 +2,8 @@ import { useId, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { byId, evaluatedAt, natureLabel, objectPath, objects, type MockObject } from './data'
 
-type Row = { id: string; values: Record<string, string>; path?: string }
-type Column = { key: string; title: string; render?: (row: Row) => ReactNode }
+export type Row = { kind?: MockObject['kind']; id: string; values: Record<string, string>; path?: string }
+export type Column = { key: string; title: string; render?: (row: Row) => ReactNode }
 type Filter = { key: string; title: string }
 const resourceRows = objects.filter(object => object.kind === 'Resource')
 const site = (object: MockObject) => object.fields.siteHistory.split(' · ')[0]
@@ -11,7 +11,7 @@ const address = (object: MockObject) => object.fields.currentAddressFromHistory.
 const owner = (object: MockObject) => object.fields.responsibilityHistory.split(' · ')[0]
 function listContext(params: URLSearchParams) {
   const result = new URLSearchParams()
-  for (const key of ['q', 'scope', 'site', 'size', 'page']) if (params.has(key)) result.set(key, params.get(key)!)
+  for (const key of ['q', 'scope', 'site', 'state', 'size', 'page']) if (params.has(key)) result.set(key, params.get(key)!)
   return result
 }
 export function resourceListPath(params: URLSearchParams) {
@@ -20,7 +20,7 @@ export function resourceListPath(params: URLSearchParams) {
 }
 
 // One table pattern for the top-level and parent-scoped fixture collections.
-function Collection({ rows, columns, filters = [], remote = false, label }: { rows: Row[]; columns: Column[]; filters?: Filter[]; remote?: boolean; label: string }) {
+export function Collection({ rows, columns, filters = [], remote = false, label }: { rows: Row[]; columns: Column[]; filters?: Filter[]; remote?: boolean; label: string }) {
   const id = useId()
   const [url, setUrl] = useSearchParams()
   const [local, setLocal] = useState(new URLSearchParams())
@@ -44,7 +44,7 @@ function Collection({ rows, columns, filters = [], remote = false, label }: { ro
       {filters.map(filter => <label key={filter.key}>{filter.title}<select aria-label={filter.title} value={params.get(filter.key) ?? ''} onChange={event => update(filter.key, event.target.value)}><option value="">Все</option>{Array.from(new Set(rows.map(row => row.values[filter.key]))).map(value => <option key={value}>{value}</option>)}</select></label>)}
       <p role="status">Показано {visible.length} из {rows.length}</p>
     </div>
-    <div className="ux-table-scroll">{visible.length ? <table className="ux-table"><caption className="sr-only">{label}</caption><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.title}</th>)}</tr></thead><tbody>{sliced.map(row => <tr key={row.id}>{columns.map((column, index) => <td key={column.key}>{column.render ? column.render(row) : index === 0 && row.path ? <Link to={row.path}>{row.values[column.key]}</Link> : row.values[column.key]}</td>)}</tr>)}</tbody></table> : <p className="ux-empty">Нет совпадений. Измените поисковый запрос.</p>}</div>
+    <div className="ux-table-scroll">{visible.length ? <table className="ux-table"><caption className="sr-only">{label}</caption><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.title}</th>)}</tr></thead><tbody>{sliced.map(row => <tr key={row.id} data-object-id={row.id} data-object-kind={row.kind}>{columns.map((column, index) => <td key={column.key}>{column.render ? column.render(row) : index === 0 && row.path ? <Link to={row.path}>{row.values[column.key]}</Link> : row.values[column.key]}</td>)}</tr>)}</tbody></table> : <p className="ux-empty">Нет совпадений. Измените поисковый запрос.</p>}</div>
     <div className="ux-pagination"><span>{visible.length ? (page - 1) * size + 1 : 0}–{Math.min(page * size, visible.length)} из {visible.length}</span><div><label>Строк на странице <select aria-label="Строк на странице" value={size} onChange={event => update('size', event.target.value)}><option value="1">1</option><option value="2">2</option></select></label><button aria-label="Предыдущая страница" disabled={page <= 1} onClick={() => update('page', String(page - 1))}>‹</button><span>Страница {page} из {pages}</span><button aria-label="Следующая страница" disabled={page >= pages} onClick={() => update('page', String(page + 1))}>›</button></div></div>
   </section>
 }
@@ -52,8 +52,8 @@ export function Resources() {
   const [params] = useSearchParams()
   const context = listContext(params).toString()
   return <>
-    <Collection label="Resources collection" remote rows={resourceRows.map(object => ({ id: object.id, path: objectPath(object) + (context ? '?' + context : ''), values: { name: object.name, id: object.id, scope: object.fields.scope, address: address(object), site: site(object), owner: owner(object) } }))}
-      columns={[{ key: 'name', title: 'Resource', render: row => <><Link to={row.path!}>{row.values.name}</Link><small>{row.id}</small></> }, { key: 'scope', title: 'Scope' }, { key: 'address', title: 'Текущий адрес / тип' }, { key: 'site', title: 'Площадка' }, { key: 'owner', title: 'Ответственность' }]}
+    <Collection label="Resources collection" remote rows={resourceRows.map(object => ({ kind: object.kind, id: object.id, path: objectPath(object) + (context ? '?' + context : ''), values: { name: object.name, id: object.id, scope: object.fields.scope, address: address(object), site: site(object), owner: owner(object) } }))}
+      columns={[{ key: 'name', title: 'Resource', render: row => <><Link to={row.path!}>{row.values.name}</Link><small>{row.id}</small></> }, { key: 'scope', title: 'Scope' }, { key: 'address', title: 'Endpoints / текущий адрес', render: row => <>{row.values.address}<small>{resourceRows.find(item => item.id === row.id)?.fields.endpoint}</small></> }, { key: 'site', title: 'Площадка' }, { key: 'owner', title: 'Ответственность' }]}
       filters={[{ key: 'scope', title: 'Scope' }, { key: 'site', title: 'Площадка' }]} />
     <p className="ux-note">Fixture: 2 Resource, по одному Endpoint. Адрес прочитан из EndpointAddressHistory на {evaluatedAt}. OWNER не предоставляет grant.</p>
   </>
@@ -71,7 +71,7 @@ export function ResourceDetail({ object }: { object: MockObject }) {
     { id: 'owner', values: { fact: 'Ответственность', value: object.fields.responsibilityHistory, source: object.id + ' / responsibilityHistory' } },
   ]
   return <>
-    <nav aria-label="Resource tabs" className="ux-tabs">{[['overview', 'Overview', undefined], ['endpoints', 'Endpoints', endpoints.length], ['deployments', 'Deployments', deployments.length], ['history', 'History', history.length]].map(([key, title, count]) => {
+    <nav aria-label="Resource tabs" className="ux-tabs">{[['overview', 'Обзор', undefined], ['endpoints', 'Endpoints', endpoints.length], ['deployments', 'Развёрнутые компоненты', deployments.length], ['history', 'История', history.length]].map(([key, title, count]) => {
       const next = listContext(params)
       if (key !== 'overview') next.set('tab', String(key))
       return <Link key={key} aria-current={key === tab ? 'page' : undefined} to={{ pathname: objectPath(object), search: next.toString() }}>{title}{count !== undefined && <small>{count}</small>}</Link>

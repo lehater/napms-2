@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { byId, dataNature, natureLabel, objects, objectPath, sections, stateDefinitions } from '../src/prototype/data'
+import { byId, dataNature, natureLabel, objects, objectPath, sections, legacySections, visibleCollection } from '../src/prototype/data'
 
 test('fixture has one coherent allow-only communication with honest comparison evidence', () => {
   expect(byId.size).toBe(objects.length)
   for (const object of objects) {
     expect(object.id).toMatch(/^mock-/)
-    expect(sections.some(section => section.id === object.section) || (object.kind === 'AccessRequest' && object.section === 'requests')).toBe(true)
+    expect([...sections, ...legacySections].some(section => section.id === object.section)).toBe(true)
     for (const link of object.links) expect(byId.has(link.id), `${object.id} → ${link.id}`).toBe(true)
   }
   const resources = objects.filter(object => object.kind === 'Resource')
@@ -84,178 +84,6 @@ test('TAE facts remain independent of AP/NEP and configured is a computed interp
   expect(byId.get('mock-configured-unknown')!.permits).toBeNull() // unknown ≠ [] ≠ Any
 })
 
-test('all eight sections, filtering and every object relation work without API requests', async ({ page }) => {
-  const apiRequests: string[] = []
-  // Observe real browser traffic. Do not intercept or stub API calls.
-  page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) apiRequests.push(request.url()) })
-  await page.goto('/prototype')
-  for (const section of sections) {
-    await page.getByRole('navigation', { name: 'Prototype navigation', exact: true }).getByRole('link', { name: section.title, exact: true }).click()
-    await expect(page.getByRole('heading', { name: section.title, exact: true })).toBeVisible()
-    await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
-  }
-  await page.goto('/prototype/resources')
-  await page.getByLabel('Поиск объектов').fill('192.0.2.10')
-  await expect(page.getByRole('link', { name: 'order-api-01', exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'ledger-api-01', exact: true })).toHaveCount(0)
-  await page.getByLabel('Поиск объектов').fill('no-such-object')
-  await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
-  for (const object of objects) {
-    await page.goto(objectPath(object))
-    await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
-    await page.getByText('О данных', { exact: true }).click()
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText(natureLabel[dataNature[object.kind]])
-    if (object.kind === 'Resource') {
-      for (const [tab, kind] of [['Endpoints', 'Endpoint'], ['Deployments', 'ComponentDeployment']] as const) {
-        await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: new RegExp(tab) }).click()
-        const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('table').getByRole('link')
-        const targets = object.links.map(link => byId.get(link.id)!).filter(target => target.kind === kind)
-        await expect(links).toHaveCount(targets.length)
-        for (let index = 0; index < targets.length; index++) await expect(links.nth(index)).toHaveAttribute('href', objectPath(targets[index]))
-      }
-    } else {
-      const links = page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link')
-      await expect(links).toHaveCount(object.links.length)
-      for (let index = 0; index < object.links.length; index++) await expect(links.nth(index)).toHaveAttribute('href', objectPath(byId.get(object.links[index].id)!))
-    }
-  }
-  expect(apiRequests).toEqual([])
-  await expect(page.getByLabel('Bearer token', { exact: true })).toHaveCount(0)
-  expect(await page.evaluate(() => ({
-    local: Object.entries(localStorage).filter(([key]) => key !== 'napms.prototype.sidebarWidth'),
-    validWidth: localStorage.getItem('napms.prototype.sidebarWidth') === null || /^(2\d\d|3[0-5]\d|360)$/.test(localStorage.getItem('napms.prototype.sidebarWidth')!), session: Object.keys(sessionStorage), cookie: document.cookie,
-  }))).toEqual({ local: [], validWidth: true, session: [], cookie: '' })
-})
-
-test('linked chain supports reload, browser back, unknown evidence and real-route boundary', async ({ page }) => {
-  const chain = ['mock-resource-order', 'mock-deployment-order', 'mock-interaction-ledger', 'mock-need', 'mock-request-allowed', 'mock-rule', 'mock-required', 'mock-configured', 'mock-evidence-set-f2', 'mock-evidence-entry-f2', 'mock-configured', 'mock-drift']
-  await page.goto(objectPath(byId.get(chain[0])!))
-  await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: /Deployments/ }).click()
-  for (const id of chain.slice(1)) {
-    const target = byId.get(id)!
-    await page.getByRole('region', { name: 'Связанные объекты' }).getByRole('link', { name: target.name + ' →', exact: true }).click()
-    await expect(page.getByRole('heading', { name: target.name, exact: true })).toBeVisible()
-    await expect(page.getByRole('navigation', { name: 'Breadcrumbs' })).toContainText(target.name)
-  }
-  await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Drift')
-  await page.reload()
-  await expect(page.getByRole('heading', { name: byId.get('mock-drift')!.name, exact: true })).toBeVisible()
-  await page.goBack()
-  await expect(page.getByRole('heading', { name: byId.get('mock-configured')!.name, exact: true })).toBeVisible()
-  await page.goto('/prototype/comparison/mock-uncomparable')
-  await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Uncomparable')
-  await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Unknown')
-  await page.goto('/prototype/resources/missing')
-  await expect(page.getByRole('heading', { name: 'Объект не найден' })).toBeVisible()
-  await page.getByRole('link', { name: 'Новая заявка →', exact: true }).click()
-  await expect(page).toHaveURL(/\/access-requests\/new$/)
-  await expect(page.getByRole('heading', { name: 'Enter a demo credential' })).toBeVisible()
-  await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
-  await page.getByRole('link', { name: 'UX-0 prototype · MOCK', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible()
-})
-
-test('ObjectTable headers match object, type, status and description cells', async ({ page }) => {
-  for (const id of ['mock-request-allowed', 'mock-need', 'mock-application'] as const) {
-    const object = byId.get(id)!
-    await page.goto('/prototype/' + object.section)
-    const table = page.getByRole('table')
-    await expect(table.getByRole('columnheader')).toHaveText(['Объект', 'Тип', 'Состояние', 'Описание'])
-    const row = table.getByRole('row').filter({ has: page.getByRole('link', { name: object.name, exact: true }) })
-    const cells = row.getByRole('cell')
-    await expect(cells).toHaveCount(4)
-    await expect(cells.nth(0)).toHaveText(object.name)
-    await expect(cells.nth(1)).toHaveText(object.kind)
-    if (object.state) {
-      await expect(cells.nth(2)).toContainText(stateDefinitions[object.kind].label!)
-      await expect(cells.nth(2)).toContainText(object.state)
-    } else await expect(cells.nth(2)).toHaveText('—')
-    await expect(cells.nth(3)).toHaveText(object.summary)
-  }
-})
-
-test('Applications presents profile → interaction → revision with parent context and distinct properties', async ({ page }) => {
-  const requests: string[] = []
-  page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })
-  const application = byId.get('mock-application')!
-  const interaction = byId.get('mock-interaction-ledger')!
-  const revision = byId.get('mock-revision')!
-  for (const width of [1440, 800, 390]) {
-    await page.setViewportSize({ width, height: 1000 })
-    await page.goto('/prototype/applications')
-    const nav = page.getByRole('navigation', { name: 'Prototype navigation', exact: true })
-    await expect(nav.getByRole('link', { name: 'Applications', exact: true })).toHaveAttribute('aria-current', 'page')
-    await expect(nav.getByRole('link')).toHaveCount(8)
-    const table = page.getByRole('table')
-    await expect(table.getByRole('row')).toHaveCount(2)
-    await expect(table).not.toContainText('Immutable')
-    await expect(table).not.toContainText('Read-only')
-    await expect(table).not.toContainText(natureLabel.persistent)
-    await table.getByRole('link', { name: application.name, exact: true }).click()
-    await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('OrderClient')
-    await expect(page.getByRole('region', { name: 'Components', exact: true })).toContainText('LedgerApi')
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).not.toContainText('Read-only')
-    await page.getByRole('region', { name: 'Interactions', exact: true }).getByRole('link', { name: 'Interaction details', exact: true }).click()
-    const communication = page.getByRole('region', { name: 'Communication', exact: true })
-    await expect(communication).toContainText('OrderClient')
-    await expect(communication).toContainText('LedgerApi')
-    await expect(communication).toContainText('Назначение: Запись проводки')
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Актуальность')
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Current')
-    await page.getByRole('region', { name: 'Interaction revisions', exact: true }).getByRole('link', { name: revision.name + ' →', exact: true }).click()
-    await expect(page).toHaveURL(new RegExp(objectPath(revision) + '$'))
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Неизменяемость параметров')
-    await expect(page.getByRole('region', { name: 'Карточка объекта' })).not.toContainText('Immutable')
-    const crumbs = page.getByRole('navigation', { name: 'Breadcrumbs' })
-    await expect(crumbs.getByRole('link', { name: application.name, exact: true })).toBeVisible()
-    await expect(crumbs.getByRole('link', { name: interaction.name, exact: true })).toBeVisible()
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-    await page.reload()
-    await expect(page.getByRole('heading', { name: revision.name, exact: true })).toBeVisible()
-    await page.goBack()
-    await expect(page.getByRole('heading', { name: interaction.name, exact: true })).toBeVisible()
-    await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: application.name, exact: true }).click()
-    await expect(page.getByRole('heading', { name: application.name, exact: true })).toBeVisible()
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-  }
-  expect(requests).toEqual([])
-})
-
-test('Application Detail prioritizes communication above metadata without implying L7', async ({ page }) => {
-  const application = byId.get('mock-application')!
-  const revision = byId.get('mock-revision')!
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 900 })
-    await page.goto(objectPath(application))
-    await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
-    const interactions = page.getByRole('region', { name: 'Interactions', exact: true })
-    const components = interactions.getByRole('region', { name: 'Components', exact: true })
-    const purpose = interactions.getByLabel('Назначение коммуникации', { exact: true })
-    await expect(components).toContainText('OrderClient')
-    await expect(components).toContainText('LedgerApi')
-    await expect(interactions.getByLabel('Направление коммуникации')).toHaveText('→')
-    await expect(purpose).toHaveText('Назначение: Запись проводки')
-    await expect(interactions).toContainText('TCP/443 не подтверждает HTTPS')
-    await expect(interactions).toContainText(revision.fields.traffic)
-    await expect(interactions.getByRole('link', { name: /Revision ·/ })).toHaveAttribute('href', objectPath(revision))
-    // Navigation labels are separate from the communication direction.
-    for (const link of await interactions.getByRole('link').all()) await expect(link).not.toContainText('→')
-    if (width === 1440) {
-      await expect(page.getByRole('heading', { name: application.name, exact: true })).toBeInViewport({ ratio: 1 })
-      await expect(components).toBeInViewport({ ratio: 1 })
-      await expect(purpose).toBeInViewport({ ratio: 1 })
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
-    }
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-    const card = page.getByRole('region', { name: 'Карточка объекта' })
-    await expect(card.getByText(application.id, { exact: true })).not.toBeVisible()
-    await card.getByText('Application · технические свойства', { exact: true }).click()
-    await expect(card.getByText(application.id, { exact: true })).toBeVisible()
-    await card.getByText('О данных', { exact: true }).click()
-    await expect(card).toContainText(natureLabel.persistent)
-  }
-})
-
 for (const [width, height] of [[1440, 900], [1920, 1080], [2560, 1440]]) {
   test(`baseline fluid geometry and sidebar bounds at ${width}×${height}`, async ({ page }) => {
     await page.setViewportSize({ width, height })
@@ -301,7 +129,7 @@ test('Resources collection filtering, pagination, tabs, direct URLs and return r
   page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })
   await page.goto('/prototype/resources')
   const table = page.getByRole('table')
-  await expect(table.getByRole('columnheader')).toHaveText(['Resource', 'Scope', 'Текущий адрес / тип', 'Площадка', 'Ответственность'])
+  await expect(table.getByRole('columnheader')).toHaveText(['Resource', 'Scope', 'Endpoints / текущий адрес', 'Площадка', 'Ответственность'])
   await expect(table.getByRole('row')).toHaveCount(3)
   await expect(table).not.toContainText('Endpoint ·')
   await page.getByLabel('Scope', { exact: true }).selectOption('orders-prod')
@@ -328,7 +156,7 @@ test('Resources collection filtering, pagination, tabs, direct URLs and return r
   const listUrl = page.url()
   await page.getByRole('link', { name: 'ledger-api-01', exact: true }).click()
   const tabs = page.getByRole('navigation', { name: 'Resource tabs' })
-  await expect(tabs.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
+  await expect(tabs.getByRole('link', { name: 'Обзор' })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('192.0.2.20')
   await expect(page.getByRole('region', { name: 'Связанные объекты' })).toHaveCount(0)
   await tabs.getByRole('link', { name: /Endpoints/ }).click()
@@ -340,11 +168,11 @@ test('Resources collection filtering, pagination, tabs, direct URLs and return r
   await expect(page.getByRole('navigation', { name: 'Breadcrumbs' })).toContainText('ledger-api-01')
   await page.goBack()
   await expect(page).toHaveURL(endpointUrl)
-  await tabs.getByRole('link', { name: /Deployments/ }).click()
+  await tabs.getByRole('link', { name: /Развёрнутые компоненты/ }).click()
   await page.getByRole('table').getByRole('link', { name: 'dep-ledger-1 →' }).click()
   await expect(page.getByRole('heading', { name: 'dep-ledger-1', exact: true })).toBeVisible()
   await page.goBack()
-  await tabs.getByRole('link', { name: /History/ }).click()
+  await tabs.getByRole('link', { name: /История/ }).click()
   await expect(page.getByText(/Предыдущие значения, авторы/)).toBeVisible()
   await page.getByLabel('Тип факта').selectOption('Ответственность')
   await expect(page.getByRole('table')).toContainText('OWNER Finance')
@@ -368,22 +196,131 @@ test('Resource slice stays usable at 390px and rejects invalid width preferences
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/prototype/resources')
   const nav = page.getByRole('navigation', { name: 'Prototype navigation', exact: true })
-  await expect(nav.getByRole('link')).toHaveCount(8)
-  await expect(nav.getByRole('link', { name: 'Resources', exact: true })).toBeVisible()
+  await expect(nav.getByRole('link')).toHaveCount(7)
+  await expect(nav.getByRole('link', { name: 'Ресурсы', exact: true })).toBeVisible()
   await page.getByRole('table').getByRole('link', { name: 'order-api-01', exact: true }).click()
-  for (const name of ['Overview', 'Endpoints', 'Deployments', 'History']) {
+  for (const name of ['Обзор', 'Endpoints', 'Развёрнутые компоненты', 'История']) {
     await page.getByRole('navigation', { name: 'Resource tabs' }).getByRole('link', { name: new RegExp(name) }).click()
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
-    if (name !== 'Overview') {
+    if (name !== 'Обзор') {
       await expect(page.getByRole('table')).toBeVisible()
       await page.getByLabel('Поиск объектов').fill('no-such-object')
       await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
     }
   }
   await page.getByRole('link', { name: '← К списку Resources' }).click()
-  await expect(page.getByRole('heading', { name: 'Resources', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Ресурсы', exact: true })).toBeVisible()
   await page.setViewportSize({ width: 1440, height: 900 })
   await expect(page.getByRole('separator', { name: 'Sidebar width' })).toHaveAttribute('aria-valuenow', '264')
   await page.getByRole('separator', { name: 'Sidebar width' }).press('ArrowRight')
   expect(await page.evaluate(() => [Object.entries(localStorage), Object.keys(sessionStorage), document.cookie])).toEqual([[['napms.prototype.sidebarWidth', '274']], [], ''])
+})
+
+const journeys = [
+  ['processes', 'mock-process', 'Потребности', 'mock-need'],
+  ['needs', 'mock-need', 'Заявки', 'mock-request-allowed'],
+  ['resources', 'mock-resource-order', 'Endpoints', 'mock-endpoint-order'],
+  ['applications', 'mock-application', 'Коммуникации', 'mock-interaction-ledger'],
+  ['deployments', 'mock-deployment-order', 'Ресурс', 'mock-resource-order'],
+  ['requests', 'mock-request-allowed', 'Бизнес-основание', 'mock-need'],
+  ['policy', 'mock-rule', 'Основания разрешения', 'mock-request-allowed'],
+] as const
+for (const [sectionId, id, tab, targetId] of journeys) {
+  test(`Sidebar → ${sectionId} → Detail → ${tab} → related object`, async ({ page }) => {
+    const requests: string[] = []
+    page.on('request', request => { if (['fetch', 'xhr'].includes(request.resourceType())) requests.push(request.url()) })
+    await page.goto('/prototype')
+    const nav = page.getByRole('navigation', { name: 'Prototype navigation', exact: true })
+    await expect(nav.getByRole('link')).toHaveText(sections.map(item => item.title))
+    await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
+    await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
+    const rows = page.locator('tbody tr')
+    await expect(rows).toHaveCount(visibleCollection(sectionId).length)
+    expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-kind')))).toEqual(visibleCollection(sectionId).map(item => item.kind))
+    const object = byId.get(id)!, target = byId.get(targetId)!
+    await page.getByRole('table').getByRole('link', { name: object.name, exact: true }).click()
+    await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
+    await expect(nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true })).toHaveAttribute('aria-current', 'page')
+    const tabs = page.getByRole('navigation', { name: /^(Object|Resource) tabs$/ })
+    await expect(tabs.getByRole('link', { name: 'Обзор', exact: true })).toHaveAttribute('aria-current', 'page')
+    await tabs.getByRole('link', { name: new RegExp(tab) }).click()
+    const tabUrl = page.url()
+    await page.reload()
+    await expect(tabs.getByRole('link', { name: new RegExp(tab) })).toHaveAttribute('aria-current', 'page')
+    await page.getByRole('table').getByRole('link', { name: sectionId === 'resources' ? target.name + ' →' : target.name, exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(objectPath(target) + '$'))
+    await expect(page.getByRole('navigation', { name: 'Breadcrumbs' })).toContainText(target.name)
+    await page.goBack()
+    await expect(page).toHaveURL(tabUrl)
+    expect(requests).toEqual([])
+  })
+}
+
+test('all fixture relations remain reachable through typed tabs and technical deep links', async ({ page }) => {
+  for (const object of objects) {
+    await page.goto(objectPath(object))
+    await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
+    const visited = new Set<string>()
+    const hrefs = await page.getByRole('navigation', { name: /^(Object|Resource) tabs$/ }).getByRole('link').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')!))
+    for (const href of hrefs) {
+      await page.goto(href)
+      for (const link of await page.getByRole('table').getByRole('link').all()) visited.add((await link.getAttribute('href'))!)
+    }
+    for (const relation of object.links) expect(visited.has(objectPath(byId.get(relation.id)!)), `${object.id} → ${relation.id}`).toBe(true)
+    await expect(page.getByRole('heading', { name: 'Связанные объекты', exact: true })).toHaveCount(0)
+  }
+})
+
+test('Application components and directed communication lead to immutable Revision', async ({ page }) => {
+  for (const width of [1440, 800, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/prototype/applications')
+    const table = page.getByRole('table')
+    await expect(table.getByRole('columnheader')).toHaveText(['Объект', 'Компоненты', 'Коммуникации', 'Назначение'])
+    await expect(table.locator('tbody tr')).toHaveCount(1)
+    await expect(table).toContainText('OrderClient\nLedgerApi')
+    await table.getByRole('link', { name: byId.get('mock-application')!.name }).click()
+    await expect(page.getByText('Назначение: Запись проводки')).toBeVisible()
+    await expect(page.getByLabel('Направление коммуникации')).toHaveText('→')
+    await expect(page.getByText(/TCP\/443 не подтверждает HTTPS/)).toBeVisible()
+    const tabs = page.getByRole('navigation', { name: 'Object tabs' })
+    await tabs.getByRole('link', { name: 'Компоненты', exact: true }).click()
+    await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(2)
+    await tabs.getByRole('link', { name: 'Коммуникации', exact: true }).click()
+    await page.getByRole('table').getByRole('link', { name: byId.get('mock-interaction-ledger')!.name, exact: true }).click()
+    await tabs.getByRole('link', { name: 'Ревизии', exact: true }).click()
+    await page.getByRole('table').getByRole('link', { name: byId.get('mock-revision')!.name, exact: true }).click()
+    await expect(page.getByRole('region', { name: 'Карточка объекта' })).toContainText('Неизменяемость параметров')
+    const crumbs = page.getByRole('navigation', { name: 'Breadcrumbs' })
+    await expect(crumbs).toContainText(byId.get('mock-application')!.name)
+    await expect(crumbs).toContainText(byId.get('mock-interaction-ledger')!.name)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
+
+test('collection state survives breadcrumb and reload; real API stays separate', async ({ page }) => {
+  await page.goto('/prototype/requests')
+  await page.getByLabel('Строк на странице').selectOption('1')
+  await page.getByRole('button', { name: 'Следующая страница' }).click()
+  await page.getByRole('table').getByRole('link', { name: byId.get('mock-request-denied')!.name }).click()
+  await page.getByRole('navigation', { name: 'Object tabs' }).getByRole('link', { name: 'Решение и evidence' }).click()
+  await expect(page.locator('main')).toContainText('mock-decision-denied')
+  await expect(page.locator('main')).toContainText('access.decide')
+  await page.reload()
+  await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
+  await expect(page.getByLabel('Строк на странице')).toHaveValue('1')
+  await expect(page.getByRole('table')).toContainText(byId.get('mock-request-denied')!.name)
+  await page.getByLabel('Состояние', { exact: true }).selectOption('ALLOWED')
+  await expect(page.getByRole('table')).toContainText(byId.get('mock-request-allowed')!.name)
+  await expect(page.getByRole('button', { name: 'Следующая страница' })).toBeDisabled()
+  await page.getByLabel('Поиск объектов').fill('absent')
+  await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
+  await page.getByRole('navigation', { name: 'Real API navigation' }).getByRole('link', { name: 'Новая заявка →' }).click()
+  await expect(page).toHaveURL(/\/access-requests\/new$/)
+  await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
+  await page.getByRole('link', { name: 'UX-0 prototype · MOCK' }).click()
+  await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Bearer token', { exact: true })).toHaveCount(0)
+  await page.goto('/prototype/resources/missing')
+  await expect(page.getByRole('heading', { name: 'Объект не найден' })).toBeVisible()
 })

@@ -1,3 +1,5 @@
+> Текущее меню реализует [UI/IA Baseline v0.2](ui-baseline-v0.2/README.md). Описания прежних восьми views ниже сохраняют историю UX-0. [Отчёт Issue #34](ui-baseline-v0.2/implementation.md).
+
 # UX-0: интерактивный исследовательский прототип
 
 Issue [#23](https://github.com/lehater/napms-2/issues/23). Восемь компактных read-only разделов, не принятая продуктовая IA. Требования change относятся только к поведению прототипа; исследовательские capabilities и будущие backend-контракты не утверждаются.
@@ -36,7 +38,7 @@ npm run dev
 
 **Декларированная Effective Policy** — расчётная совокупность эффективных ACTIVE PolicyRule на момент оценки и вход для дальнейших преобразований; отдельного пользовательского экрана для неё сейчас не требуется. Наличие принятого API `policy/export` не обязывает создавать workspace. Не смешивать эту проекцию с `ConfiguredEffectivePolicySnapshot` — вычисленной интерпретацией технических данных.
 
-**Принятый контракт UX-0:** [README](../contracts/README.md) и [машинно-читаемые границы](../contracts/ux-0-semantic-boundaries.json) запрещают включать AccessRequest в каталог PolicyRule и разделяют домены статусов. Mock-заявки доступны через Need, Overview и provenance правила; прежние `/prototype/policy/mock-request-*` перенаправляются на `/prototype/requests/…`. В Sidebar остаются восемь разделов. Настоящий `/access-requests` UI отделён от mock и сохраняет серверную авторизацию.
+**Принятый контракт UX-0:** [README](../contracts/README.md) и [машинно-читаемые границы](../contracts/ux-0-semantic-boundaries.json) запрещают включать AccessRequest в каталог PolicyRule и разделяют домены статусов. Mock-заявки доступны из своей коллекции, Need и provenance правила; прежние `/prototype/policy/mock-request-*` перенаправляются на `/prototype/requests/…`. В Issue #34 Sidebar переведён на три группы и семь коллекций [Baseline v0.2](ui-baseline-v0.2/README.md); технические deep links сохранены. Настоящий `/access-requests` UI отделён от mock и сохраняет серверную авторизацию.
 
 **Будущая IA:** расположение пунктов и расширение пользовательских сценариев остаются предметом review [исследовательской карты](ux-information-architecture.md). Эта карта не становится нормативной спецификацией от факта разделения списков. Новые экраны, операции и изменения [UI Baseline v0.1](ui-baseline-v0.1/README.md) этой документационной правкой не вводятся.
 
@@ -62,7 +64,7 @@ RC показывает текущий адрес как чтение EndpointAd
 
 ## Проверки
 
-Из `web`: `npm run typecheck`, `npm run build`, `npm run test:e2e`. Проверки проверяют fixture, восемь разделов, каждую ссылку, цепочку через TAE, Need→Interaction и Request→Revision, типы данных, независимость TAE/AP/NEP, поиск, прямые URL, Back/reload, отсутствие fetch/XHR и границу реальных маршрутов. Существующий `requests.spec.ts` использует настоящие FastAPI и временную SQLite без mock interception, включая ALLOWED/DENIED и отрицательную авторизацию. Общий CI web job запускает обе группы.
+Из `web`: `npm run typecheck`, `npm run build`, `npm run test:e2e`. Проверки проверяют fixture, семь коллекций из Sidebar, каждую связь через предметные вкладки, технические ссылки TAE, Need→Interaction и Request→Revision, типы данных, независимость TAE/AP/NEP, поиск, прямые URL, Back/reload, отсутствие fetch/XHR и границу реальных маршрутов. Существующий `requests.spec.ts` использует настоящие FastAPI и временную SQLite без mock interception, включая ALLOWED/DENIED и отрицательную авторизацию. Общий CI web job запускает обе группы.
 
 ## Вопросы владельцу для следующего этапа
 
