@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { byId, dataNature, natureLabel, objects, objectPath, sections } from '../src/prototype/data'
+import { byId, dataNature, natureLabel, objects, objectPath, sections, stateDefinitions } from '../src/prototype/data'
 
 test('fixture has one coherent allow-only communication with honest comparison evidence', () => {
   expect(byId.size).toBe(objects.length)
@@ -156,7 +156,7 @@ test('linked chain supports reload, browser back, unknown evidence and real-rout
 })
 
 test('ObjectTable headers match object, type, status and description cells', async ({ page }) => {
-  for (const [id, statusLabel] of [['mock-request-allowed', 'Состояние'], ['mock-need', 'Актуальность'], ['mock-application', '']] as const) {
+  for (const id of ['mock-request-allowed', 'mock-need', 'mock-application'] as const) {
     const object = byId.get(id)!
     await page.goto('/prototype/' + object.section)
     const table = page.getByRole('table')
@@ -167,7 +167,7 @@ test('ObjectTable headers match object, type, status and description cells', asy
     await expect(cells.nth(0)).toHaveText(object.name)
     await expect(cells.nth(1)).toHaveText(object.kind)
     if (object.state) {
-      await expect(cells.nth(2)).toContainText(statusLabel)
+      await expect(cells.nth(2)).toContainText(stateDefinitions[object.kind].label!)
       await expect(cells.nth(2)).toContainText(object.state)
     } else await expect(cells.nth(2)).toHaveText('—')
     await expect(cells.nth(3)).toHaveText(object.summary)
