@@ -52,5 +52,9 @@
     "openspec/specs/access-requests/spec.md",
     "openspec/specs/access-requests-web-ui/spec.md",
     "openspec/changes/ux-0-prototype/specs/ux-research-prototype/spec.md"
-  ]
+  ],
+  "routes": {
+    "AccessRequest": "/prototype/requests/",
+    "PolicyRule": "/prototype/policy/"
+  }
 }
