@@ -51,7 +51,8 @@
 - Рабочая фильтрация и pagination, сохранение query-контекста, все прежние object links, прямые URL/reload/Back, нулевой fetch/XHR и запрет credentials/domain storage — PASS.
 - `openspec validate --all --strict` — 7/7 PASS; `git diff --check` — PASS.
 - WSL2 Chromium использует ранее установленный `LD_LIBRARY_PATH=/tmp/napms-browser-libs/usr/lib/x86_64-linux-gnu`; конфигурация проекта и зависимости не менялись.
-- Финальный HEAD и GitHub CI указываются в описании PR: SHA невозможно записать внутрь собственного коммита.
+- [GitHub Verify #98](https://github.com/lehater/napms-2/actions/runs/42510654630) — application/web/validate PASS на `ed68a26ab36127826820220ebe0f2977c7cce0bd`. Проверка Resources дополнительно прошла 10 повторов после добавления ожиданий наблюдаемых URL/table transitions.
+- Финальный документационный HEAD и его GitHub CI указываются в описании PR: SHA невозможно записать внутрь собственного коммита.
 
 P0/P1 в проверенном срезе не обнаружены. P2: смешение русских пояснений и английских технических названий; малый fixture не позволяет судить о производительности/плотности больших коллекций; остальные Detail пока используют старую внутреннюю композицию. Требуется review координатора и владельца, техническая визуальная проверка не заменяет их приёмку.
 
