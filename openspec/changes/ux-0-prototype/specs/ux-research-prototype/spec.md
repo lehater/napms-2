@@ -67,6 +67,10 @@ The prototype SHALL label request statuses PENDING/ALLOWED/DENIED, rule states A
 ### Requirement: Automatic UX-0 semantic contract gate
 Every PR SHALL execute a blocking UX-0 semantic fixture check and browser rendering regression tests in GitHub Actions. The gate SHALL report the affected entity and violated rule. Failures SHALL enter SDLC-04 triage without automatic Harness changes.
 
+#### Scenario: Verify a changed prototype PR
+- **WHEN** a PR changes UX-0 fixtures, views or specifications
+- **THEN** GitHub Actions executes blocking semantic and browser regression checks and reports failed invariants
+
 ### Requirement: Explicit status and browser coverage
 Every UX-0 Kind SHALL have a typed status domain or an explicit no-status decision. New Kind and top-level sections SHALL require an updated contract and browser coverage. These checks apply to the research prototype, not arbitrary UI or the real API.
 
