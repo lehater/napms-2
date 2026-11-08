@@ -119,14 +119,13 @@
     },
     "coverage": {
       "topLevelSectionIds": [
-        "overview",
+        "processes",
+        "needs",
         "resources",
         "applications",
         "deployments",
-        "needs",
-        "policy",
-        "network",
-        "comparison"
+        "requests",
+        "policy"
       ],
       "browserSuites": [
         "web/e2e/prototype.spec.ts",

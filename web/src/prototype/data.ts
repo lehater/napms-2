@@ -1,15 +1,20 @@
 // Fictional research fixture only. Never seed SQLite or pass these IDs to api.ts.
 export const sections = [
-  { id: 'overview', group: 'Research', title: 'Overview', description: 'Одна коммуникация: от ресурса до расхождения политики.' },
-  { id: 'resources', group: 'Catalogues', title: 'Resources', description: 'Стабильная identity, один Endpoint на Resource. Ответственность не предоставляет полномочий.' },
-  { id: 'applications', group: 'Catalogues', title: 'Applications', description: 'Профиль Order-to-Ledger и одна неизменяемая InteractionRevision.' },
-  { id: 'deployments', group: 'Catalogues', title: 'Deployments', description: 'Конкретные компоненты на ресурсах; адрес не является identity размещения.' },
-  { id: 'needs', group: 'Business & access', title: 'Business needs', description: 'Бизнес-обоснование потребности отдельно от разрешения доступа.' },
-  { id: 'policy', group: 'Business & access', title: 'Policies', description: 'Только разрешённые коммуникации. DENIED заявки не создаёт NST DENY и не отзывает Rule.' },
-  { id: 'network', group: 'Network', title: 'Network evidence', description: 'Кандидаты мест применения и фиктивные снимки; реальный маршрут и доставка не доказаны.' },
-  { id: 'comparison', group: 'Network', title: 'Reconciliation', description: 'Требуемая и настроенная политика сравниваются только в явно выбранном scope.' },
+  { id: 'processes', group: 'Бизнес-контекст', title: 'Бизнес-процессы', description: 'Назначение, ответственность и потребности бизнеса.', kind: 'BusinessProcess' },
+  { id: 'needs', group: 'Бизнес-контекст', title: 'Потребности в коммуникациях', description: 'Бизнес-обоснование коммуникации. Потребность сама по себе не разрешает доступ.', kind: 'ConnectivityNeed' },
+  { id: 'resources', group: 'Каталоги', title: 'Ресурсы', description: 'Стабильные ресурсы и их Endpoints. Ответственность не предоставляет полномочий.', kind: 'Resource' },
+  { id: 'applications', group: 'Каталоги', title: 'Профили приложений', description: 'Повторно используемые профили, роли компонентов и направленные коммуникации.', kind: 'Application' },
+  { id: 'deployments', group: 'Каталоги', title: 'Развёрнутые компоненты', description: 'Конкретные экземпляры компонентов на ресурсах, независимо от IP.', kind: 'ComponentDeployment' },
+  { id: 'requests', group: 'Управление доступом', title: 'Заявки на доступ', description: 'Предмет запроса и решение ALLOWED / DENIED. Заявка и правило — разные сущности.', kind: 'AccessRequest' },
+  { id: 'policy', group: 'Управление доступом', title: 'Правила политики', description: 'Авторитетные разрешения для точного AccessSubject и основания их появления.', kind: 'PolicyRule' },
 ] as const
-export type SectionId = typeof sections[number]['id'] | 'requests'
+// Existing technical URLs and fixture identities stay available outside the Sidebar.
+export const legacySections = [
+  { id: 'overview', group: 'Research', title: 'Overview', description: 'Исторический обзор UX-0. Целевые коллекции доступны в Sidebar.' },
+  { id: 'network', group: 'Research', title: 'Network evidence', description: 'Фиктивные сетевые данные; маршрут и доставка не доказаны.' },
+  { id: 'comparison', group: 'Research', title: 'Reconciliation', description: 'Сравнение фиктивных permits в выбранном scope.' },
+] as const
+export type SectionId = typeof sections[number]['id'] | typeof legacySections[number]['id']
 export type Kind = 'Resource' | 'Endpoint' | 'Interaction' | 'TechnicalAccessEvidenceSet' | 'TechnicalAccessEntry' | 'Application' | 'ComponentDeployment' | 'InteractionRevision' | 'BusinessProcess' | 'ConnectivityNeed' | 'AccessRequest' | 'PolicyRule' | 'NST' | 'TargetRequiredPolicy' | 'ConfiguredEffectivePolicySnapshot' | 'Reconciliation'
 // Logical research classification, not a claim that the browser stores these entities.
 export const dataNature: Record<Kind, 'persistent' | 'computed'> = {
@@ -82,5 +87,6 @@ export function objectPath(object: MockObject) { return `/prototype/${object.sec
 
 // A policy catalogue contains declared PolicyRule only; requests remain linked provenance.
 export function visibleCollection(section: SectionId): readonly MockObject[] {
-  return section === 'policy' ? objects.filter(o => o.kind === 'PolicyRule') : objects.filter(o => o.section === section)
+  const collection = sections.find(item => item.id === section)
+  return objects.filter(object => collection ? object.kind === collection.kind : object.section === section)
 }

@@ -1,12 +1,12 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { sections } from './data'
 import './baseline.css'
 
 export const sidebarWidthKey = 'napms.prototype.sidebarWidth'
 const clamp = (width: number) => Math.min(360, Math.max(200, width))
 
-export function Shell({ children }: { children: ReactNode }) {
+export function Shell({ children, section }: { children: ReactNode; section?: string }) {
   const [width, setWidth] = useState(() => {
     try {
       const saved = Number(localStorage.getItem(sidebarWidthKey))
@@ -22,7 +22,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <aside id="prototype-sidebar" className="ux-sidebar">
       <Link to="/prototype" className="ux-brand"><span className="ux-brand-icon">N</span><span><strong>NAPMS 2.0</strong><small>Network Access Policy Management</small></span></Link>
       <nav aria-label="Prototype navigation" className="ux-navigation">
-        {Array.from(new Set(sections.map(item => item.group))).map(group => <div key={group}><p className="ux-nav-label">{group}</p><ul>{sections.filter(item => item.group === group).map(item => <li key={item.id}><NavLink end={item.id === 'overview'} to={item.id === 'overview' ? '/prototype' : `/prototype/${item.id}`} className={({ isActive }) => isActive ? 'selected' : ''}>{item.title}</NavLink></li>)}</ul></div>)}
+        {Array.from(new Set(sections.map(item => item.group))).map(group => <div key={group}><p className="ux-nav-label">{group}</p><ul>{sections.filter(item => item.group === group).map(item => <li key={item.id}><Link to={`/prototype/${item.id}`} aria-current={section === item.id ? 'page' : undefined} className={section === item.id ? 'selected' : ''}>{item.title}</Link></li>)}</ul></div>)}
       </nav>
       <nav aria-label="Real API navigation" className="ux-api"><strong>REAL API</strong><Link to="/access-requests">Заявки →</Link><Link to="/access-requests/new">Новая заявка →</Link><p>Отдельные данные и credentials. Mock-объекты не переносятся.</p></nav>
     </aside>
@@ -35,7 +35,7 @@ export function Shell({ children }: { children: ReactNode }) {
       onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) resize(event.clientX) }}
       onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId) }}><span aria-hidden="true">⋮</span></div>
     <div className="ux-workspace">
-      <header className="ux-topbar"><span>NAPMS / UX-0</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · read-only · без API</span></header>
+      <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · read-only · без API</span></header>
       <main className="ux-main">{children}</main>
     </div>
   </div>
