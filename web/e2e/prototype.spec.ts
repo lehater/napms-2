@@ -235,8 +235,15 @@ for (const [sectionId, id, tab, targetId] of journeys) {
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
     await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
     const rows = page.locator('tbody tr')
-    await expect(rows).toHaveCount(visibleCollection(sectionId).length)
-    expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-kind')))).toEqual(visibleCollection(sectionId).map(item => item.kind))
+    const expected = visibleCollection(sectionId)
+    await expect(rows).toHaveCount(Math.min(2, expected.length))
+    expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-kind')))).toEqual(expected.slice(0, 2).map(item => item.kind))
+    if (expected.length > 2) {
+      await page.getByRole('button', { name: 'Следующая страница', exact: true }).click()
+      await expect(rows).toHaveCount(expected.length - 2)
+      expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-id')))).toEqual(expected.slice(2).map(item => item.id))
+      await page.getByRole('button', { name: 'Предыдущая страница', exact: true }).click()
+    }
     const object = byId.get(id)!, target = byId.get(targetId)!
     await page.getByRole('table').getByRole('link', { name: object.name, exact: true }).click()
     await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
