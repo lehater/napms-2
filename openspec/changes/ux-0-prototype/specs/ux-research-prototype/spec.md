@@ -49,3 +49,24 @@ Browser checks SHALL verify navigation, linked fixture integrity and absence of 
 #### Scenario: Run browser checks
 - **WHEN** the frontend verification suite runs
 - **THEN** prototype navigation and real create/list/detail/ALLOWED/DENIED and authorization regressions are checked independently
+
+### Requirement: Independent request, policy and comparison presentation
+The prototype SHALL preserve the distinction between AccessRequest, PolicyRule and computed Reconciliation. The policy catalogue SHALL list PolicyRule only. Separate labelled mock request and reconciliation lists MAY appear on Overview; linked request provenance and all existing direct object URLs SHALL remain available.
+
+#### Scenario: Browse policies and requests
+- **WHEN** the user opens the policy catalogue and follows a related access request
+- **THEN** the policy list contains PolicyRule only while the request displays its own decision state and provenance
+
+### Requirement: Typed UI status semantics
+The prototype SHALL label request statuses PENDING/ALLOWED/DENIED, rule states Active/Inactive and Reconciliation results Drift/Uncomparable as distinct categories. Read-only UI mode and InteractionRevision immutability SHALL appear as attributes, never as lifecycle status. The normative presentation-only status domains SHALL be recorded in `docs/contracts/ux-0-semantic-boundaries.json`.
+
+#### Scenario: Inspect statuses and invariants
+- **WHEN** the user examines an ALLOWED or DENIED request, an Active rule, a Reconciliation result, Application or InteractionRevision
+- **THEN** status captions identify the relevant category, and UI read-only/immutable indicators are never shown as object status
+
+### Requirement: Automatic semantic contract gate
+Every PR SHALL execute a blocking fixture/domain semantic contract check and browser rendering regression checks in GitHub Actions. The check SHALL report the entity, expected type/state and violation. Failures SHALL be triaged through SDLC-04 rather than silently modifying Harness.
+
+#### Scenario: Introduce a semantic regression
+- **WHEN** an AccessRequest is added to the PolicyRule catalogue or assigned a PolicyRule lifecycle status
+- **THEN** the semantic contract check fails before merge and identifies the violated invariant
