@@ -27,6 +27,19 @@ npm run dev
 
 Представления: Обзор; Ресурсы; Приложения и коммуникации; Размещения компонентов; Бизнес-процессы и ConnectivityNeed; Декларированная политика и PolicyRule; NST и фактическая конфигурация; Сопоставление политик. Общие таблицы с поиском и карточки со связанными объектами.
 
+## Разделение заявок и правил: реализованное представление и границы IA
+
+Согласно [доменной модели](../domain.md) и принятым N2 OpenSpec [access-requests](../../openspec/specs/access-requests/spec.md), [access-decisions](../../openspec/specs/access-decisions/spec.md) и [policy-export](../../openspec/specs/policy-export/spec.md), **AccessRequest**, **AccessDecision** и **PolicyRule** — разные предметные понятия. После интеграции PR #31 в `main` заявки и правила уже имеют отдельные пользовательские списки и карточки в mock UI:
+
+- **Access Requests:** `/prototype/requests` показывает Q1 (ALLOWED) и Q2 (DENIED) как самостоятельные заявки с решениями. DENIED — результат рассмотрения Q2; отказ не создаёт PolicyRule и не отзывает ранее разрешённый доступ.
+- **Policy Rules:** `/prototype/policy` показывает только PolicyRule — P1 со значением `Active` и подписью «Состояние правила». Контракт допускает `Active/Inactive`, но в fixture нет Inactive Rule. В продуктовых контрактах используются `ACTIVE/INACTIVE`: повторное ALLOWED для того же exact AccessSubject переиспользует каноническое правило без автоматической активации INACTIVE. Переходы к исходным заявкам служат объяснению provenance.
+
+**Декларированная Effective Policy** — расчётная совокупность эффективных ACTIVE PolicyRule на момент оценки и вход для дальнейших преобразований; отдельного пользовательского экрана для неё сейчас не требуется. Наличие принятого API `policy/export` не обязывает создавать workspace. Не смешивать эту проекцию с `ConfiguredEffectivePolicySnapshot` — вычисленной интерпретацией технических данных.
+
+**Принятый контракт UX-0:** [README](../contracts/README.md) и [машинно-читаемые границы](../contracts/ux-0-semantic-boundaries.json) запрещают включать AccessRequest в каталог PolicyRule и разделяют домены статусов. Mock-заявки доступны через Need, Overview и provenance правила; прежние `/prototype/policy/mock-request-*` перенаправляются на `/prototype/requests/…`. В Sidebar остаются восемь разделов. Настоящий `/access-requests` UI отделён от mock и сохраняет серверную авторизацию.
+
+**Будущая IA:** расположение пунктов и расширение пользовательских сценариев остаются предметом review [исследовательской карты](ux-information-architecture.md). Эта карта не становится нормативной спецификацией от факта разделения списков. Новые экраны, операции и изменения [UI Baseline v0.1](ui-baseline-v0.1/README.md) этой документационной правкой не вводятся.
+
 ## Граница mock и evidence
 
 В Applications сначала показаны только Application-профили. Откройте `Order-to-Ledger HTTPS`: сразу под назначением профиля блок Interactions показывает роли OrderClient и LedgerApi, отдельную стрелку направления и назначение коммуникации. `Interaction details` открывает Interaction → Interaction revisions → rev-1; параметры также доступны по явно подписанной ссылке Revision. TCP/443 не подтверждает HTTPS: название профиля не служит доказательством L7. Технические свойства и «О данных» свернуты ниже коммуникаций, все значения доступны. Breadcrumbs содержат профиль и Interaction даже при прямом входе в revision; работают Back и reload. Application не является инсталляцией ПО, Component — роль участника, Interaction — устойчивая коммуникация, revision — её технические параметры.
@@ -70,7 +83,7 @@ Baseline фиксирует визуальную основу для следу�
 [Walkthrough, таблица Baseline → реализовано → отложено, проверки и четыре review-скриншота](ux-0-2-baseline.md). Общий Shell теперь fluid без глобального max-width, с тёмным регулируемым Sidebar. Resources показывает только Resource; Endpoint и Deployment доступны на предметных вкладках Detail. History содержит существующие интервальные факты fixture. Остальные внутренние Detail сохранены до review. Исторические кадры UX-0.1 выше показывают предыдущую композицию; текущие кадры находятся в UX-0.2.
 
 
-## SDLC-04 — проверяемая семантика UI (Issue #30, Draft PR #31)
+## SDLC-04 — проверяемая семантика UI (Issue #30, принят в main через PR #31)
 
 [Нормативный контракт UX-0](../contracts/README.md) разделяет каталог PolicyRule и mock-заявки. Заявки доступны по `/prototype/requests/…`, старые bookmark `/prototype/policy/mock-request-*` перенаправляются. На Overview заявки и Reconciliation находятся в отдельных таблицах. Метки состояний типизированы для всех 16 видов объектов; режим read-only и неизменяемость revision остаются атрибутами.
 
