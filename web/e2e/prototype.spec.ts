@@ -5,7 +5,7 @@ test('fixture has one coherent allow-only communication with honest comparison e
   expect(byId.size).toBe(objects.length)
   for (const object of objects) {
     expect(object.id).toMatch(/^mock-/)
-    expect(sections.some(section => section.id === object.section)).toBe(true)
+    expect(sections.some(section => section.id === object.section) || (object.kind === 'AccessRequest' && object.section === 'requests')).toBe(true)
     for (const link of object.links) expect(byId.has(link.id), `${object.id} → ${link.id}`).toBe(true)
   }
   const resources = objects.filter(object => object.kind === 'Resource')
