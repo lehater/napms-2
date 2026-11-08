@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { Link, NavLink, useParams } from 'react-router-dom'
+import { Link, Navigate, NavLink, useParams } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { byId, dataNature, evaluatedAt, natureLabel, objectPath, objects, sections, statusCaptions, visibleCollection, type MockObject } from './data'
@@ -69,9 +69,14 @@ function Overview() {
 
 export default function Prototype() {
   const { section = 'overview', objectId } = useParams()
-  const current = sections.find(item => item.id === section)
+  // Nested mock request workspace, not a ninth top-level sidebar section.
+  const current = section === 'requests'
+    ? { id: 'requests', group: 'Бизнес и доступ', title: 'Заявки (MOCK)', description: 'Заявки на доступ и их решения, отдельно от PolicyRule.' }
+    : sections.find(item => item.id === section)
   const object = objectId ? byId.get(objectId) : undefined
   const found = current && (!objectId || object?.section === current.id)
+  // Preserve old bookmark links while making Requests a separate canonical route.
+  if (section === 'policy' && object?.kind === 'AccessRequest') return <Navigate to={objectPath(object)} replace />
   return <div className="min-h-screen bg-slate-50 text-slate-950">
     <header className="border-b bg-slate-950 text-white"><div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 lg:px-8"><Link to="/prototype" className="text-xl font-semibold tracking-tight text-white">NAPMS <span className="ml-2 text-sm font-normal text-slate-300">2.0 / UX-0</span></Link><span className="text-xs text-slate-300">Исследовательский прототип · read-only</span></div></header>
     <div className="grid lg:min-h-[calc(100vh-61px)] lg:grid-cols-[264px_1fr]">
@@ -86,7 +91,7 @@ export default function Prototype() {
         <nav aria-label="Breadcrumbs" className="flex flex-wrap gap-2 text-sm text-slate-500"><Link to="/prototype">UX-0</Link><span>/</span>{current && <Link to={current.id === 'overview' ? '/prototype' : `/prototype/${current.id}`}>{current.title}</Link>}{object && <><span>/</span><span aria-current="page">{object.name}</span></>}</nav>
         {!found ? <section className="panel space-y-3"><h1>Объект не найден</h1><p>В фиктивном наборе нет такой ссылки.</p><Link to="/prototype">Вернуться к обзору</Link></section> : <>
           <div><p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">UX-0 / {current.group}</p><h1>{object?.name ?? current.title}</h1><p className="mt-2 max-w-4xl text-sm text-slate-500">{current.description}</p></div>
-          {object ? <ObjectCard object={object} /> : current.id === 'overview' ? <Overview /> : <ObjectTable key={current.id} title={current.id === 'policy' ? 'Правила политики' : 'Каталог объектов'} rows={visibleCollection(current.id)} />}
+          {object ? <ObjectCard object={object} /> : current.id === 'overview' ? <Overview /> : <ObjectTable key={current.id} title={current.id === 'policy' ? 'Правила политики' : current.id === 'requests' ? 'Заявки на доступ (MOCK)' : 'Каталог объектов'} rows={visibleCollection(current.id)} />}
         </>}
         <footer className="border-t pt-4 text-xs text-slate-500">Фиксированная оценка: {evaluatedAt} · Не live-статус · Источник: единый UX-0 fixture</footer>
       </main>
