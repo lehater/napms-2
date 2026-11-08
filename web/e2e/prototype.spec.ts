@@ -28,7 +28,8 @@ test('fixture has one coherent allow-only communication with honest comparison e
   expect(need.links.some(link => byId.get(link.id)?.kind === 'InteractionRevision')).toBe(false)
   expect(need.fields.participantComponent).toBe(byId.get('mock-interaction-ledger')!.fields.sourceComponent + ' / sender')
   expect(byId.get('mock-revision')!.fields.interaction).toBe('mock-interaction-ledger')
-  expect(byId.get('mock-revision')!.state).toBe('Immutable')
+  expect(byId.get('mock-revision')!.state).toBeUndefined() // invariant, not lifecycle
+  expect(byId.get('mock-application')!.state).toBeUndefined() // UI mode, not lifecycle
   for (const request of objects.filter(object => object.kind === 'AccessRequest')) {
     for (const kind of ['BusinessProcess', 'ConnectivityNeed', 'InteractionRevision']) {
       expect(request.links.some(link => byId.get(link.id)?.kind === kind)).toBe(true)
