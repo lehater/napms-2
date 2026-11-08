@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { objects, visibleCollection, statusCaptions } from '../src/prototype/data.ts'
+import { objects, objectPath, visibleCollection, statusCaptions } from '../src/prototype/data.ts'
 
 const contract = JSON.parse(readFileSync(new URL('../../docs/contracts/ux-0-semantic-boundaries.json', import.meta.url), 'utf8'))
 
@@ -18,6 +18,12 @@ function validate(items, policyRows) {
       } else if (domain.values.length > 0 && !domain.values.includes(item.state)) {
         errors.push(`${item.id} (${kind}): invalid state ${JSON.stringify(item.state)}; expected ${domain.values.join(', ')}`)
       }
+    }
+  }
+  for (const [kind, prefix] of Object.entries(contract.routes)) {
+    for (const item of items.filter(obj => obj.kind === kind)) {
+      const actual = objectPath(item)
+      if (!actual.startsWith(prefix)) errors.push(`${item.id} (${kind}): route ${actual} must start with ${prefix}`)
     }
   }
   const allowedPolicyKinds = contract.catalogues.policy.allowedKinds
