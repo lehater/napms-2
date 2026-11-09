@@ -194,3 +194,15 @@ JSON/CSV parity, отсутствие токенов в выводе. GitHub Act
 Основные модули следуют D1: `http.py`, `use_cases.py`, `domain.py`, `storage.py`, `dev.py`.
 Актуальные спецификации находятся в `openspec/specs/`. Завершённый change с 17/17 задачами
 сохранён в `openspec/changes/archive/2026-11-07-first-access-policy-slice/`.
+
+### Business-to-policy MOCK journey
+
+Run `npm run dev --prefix web` and open http://127.0.0.1:5173/prototype/processes (no backend needed).
+Open Settlement → Потребности → need-001 → Профиль → Order-to-Ledger HTTPS → Коммуникации → OrderClient → LedgerApi → Ревизии → rev-1 → Участники / Ресурс.
+Open the Need card's «Коммуникация» tab: `/prototype/needs/mock-need?tab=communication`. The inline form shows directed communication, immutable Revision, compatible deployments, exact-subject history and the submission summary. The Revision card links back to this form.
+
+Use «Сценарное состояние» (or `&scenario=A|B|C`) to reproduce the accepted [UX Visual Baseline](docs/ux/access-request/README.md): A defaults to `dep-order-1 → dep-ledger-2 / rev-1` on `ledger-api-02`; B selects the historical `dep-order-1 → dep-ledger-1 / rev-1` with P1; C explicitly has no compatible destination and cannot submit. The first new request is Q3; its first ALLOWED creates P2. Historical Q1/Q2 remain independent requests for the same subject and P1 is not changed.
+
+Confirm submission, then switch the demonstration role to Decider (or enable «MOCK режим принятия решения»). Neither ALLOWED nor DENIED is preselected: choose one, inspect its confirmation panel and separately confirm that outcome. Completed decisions cannot be changed. «Открыть PolicyRule» shows the declared permission and provenance; it does not prove network availability. Switch back to Requester to inspect the saved result. Repeated ALLOWED reuses the canonical Rule, including an INACTIVE Rule without reactivating it; DENIED creates no Rule and revokes none. Role selection is mock context, not real authorization; protected Rule viewing is an explicitly permitted mock `policy.export` context.
+
+SPA navigation preserves React simulation state. «Сбросить mock-state» or a full reload resets it without changing historical fixtures. The mock never calls the real API; the separate real API UI remains available.

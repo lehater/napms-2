@@ -52,7 +52,7 @@ test('Application mode and immutable revision are never lifecycle states', async
     await expect(card.getByRole('status')).toHaveCount(0)
     if (kind === 'InteractionRevision') await expect(card).toContainText('Неизменяемость параметров')
   }
-  await expect(page.locator('.ux-topbar')).toContainText('read-only')
+  await expect(page.locator('.ux-topbar')).toContainText('Simulation')
 })
 
 test('Reconciliation displays comparison outcome and never request decision status', async ({ page }) => {

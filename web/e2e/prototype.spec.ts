@@ -9,8 +9,8 @@ test('fixture has one coherent allow-only communication with honest comparison e
     for (const link of object.links) expect(byId.has(link.id), `${object.id} → ${link.id}`).toBe(true)
   }
   const resources = objects.filter(object => object.kind === 'Resource')
-  expect(resources).toHaveLength(2)
-  expect(new Set(resources.map(object => object.fields.endpoint)).size).toBe(2)
+  expect(resources).toHaveLength(3)
+  expect(new Set(resources.map(object => object.fields.endpoint)).size).toBe(3)
   expect(resources.every(object => Boolean(object.fields.endpoint))).toBe(true)
   for (const resource of resources) {
     const endpoints = resource.links.map(link => byId.get(link.id)!).filter(object => object.kind === 'Endpoint')
@@ -150,7 +150,7 @@ test('Resources collection filtering, pagination, tabs, direct URLs and return r
   await page.getByLabel('Строк на странице').selectOption('1')
   await expect(page).toHaveURL(/\?size=1$/)
   await expect(table.getByRole('row')).toHaveCount(2)
-  await expect(page.getByRole('status')).toHaveText('Показано 2 из 2')
+  await expect(page.getByRole('status')).toHaveText('Показано 3 из 3')
   await page.getByRole('button', { name: 'Следующая страница' }).click()
   await expect(table).toContainText('ledger-api-01')
   const listUrl = page.url()
@@ -235,8 +235,18 @@ for (const [sectionId, id, tab, targetId] of journeys) {
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
     await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
     const rows = page.locator('tbody tr')
-    await expect(rows).toHaveCount(visibleCollection(sectionId).length)
-    expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-kind')))).toEqual(visibleCollection(sectionId).map(item => item.kind))
+    const expected = visibleCollection(sectionId)
+    await expect(rows).toHaveCount(Math.min(2, expected.length))
+    expect(await rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-kind')))).toEqual(expected.slice(0, 2).map(item => item.kind))
+    for (let offset = 2; offset < expected.length; offset += 2) {
+      await page.getByRole('button', { name: 'Следующая страница', exact: true }).click()
+      await expect(rows).toHaveCount(Math.min(2, expected.length - offset))
+      await expect.poll(() => rows.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-object-id')))).toEqual(expected.slice(offset, offset + 2).map(item => item.id))
+    }
+    for (let pageNumber = Math.ceil(expected.length / 2); pageNumber > 1; pageNumber--) {
+      await page.getByRole('button', { name: 'Предыдущая страница', exact: true }).click()
+      await expect(page.getByText('Страница ' + (pageNumber - 1) + ' из ' + Math.ceil(expected.length / 2), { exact: true })).toBeVisible()
+    }
     const object = byId.get(id)!, target = byId.get(targetId)!
     await page.getByRole('table').getByRole('link', { name: object.name, exact: true }).click()
     await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
@@ -265,6 +275,7 @@ test('all fixture relations remain reachable through typed tabs and technical de
     for (const href of hrefs) {
       await page.goto(href)
       for (const link of await page.getByRole('table').getByRole('link').all()) visited.add((await link.getAttribute('href'))!)
+      for (const link of await page.getByLabel('Составление заявки на вкладке Коммуникация').getByRole('link').all()) visited.add((await link.getAttribute('href'))!)
     }
     for (const relation of object.links) expect(visited.has(objectPath(byId.get(relation.id)!)), `${object.id} → ${relation.id}`).toBe(true)
     await expect(page.getByRole('heading', { name: 'Связанные объекты', exact: true })).toHaveCount(0)

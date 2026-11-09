@@ -1,12 +1,16 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { sections } from './data'
+import { useSimulation, type MockRole } from './simulation'
 import './baseline.css'
 
 export const sidebarWidthKey = 'napms.prototype.sidebarWidth'
 const clamp = (width: number) => Math.min(360, Math.max(200, width))
 
 export function Shell({ children, section }: { children: ReactNode; section?: string }) {
+  const simulation = useSimulation(), navigate = useNavigate()
+  const { pathname } = useLocation(), main = useRef<HTMLElement>(null)
+  useLayoutEffect(() => { main.current?.scrollTo(0, 0); window.scrollTo(0, 0) }, [pathname])
   const [width, setWidth] = useState(() => {
     try {
       const saved = Number(localStorage.getItem(sidebarWidthKey))
@@ -35,8 +39,8 @@ export function Shell({ children, section }: { children: ReactNode; section?: st
       onPointerMove={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) resize(event.clientX) }}
       onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId) }}><span aria-hidden="true">⋮</span></div>
     <div className="ux-workspace">
-      <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · read-only · без API</span></header>
-      <main className="ux-main">{children}</main>
+      <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>RESEARCH / MOCK</strong><span>Фиктивные данные · Simulation · без API</span><label className="nid-role">Демонстрационная роль<select aria-label="Демонстрационная роль" value={simulation.role} onChange={e => simulation.setRole(e.target.value as MockRole)}><option value="Requester">Requester · alice-orders</option><option value="Decider">Decider · bob-policy</option><option value="Policy Viewer">Policy Viewer · policy.export (mock)</option></select></label><button onClick={() => { simulation.reset(); navigate('/prototype/needs/mock-need?tab=communication') }}>Сбросить mock-state</button></header>
+      <main ref={main} className="ux-main">{children}</main>
     </div>
   </div>
 }
