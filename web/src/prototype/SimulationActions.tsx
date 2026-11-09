@@ -1,30 +1,33 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/button'
-import { objectPath, type MockObject } from './data'
-import { useSimulation } from './simulation'
+import { type MockObject } from './data'
+import { subjectLabel, subjectOf, useSimulation, type Outcome } from './simulation'
 
 export function SimulationActions({ object }: { object: MockObject }) {
-  const simulation = useSimulation(), navigate = useNavigate()
-  const [source, setSource] = useState('mock-deployment-order-2')
-  const [destination, setDestination] = useState('mock-deployment-ledger')
-  const [revision, setRevision] = useState(object.kind === 'InteractionRevision' ? object.id : 'mock-revision')
-  const [error, setError] = useState(''), [decider, setDecider] = useState(false)
-  const need = object.kind === 'ConnectivityNeed' ? object : simulation.objects.find(o => o.id === 'mock-need')!
-  const deploymentOptions = simulation.objects.filter(o => o.kind === 'ComponentDeployment')
-  const select = (label: string, value: string, change: (v: string) => void, options: readonly MockObject[]) => <label>{label}<select aria-label={label} value={value} onChange={e => change(e.target.value)}>{options.map(o => <option key={o.id} value={o.id}>{o.name} · {o.summary}</option>)}</select></label>
+  const simulation = useSimulation()
+  const [selected, setSelected] = useState<Outcome | null>(null), [error, setError] = useState('')
+  useEffect(() => { setSelected(null); setError('') }, [simulation.role, object.id])
   const isRequest = object.id.startsWith('mock-simulation-request-')
-  if (!['ConnectivityNeed', 'InteractionRevision'].includes(object.kind) && !isRequest) return null
-  return <section className="ux-panel ux-panel-body" aria-label="MOCK Simulation"><h2>MOCK / Simulation</h2><p>Только состояние браузера. Полная перезагрузка сбрасывает симуляцию. Это не серверная авторизация.</p>
+  if (object.kind === 'InteractionRevision') return <p className="ux-callout"><Link to="/prototype/needs/mock-need?tab=communication">Составить заявку по ConnectivityNeed →</Link></p>
+  if (!isRequest) return null
+  const pending = object.state === 'PENDING', decider = simulation.role === 'Decider'
+  return <section className="ux-panel" aria-label="MOCK Simulation"><h2>{pending ? 'Рассмотрение · Decider' : 'Сохранённое решение'}</h2><div className="ux-panel-body">
+    <div className={object.state === 'DENIED' ? 'nid-warning' : pending ? 'nid-notice nid-pending' : 'nid-notice'}><strong>{pending ? 'PENDING — решение ещё не принято' : object.state + ' — терминальное решение'}</strong><p>{pending ? 'Заявка ожидает независимого решения.' : 'Повторное решение недоступно. Исходы ALLOWED и DENIED взаимоисключающие.'}</p></div>
     {error && <p role="alert">{error}</p>}
-    {!isRequest ? <form className="ux-tab-content" onSubmit={e => { e.preventDefault(); try { const id = simulation.create({ sourceDeploymentId: source, destinationDeploymentId: destination, interactionRevisionId: revision }, need.id); navigate(`/prototype/requests/${id}`) } catch (e) { setError((e as Error).message) } }}>
-      <p>Основание: <Link to={objectPath(need)}>{need.name}</Link></p>
-      {select('Источник', source, setSource, deploymentOptions)}
-      {select('Получатель', destination, setDestination, deploymentOptions)}
-      {select('Точная InteractionRevision', revision, setRevision, simulation.objects.filter(o => o.kind === 'InteractionRevision'))}
-      <p>Выберите компоненты в направлении коммуникации. Ресурсы доступны в карточках участников.</p>
-      <Button type="submit">Создать MOCK заявку</Button>
-    </form> : object.state === 'PENDING' ? <><label><input type="checkbox" checked={decider} onChange={e => setDecider(e.target.checked)} /> MOCK режим принятия решения</label>{decider && <div>{(['ALLOWED', 'DENIED'] as const).map(outcome => <Button key={outcome} onClick={() => simulation.decision(object.id, outcome)}>{outcome}</Button>)}</div>}</> : <p>AccessDecision: {object.fields.decisionId} · {object.state} · {object.fields.decisionAt}. Решение завершено.</p>}
-    {isRequest && object.links.filter(l => simulation.objects.find(o => o.id === l.id)?.kind === 'PolicyRule').map(l => <p key={l.id}><Link to={`/prototype/policy/${l.id}`}>Открыть PolicyRule</Link></p>)}
-  </section>
+    {pending ? <>
+      <label className="nid-decision-mode"><input type="checkbox" checked={decider} onChange={e => simulation.setRole(e.target.checked ? 'Decider' : 'Requester')} /> MOCK режим принятия решения</label>
+      <p className="ux-note">Только Decider с отдельным access.decide может принять решение. Переключение роли — симуляция, не серверная авторизация.</p>
+      {decider ? <>
+        <fieldset className="nid-decision-choices"><legend>Выберите ровно одно решение</legend>{(['ALLOWED', 'DENIED'] as const).map(outcome => <label key={outcome} data-selected={selected === outcome}><span>{outcome}<input type="radio" aria-label={outcome} name="mock-decision" value={outcome} checked={selected === outcome} onChange={() => { setSelected(outcome); setError('') }} /></span><small>{outcome === 'ALLOWED' ? 'Разрешить точный subject; создать или переиспользовать Rule.' : 'Отклонить эту заявку; не создавать и не отзывать Rule.'}</small></label>)}</fieldset>
+        {selected ? <div className="nid-confirmation" role="dialog" aria-label={'Подтверждение ' + selected}><h3>Подтвердить {selected} для {object.name}?</h3><code>{subjectLabel(subjectOf(object)!)}</code><p>{selected === 'ALLOWED' ? 'Будет создан или переиспользован канонический Rule. INACTIVE Rule не реактивируется. Это не подтверждает работу сети.' : 'Новый Rule не создаётся. Существующие правила, включая P1, не отзываются.'}</p><Button variant="outline" onClick={() => setSelected(null)}>Отменить выбор</Button><Button onClick={() => { try { simulation.decision(object.id, selected); setSelected(null) } catch (e) { setError((e as Error).message) } }}>Подтвердить {selected}</Button></div> : <div className="nid-confirmation"><h3>Решение не выбрано</h3><p>Выберите ALLOWED или DENIED, затем отдельно подтвердите конкретный исход.</p><Button disabled>Подтвердить решение</Button></div>}
+      </> : <p>Requester наблюдает за своей заявкой; Policy Viewer читает разрешения. Эти роли не принимают решение.</p>}
+    </> : <>
+      <dl className="ux-properties">{Object.entries({ Decision: object.fields.decisionId, Decider: object.fields.decider, 'Дата решения': object.fields.decisionAt, 'PolicyRule ID': object.fields.policyRuleId }).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
+      <p>Решение завершено.</p>{object.state === 'DENIED' && <p className="nid-warning">Разрешение по этой заявке не появилось. DENIED не создаёт PolicyRule и не отзывает существующие правила.</p>}
+    </>}
+    {object.links.filter(l => simulation.objects.find(o => o.id === l.id)?.kind === 'PolicyRule').map(l => <p className="nid-rule-result" key={l.id}><Link to={'/prototype/policy/' + l.id}>Открыть PolicyRule</Link><small>MOCK разрешённый просмотр: policy.export на оба Resource. Право видеть заявку само по себе не предоставляет это право.</small></p>)}
+    <p className="ux-note">ALLOWED / ACTIVE — декларированное разрешение. Конфигурация устройств и фактическая сетевая доступность не подтверждены.</p>
+    <Link to="/prototype/requests">← К заявкам на доступ</Link>
+  </div></section>
 }

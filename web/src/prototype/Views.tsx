@@ -2,6 +2,9 @@ import { createContext, useContext } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Collection, type Row, type Column } from './Resources'
 import { byId, objectPath, stateDefinitions, dataNature, natureLabel, type MockObject, type Kind } from './data'
+import { NeedCommunication, SubjectSummary } from './NeedCommunication'
+import { SimulationActions } from './SimulationActions'
+import { subjectOf, subjectLabel, useSimulation, type Scenario } from './simulation'
 export const ObjectIndex = createContext(byId)
 export const related = (object: MockObject, ...kinds: Kind[]) => object.links.map(link => byId.get(link.id)).filter((item): item is MockObject => !!item && kinds.includes(item.kind))
 function useRelated() { const index = useContext(ObjectIndex); return (object: MockObject, ...kinds: Kind[]) => object.links.map(l => index.get(l.id)).filter((item): item is MockObject => !!item && kinds.includes(item.kind)) }
@@ -23,7 +26,7 @@ function relationLabel(related: ReturnType<typeof useRelated>, parent: MockObjec
 }
 const names = (related: ReturnType<typeof useRelated>, object: MockObject, ...kinds: Kind[]) => related(object, ...kinds).map(item => item.name).join('\n')
 function values(object: MockObject, related: ReturnType<typeof useRelated>) {
-  return { name: object.name, summary: object.summary, state: object.state ?? '—', component: object.fields.component ?? '', components: object.fields.components?.split(' → ').join('\n') ?? '', interactions: names(related, object, 'Interaction'), resource: names(related, object, 'Resource'), application: names(related, object, 'Application'), responsible: object.fields.responsible ?? '', needs: names(related, object, 'ConnectivityNeed'), process: names(related, object, 'BusinessProcess'), participant: object.fields.participantComponent ?? '', requester: object.fields.requester ?? '', submittedAt: object.fields.submittedAt ?? 'Не указан в fixture', subject: object.fields.subject ?? related(object, 'ComponentDeployment', 'InteractionRevision').map(item => item.name).join('\n'), provenance: object.fields.RuleAuthorizationEvidence ?? '' }
+  return { name: object.name, summary: object.summary, state: object.state ?? '—', component: object.fields.component ?? '', components: object.fields.components?.split(' → ').join('\n') ?? '', interactions: names(related, object, 'Interaction'), resource: names(related, object, 'Resource'), application: names(related, object, 'Application'), responsible: object.fields.responsible ?? '', needs: names(related, object, 'ConnectivityNeed'), process: names(related, object, 'BusinessProcess'), participant: object.fields.participantComponent ?? '', requester: object.fields.requester ?? '', submittedAt: object.fields.submittedAt ?? 'Не указан в fixture', subject: subjectOf(object) ? subjectLabel(subjectOf(object)!) : object.fields.subject ?? related(object, 'ComponentDeployment', 'InteractionRevision').map(item => item.name).join('\n'), provenance: object.fields.RuleAuthorizationEvidence ?? '' }
 }
 const c = (key: string, title: string): Column => ({ key, title })
 const nameColumn: Column = { key: 'name', title: 'Объект', render: row => <><Link to={row.path!}>{row.values.name}</Link><small>{row.id}</small></> }
@@ -76,27 +79,41 @@ function tabsFor(object: MockObject, related: ReturnType<typeof useRelated>, ind
 }
 export function ObjectDetail({ object }: { object: MockObject }) {
   const related = useRelated()
+  const { resetVersion } = useSimulation()
   const [params] = useSearchParams()
   const tabs = tabsFor(object, related, useContext(ObjectIndex))
   const selected = tabs.find(tab => tab.id === params.get('tab'))
   const overview = !selected
+  const scenario: Scenario = params.get('scenario') === 'B' ? 'B' : params.get('scenario') === 'C' ? 'C' : 'A'
+  const simulatedRequest = object.id.startsWith('mock-simulation-request-')
+  const subject = ['AccessRequest', 'PolicyRule'].includes(object.kind) ? subjectOf(object) : undefined
+  const origin = object.kind === 'PolicyRule' ? related(object, 'AccessRequest').find(r => r.state === 'ALLOWED') : undefined
   const isCommunication = object.kind === 'Application' || object.kind === 'Interaction'
   const communications = object.kind === 'Application' ? related(object, 'Interaction') : [object]
   return <>
     <nav aria-label="Object tabs" className="ux-tabs">{[{ id: 'overview', title: 'Обзор' }, ...tabs].map(tab => { const next = new URLSearchParams(params); if (tab.id === 'overview') next.delete('tab'); else next.set('tab', tab.id); return <Link key={tab.id} to={{ pathname: objectPath(object), search: next.toString() }} aria-current={(overview ? tab.id === 'overview' : selected.id === tab.id) ? 'page' : undefined}>{tab.title}</Link> })}</nav>
-    {overview ? <div className="ux-detail-grid">
+    {object.kind === 'ConnectivityNeed' && selected?.id === 'communication' ? <NeedCommunication key={object.id + scenario + resetVersion} object={object} scenario={scenario} /> : overview ? <div className={simulatedRequest ? 'nid-request-grid' : 'ux-detail-grid'}>
       <section className="ux-panel" aria-label="Карточка объекта"><h2>{object.kind} · Обзор</h2><div className="ux-panel-body"><ObjectStatus object={object} />
         {isCommunication ? <div className="ux-communication">{communications.map(item => <div key={item.id}><p className="ux-eyebrow">Направленная коммуникация</p><p className="ux-direction"><strong>{item.fields.sourceComponent}</strong><span aria-label="Направление коммуникации">→</span><strong>{item.fields.destinationComponent}</strong></p><p>Назначение: {item.fields.purpose}</p>{related(item, 'InteractionRevision').map(revision => <p className="ux-note" key={revision.id}>{revision.fields.traffic}</p>)}</div>)}<p className="ux-note">TCP/443 не подтверждает HTTPS; имя профиля не является доказательством L7.</p></div> : <p className="ux-summary">{object.summary}</p>}
+        {subject && <SubjectSummary subject={subject} />}
+        {object.kind === 'PolicyRule' && <p className="nid-warning">Наличие ACTIVE не означает работу сети. Маршрутизация, ACL и фактическая доступность требуют отдельного подтверждения.</p>}
+        {object.id.startsWith('mock-simulation-rule-') && object.links.filter(l => l.label === 'Origin ALLOWED').map(l => <p key={l.id}><Link to={'/prototype/requests/' + l.id}>Вернуться к исходной заявке</Link></p>)}
         {object.kind === 'InteractionRevision' && <p className="ux-callout">Неизменяемость параметров — инвариант InteractionRevision, а не жизненное состояние.</p>}
         {object.kind === 'AccessRequest' && object.state === 'DENIED' && <Properties fields={{ policyRuleId: object.fields.policyRuleId }} />}
         <details><summary>О данных</summary><p>{natureLabel[dataNature[object.kind]]}. Все данные — mock в памяти; UI-ссылки не задают новые постоянные связи.</p></details>
       </div></section>
-      <section className="ux-panel" aria-label="Основные свойства"><h2>Основные свойства</h2><div className="ux-panel-body"><Properties fields={{ id: object.id, ...Object.fromEntries(Object.entries(object.fields).filter(([key]) => !/Evidence|decision|decider|Authority/.test(key))) }} /></div></section>
+      <section className="ux-panel" aria-label="Основные свойства"><h2>{simulatedRequest ? 'Бизнес-основание и admission' : origin ? 'Состояние и происхождение Rule' : 'Основные свойства'}</h2><div className="ux-panel-body">
+        {simulatedRequest && <><dl className="nid-summary">{related(object, 'ConnectivityNeed', 'BusinessProcess').map(o => <div key={o.id}><dt>{o.kind}</dt><dd><Link to={objectPath(o)}>{o.name}</Link></dd></div>)}<div><dt>Заявитель</dt><dd>{object.fields.requester}</dd></div><div><dt>Время подачи</dt><dd>{object.fields.submittedAt} (mock)</dd></div><div><dt>Допуск к подаче</dt><dd>{object.fields.RequestAuthorityEvidence}</dd></div></dl></>}
+        {origin && <><dl className="nid-summary"><div><dt>PolicyRule</dt><dd>{object.name} · {object.state === 'Active' ? 'ACTIVE' : 'INACTIVE'}</dd></div><div><dt>Originating Request</dt><dd><Link to={objectPath(origin)}>{origin.name}</Link></dd></div><div><dt>Originating Decision</dt><dd>{origin.fields.decisionId} · ALLOWED</dd></div><div><dt>Decider</dt><dd>{origin.fields.decider}</dd></div><div><dt>Decided at</dt><dd>{origin.fields.decisionAt}</dd></div></dl><p className="ux-note">Origin не перезаписывается при повторном ALLOWED. Защищённый mock-просмотр предполагает policy.export на оба Resource.</p></>}
+        {simulatedRequest || origin ? <details><summary>Технические идентификаторы</summary><Properties fields={{ id: object.id, ...object.fields }} /></details> : <Properties fields={{ id: object.id, ...Object.fromEntries(Object.entries(object.fields).filter(([key]) => !/Evidence|decision|decider|Authority/.test(key))) }} />}
+      </div></section>
+      {simulatedRequest && <SimulationActions key={object.id} object={object} />}
     </div> : <div className="ux-tab-content" key={object.id + selected.id}>
       {selected.note && <p className="ux-note">{selected.note}</p>}
       {selected.fields && <section className="ux-panel"><h2>{selected.title}</h2><div className="ux-panel-body"><Properties fields={selected.fields} /></div></section>}
       {selected.rows && <Collection label={selected.title} rows={selected.rows} columns={[c('name', 'Компонент'), c('summary', 'Контекст')]} />}
       {selected.objects && [...new Set(selected.objects.map(item => item.kind))].map(kind => <ObjectCollection key={kind} title={kind} parent={object} rows={selected.objects!.filter(item => item.kind === kind)} />)}
     </div>}
+    {object.kind === 'InteractionRevision' && <SimulationActions object={object} />}
   </>
 }
