@@ -1,0 +1,50 @@
+[
+  {
+    "label": "A",
+    "query": "",
+    "links": [
+      {
+        "text": "rev-1 (единственная)",
+        "href": "/prototype/applications/mock-revision"
+      }
+    ],
+    "activation": {
+      "url": "http://127.0.0.1:5174/prototype/applications/mock-revision",
+      "h1": "OrderClient → LedgerApi / rev-1"
+    }
+  },
+  {
+    "label": "A",
+    "query": "?tab=interactions",
+    "links": [],
+    "activation": null
+  },
+  {
+    "label": "B",
+    "query": "",
+    "links": [
+      {
+        "text": "InteractionRevision · rev-1 (единственная)",
+        "href": "/prototype/applications/mock-revision"
+      }
+    ],
+    "activation": {
+      "url": "http://127.0.0.1:5175/prototype/applications/mock-revision",
+      "h1": "OrderClient → LedgerApi / rev-1"
+    }
+  },
+  {
+    "label": "B",
+    "query": "?tab=interactions",
+    "links": [
+      {
+        "text": "InteractionRevision · rev-1 (единственная)",
+        "href": "/prototype/applications/mock-revision"
+      }
+    ],
+    "activation": {
+      "url": "http://127.0.0.1:5175/prototype/applications/mock-revision",
+      "h1": "OrderClient → LedgerApi / rev-1"
+    }
+  }
+]

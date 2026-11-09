@@ -1,6 +1,6 @@
 # NAPMS 2.0 — controlled UI Skill experiment (Application detail)
 
-**Status:** protocol ready; A/B Codex runs and browser measurements have **not** been executed.
+**Status:** paired delegated Codex pilot executed; see [results and raw evidence](RESULTS.md). Exact runtime model/effort is not independently attested; this is not a fully verified CLI replication.
 **Scope:** research-only; no product implementation or Harness/CI change in this PR.
 **Source commit (both arms):** `642a6f8f5d7e903641068887bd5a32ae6ea466d3` (`main`, PR #35).
 **Target route:** `/prototype/applications/mock-application`.
@@ -69,4 +69,4 @@ Do not use stars, subjective visual appeal or number of skill instructions as ev
 - `web/src/index.css` already provides `:focus-visible` outlines for interactive elements, so focus absence must **not** be asserted from screenshots alone.
 - Existing Playwright tests cover geometry and mock/real semantics. Any proposed additional test needs a specific uncovered regression.
 
-**Next executor:** run the two Codex arms and add actual results, not more planning. Keep accepted `main` untouched until independently reviewed.
+**Next action:** review [actual results](RESULTS.md) and independent audit. Keep accepted `main` untouched; any broader adoption requires a replicated controlled trial.

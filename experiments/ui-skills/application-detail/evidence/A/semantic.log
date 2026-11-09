@@ -1,0 +1,5 @@
+
+> napms-web@0.1.0 test:semantic
+> node --experimental-strip-types scripts/check-semantic-contract.mjs
+
+SEMANTIC_CONTRACT_PASS: 16 kinds, 7 top-level sections, routes, denied provenance, 2 validator sentinels

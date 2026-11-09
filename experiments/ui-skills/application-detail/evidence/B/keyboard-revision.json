@@ -1,0 +1,91 @@
+{
+  "reached": true,
+  "url": "http://127.0.0.1:5175/prototype/applications/mock-revision",
+  "sequence": [
+    {
+      "text": "NNAPMS 2.0Network Access Policy Management",
+      "href": "/prototype",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Бизнес-процессы",
+      "href": "/prototype/processes",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Потребности в коммуникациях",
+      "href": "/prototype/needs",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Ресурсы",
+      "href": "/prototype/resources",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Профили приложений",
+      "href": "/prototype/applications",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Развёрнутые компоненты",
+      "href": "/prototype/deployments",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Заявки на доступ",
+      "href": "/prototype/requests",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Правила политики",
+      "href": "/prototype/policy",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Заявки →",
+      "href": "/access-requests",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Новая заявка →",
+      "href": "/access-requests/new",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "⋮",
+      "href": null,
+      "outline": "rgb(66, 139, 250) solid 2px"
+    },
+    {
+      "text": "NAPMS",
+      "href": "/prototype",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Профили приложений",
+      "href": "/prototype/applications",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Обзор",
+      "href": "/prototype/applications/mock-application",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Компоненты",
+      "href": "/prototype/applications/mock-application?tab=components",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "Коммуникации",
+      "href": "/prototype/applications/mock-application?tab=interactions",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    },
+    {
+      "text": "InteractionRevision · rev-1 (единственная)",
+      "href": "/prototype/applications/mock-revision",
+      "outline": "oklch(0.554 0.046 257.417) solid 2px"
+    }
+  ]
+}

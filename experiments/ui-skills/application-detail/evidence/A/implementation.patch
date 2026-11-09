@@ -1,0 +1,78 @@
+diff --git a/web/src/prototype/Views.tsx b/web/src/prototype/Views.tsx
+index 36fd84f..e40b8bf 100644
+--- a/web/src/prototype/Views.tsx
++++ b/web/src/prototype/Views.tsx
+@@ -48,7 +48,7 @@ function tabsFor(object: MockObject): Tab[] {
+   const fields = (id: string, title: string, keys: string[]) => { const entries = Object.fromEntries(keys.filter(key => object.fields[key] !== undefined).map(key => [key, object.fields[key]])); if (Object.keys(entries).length) tabs.push({ id, title, fields: id === 'decision' ? { outcome: object.state!, ...entries } : entries }) }
+   switch (object.kind) {
+     case 'Application':
+-      if (object.fields.components) tabs.push({ id: 'components', title: 'Компоненты', rows: object.fields.components.split(' → ').map(name => ({ id: name, values: { name, summary: 'Роль в профиле ' + object.name } })), note: 'Компоненты представлены ролями в fixture; самостоятельные записи и ID отсутствуют.' })
++      if (object.fields.components) tabs.push({ id: 'components', title: 'Компоненты', rows: object.fields.components.split(' → ').map(name => ({ id: name, values: { name, summary: related(object, 'Interaction').flatMap(item => [item.fields.sourceComponent === name ? 'Источник · ' + item.fields.purpose : '', item.fields.destinationComponent === name ? 'Получатель · ' + item.fields.purpose : '']).filter(Boolean).join('; ') || 'Роль в профиле ' + object.name } })), note: 'Компоненты представлены ролями в fixture; самостоятельные записи и ID отсутствуют.' })
+       add('interactions', 'Коммуникации', 'Interaction'); break
+     case 'Interaction': add('revisions', 'Ревизии', 'InteractionRevision'); add('profile', 'Профиль', 'Application'); add('needs', 'Потребности', 'ConnectivityNeed'); break
+     case 'InteractionRevision': add('interaction', 'Коммуникация', 'Interaction'); add('deployments', 'Участники', 'ComponentDeployment'); break
+@@ -69,6 +69,15 @@ function tabsFor(object: MockObject): Tab[] {
+   }
+   return tabs
+ }
++function ApplicationCommunication({ interaction }: { interaction: MockObject }) {
++  return <article className="ux-application-communication">
++    <p className="ux-eyebrow">Направленная коммуникация</p>
++    <div className="ux-direction"><div><small>Источник · роль</small><strong>{interaction.fields.sourceComponent}</strong></div><span aria-label="Направление коммуникации">→</span><div><small>Получатель · роль</small><strong>{interaction.fields.destinationComponent}</strong></div></div>
++    <p>Назначение: {interaction.fields.purpose}</p>
++    <p className="ux-note"><Link to={objectPath(interaction)}>Открыть коммуникацию →</Link></p>
++    {related(interaction, 'InteractionRevision').map(revision => <div className="ux-application-revision" key={revision.id}><small>InteractionRevision · точные параметры</small><Link to={objectPath(revision)}>{revision.fields.revision}</Link><p>{revision.fields.traffic}</p></div>)}
++  </article>
++}
+ export function ObjectDetail({ object }: { object: MockObject }) {
+   const [params] = useSearchParams()
+   const tabs = tabsFor(object)
+@@ -76,21 +85,22 @@ export function ObjectDetail({ object }: { object: MockObject }) {
+   const overview = !selected
+   const isCommunication = object.kind === 'Application' || object.kind === 'Interaction'
+   const communications = object.kind === 'Application' ? related(object, 'Interaction') : [object]
+-  return <>
++  return <div className={object.kind === 'Application' ? 'ux-application-detail' : undefined}>
+     <nav aria-label="Object tabs" className="ux-tabs">{[{ id: 'overview', title: 'Обзор' }, ...tabs].map(tab => { const next = new URLSearchParams(params); if (tab.id === 'overview') next.delete('tab'); else next.set('tab', tab.id); return <Link key={tab.id} to={{ pathname: objectPath(object), search: next.toString() }} aria-current={(overview ? tab.id === 'overview' : selected.id === tab.id) ? 'page' : undefined}>{tab.title}</Link> })}</nav>
+     {overview ? <div className="ux-detail-grid">
+-      <section className="ux-panel" aria-label="Карточка объекта"><h2>{object.kind} · Обзор</h2><div className="ux-panel-body"><ObjectStatus object={object} />
+-        {isCommunication ? <div className="ux-communication">{communications.map(item => <div key={item.id}><p className="ux-eyebrow">Направленная коммуникация</p><p className="ux-direction"><strong>{item.fields.sourceComponent}</strong><span aria-label="Направление коммуникации">→</span><strong>{item.fields.destinationComponent}</strong></p><p>Назначение: {item.fields.purpose}</p>{related(item, 'InteractionRevision').map(revision => <p className="ux-note" key={revision.id}>{revision.fields.traffic}</p>)}</div>)}<p className="ux-note">TCP/443 не подтверждает HTTPS; имя профиля не является доказательством L7.</p></div> : <p className="ux-summary">{object.summary}</p>}
++      <section className="ux-panel" aria-label="Карточка объекта"><h2>{object.kind === 'Application' ? 'Профиль коммуникации · Обзор' : object.kind + ' · Обзор'}</h2><div className="ux-panel-body"><ObjectStatus object={object} />
++        {isCommunication ? <div className="ux-communication">{communications.map(item => object.kind === 'Application' ? <ApplicationCommunication key={item.id} interaction={item} /> : <div key={item.id}><p className="ux-eyebrow">Направленная коммуникация</p><p className="ux-direction"><strong>{item.fields.sourceComponent}</strong><span aria-label="Направление коммуникации">→</span><strong>{item.fields.destinationComponent}</strong></p><p>Назначение: {item.fields.purpose}</p>{related(item, 'InteractionRevision').map(revision => <p className="ux-note" key={revision.id}>{revision.fields.traffic}</p>)}</div>)}<p className="ux-note">TCP/443 не подтверждает HTTPS; имя профиля не является доказательством L7.</p></div> : <p className="ux-summary">{object.summary}</p>}
+         {object.kind === 'InteractionRevision' && <p className="ux-callout">Неизменяемость параметров — инвариант InteractionRevision, а не жизненное состояние.</p>}
+         {object.kind === 'AccessRequest' && object.state === 'DENIED' && <Properties fields={{ policyRuleId: object.fields.policyRuleId }} />}
+         <details><summary>О данных</summary><p>{natureLabel[dataNature[object.kind]]}. Все данные — mock в памяти; UI-ссылки не задают новые постоянные связи.</p></details>
+       </div></section>
+-      <section className="ux-panel" aria-label="Основные свойства"><h2>Основные свойства</h2><div className="ux-panel-body"><Properties fields={{ id: object.id, ...Object.fromEntries(Object.entries(object.fields).filter(([key]) => !/Evidence|decision|decider|Authority/.test(key))) }} /></div></section>
++      <section className="ux-panel" aria-label="Основные свойства"><h2>Основные свойства</h2><div className="ux-panel-body"><Properties fields={object.kind === 'Application' ? { 'ID профиля': object.id, 'Компоненты · роли': object.fields.components, 'Назначение профиля': object.summary } : { id: object.id, ...Object.fromEntries(Object.entries(object.fields).filter(([key]) => !/Evidence|decision|decider|Authority/.test(key))) }} /></div></section>
+     </div> : <div className="ux-tab-content" key={object.id + selected.id}>
+       {selected.note && <p className="ux-note">{selected.note}</p>}
+       {selected.fields && <section className="ux-panel"><h2>{selected.title}</h2><div className="ux-panel-body"><Properties fields={selected.fields} /></div></section>}
+       {selected.rows && <Collection label={selected.title} rows={selected.rows} columns={[c('name', 'Компонент'), c('summary', 'Контекст')]} />}
++      {object.kind === 'Application' && selected.id === 'interactions' && <p className="ux-note">Источник → получатель. Откройте коммуникацию, затем вкладку «Ревизии» для точных параметров трафика.</p>}
+       {selected.objects && [...new Set(selected.objects.map(item => item.kind))].map(kind => <ObjectCollection key={kind} title={kind} parent={object} rows={selected.objects!.filter(item => item.kind === kind)} />)}
+     </div>}
+-  </>
++  </div>
+ }
+diff --git a/web/src/prototype/baseline.css b/web/src/prototype/baseline.css
+index b4d961b..5c3ea18 100644
+--- a/web/src/prototype/baseline.css
++++ b/web/src/prototype/baseline.css
+@@ -22,3 +22,16 @@
+ .ux-summary{font-size:16px;line-height:1.7;margin:18px 0;max-width:65ch}.ux-communication{margin-top:16px;background:#f6f9fd;border:1px solid #c8d5e3;padding:22px;border-radius:8px}.ux-direction{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:16px 0;font-size:23px;overflow-wrap:anywhere}.ux-callout{margin-top:16px;padding:14px 16px;border:1px solid #bdd0e5;border-radius:7px;background:#edf4fd;color:#294967;font-size:12px;line-height:1.7}.ux-tab-content{display:grid;gap:16px}.ux-detail-grid{grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr)}
+ @media(max-width:1050px){.ux-detail-grid{grid-template-columns:minmax(0,1fr)}}
+ @media(max-width:767px){.ux-navigation{grid-template-columns:minmax(0,1fr)}.ux-properties>div{grid-template-columns:minmax(0,1fr);gap:5px}.ux-direction{font-size:19px}.ux-communication{padding:15px}.ux-topbar{color:#475d75}}
++
++/* Application detail: keep direction, role and exact revision together. */
++.ux-application-detail .ux-communication{margin-top:0}
++.ux-application-detail .ux-direction{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;font-size:21px;line-height:1.4}
++.ux-application-detail .ux-direction small{display:block;font-size:12px;font-weight:400;color:#475d75;margin-bottom:5px}
++.ux-application-detail .ux-direction strong{display:block;overflow-wrap:anywhere}
++.ux-application-revision{border-top:1px solid #c8d5e3;padding-top:14px;margin-top:16px;display:grid;gap:7px;font-size:13px}
++.ux-application-revision small{color:#475d75}.ux-application-revision a{color:#135fca;font-weight:600;text-decoration:underline;text-underline-offset:3px}
++.ux-application-detail .ux-tabs a:focus-visible{outline-offset:-4px}
++.ux-application-detail .ux-table{table-layout:fixed}
++.ux-application-detail .ux-table td,.ux-application-detail .ux-table td:first-child{min-width:0;overflow-wrap:anywhere}
++.ux-application-detail .ux-table th{white-space:normal}
++@media(max-width:767px){.ux-application-detail .ux-direction{grid-template-columns:minmax(0,1fr);gap:8px}.ux-application-detail .ux-direction>span{transform:rotate(90deg);justify-self:start}.ux-application-detail .ux-table td,.ux-application-detail .ux-table th{padding:12px 8px}.ux-application-detail .ux-panel-body{padding:15px}}

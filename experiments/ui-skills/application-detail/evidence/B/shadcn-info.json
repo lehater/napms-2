@@ -1,0 +1,61 @@
+{
+  "project": {
+    "framework": "Vite",
+    "frameworkName": "vite",
+    "frameworkVersion": null,
+    "srcDirectory": true,
+    "rsc": false,
+    "typescript": true,
+    "tailwindVersion": "v4",
+    "tailwindConfig": null,
+    "tailwindCss": "src/index.css",
+    "importAlias": "@"
+  },
+  "config": {
+    "style": "new-york",
+    "base": "radix",
+    "rsc": false,
+    "typescript": true,
+    "iconLibrary": "radix",
+    "rtl": false,
+    "menuColor": null,
+    "menuAccent": null,
+    "aliases": {
+      "components": "@/components",
+      "utils": "@/lib/utils",
+      "ui": "@/components/ui",
+      "lib": "@/lib",
+      "hooks": "@/hooks"
+    },
+    "resolvedPaths": {
+      "cwd": "/tmp/napms-ui-B/web",
+      "tailwindConfig": null,
+      "tailwindCss": "/tmp/napms-ui-B/web/src/index.css",
+      "utils": "/tmp/napms-ui-B/web/src/lib/utils",
+      "components": "/tmp/napms-ui-B/web/src/components",
+      "lib": "/tmp/napms-ui-B/web/src/lib",
+      "hooks": "/tmp/napms-ui-B/web/src/hooks",
+      "ui": "/tmp/napms-ui-B/web/src/components/ui"
+    },
+    "registries": {
+      "@shadcn": "https://ui.shadcn.com/r/styles/{style}/{name}.json"
+    }
+  },
+  "preset": {
+    "code": null,
+    "fallbacks": [],
+    "values": null
+  },
+  "components": [
+    "badge",
+    "button",
+    "input"
+  ],
+  "links": {
+    "docs": "https://ui.shadcn.com/docs",
+    "components": "https://ui.shadcn.com/docs/components/radix/[component].md",
+    "ui": "https://ui.shadcn.com/code/apps/v4/registry/bases/radix/ui/[component].tsx",
+    "examples": "https://ui.shadcn.com/code/apps/v4/registry/bases/radix/examples/[component]-example.tsx",
+    "schema": "https://ui.shadcn.com/schema.json"
+  }
+}

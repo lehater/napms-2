@@ -1,0 +1,1938 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "tab": "overview",
+    "geometry": {
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "overflow": [],
+      "headings": [
+        "Order-to-Ledger HTTPS",
+        "Application · Обзор",
+        "Основные свойства"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "О данных",
+        "href": null,
+        "outline": "rgb(16, 16, 16) auto 1px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "tab": "components",
+    "geometry": {
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "overflow": [
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 86
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "tab": "communications",
+    "geometry": {
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "overflow": [
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 71
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "OrderClient → LedgerApi",
+        "href": "/prototype/applications/mock-interaction-ledger",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "tab": "overview",
+    "geometry": {
+      "viewport": 1920,
+      "scrollWidth": 1920,
+      "overflow": [],
+      "headings": [
+        "Order-to-Ledger HTTPS",
+        "Application · Обзор",
+        "Основные свойства"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "О данных",
+        "href": null,
+        "outline": "rgb(16, 16, 16) auto 1px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "tab": "components",
+    "geometry": {
+      "viewport": 1920,
+      "scrollWidth": 1920,
+      "overflow": [
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 86
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "tab": "communications",
+    "geometry": {
+      "viewport": 1920,
+      "scrollWidth": 1920,
+      "overflow": [
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 71
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "DIV",
+        "text": "⋮",
+        "href": null,
+        "outline": "rgb(66, 139, 250) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "OrderClient → LedgerApi",
+        "href": "/prototype/applications/mock-interaction-ledger",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tab": "overview",
+    "geometry": {
+      "viewport": 390,
+      "scrollWidth": 390,
+      "overflow": [
+        {
+          "tag": "NAV",
+          "class": "ux-tabs",
+          "client": 358,
+          "scroll": 367
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS",
+        "Application · Обзор",
+        "Основные свойства"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SUMMARY",
+        "text": "О данных",
+        "href": null,
+        "outline": "rgb(16, 16, 16) auto 1px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": false
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tab": "components",
+    "geometry": {
+      "viewport": 390,
+      "scrollWidth": 390,
+      "overflow": [
+        {
+          "tag": "NAV",
+          "class": "ux-tabs",
+          "client": 358,
+          "scroll": 367
+        },
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 86
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": false
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "tab": "communications",
+    "geometry": {
+      "viewport": 390,
+      "scrollWidth": 390,
+      "overflow": [
+        {
+          "tag": "NAV",
+          "class": "ux-tabs",
+          "client": 358,
+          "scroll": 367
+        },
+        {
+          "tag": "DIV",
+          "class": "ux-table-scroll",
+          "client": 356,
+          "scroll": 586
+        },
+        {
+          "tag": "CAPTION",
+          "class": "sr-only",
+          "client": 1,
+          "scroll": 71
+        }
+      ],
+      "headings": [
+        "Order-to-Ledger HTTPS"
+      ]
+    },
+    "keyboard": [
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Развёрнутые компоненты",
+        "href": "/prototype/deployments",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки на доступ",
+        "href": "/prototype/requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Правила политики",
+        "href": "/prototype/policy",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Заявки →",
+        "href": "/access-requests",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Новая заявка →",
+        "href": "/access-requests/new",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "NAPMS",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Обзор",
+        "href": "/prototype/applications/mock-application",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Компоненты",
+        "href": "/prototype/applications/mock-application?tab=components",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Коммуникации",
+        "href": "/prototype/applications/mock-application?tab=interactions",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "OrderClient → LedgerApi",
+        "href": "/prototype/applications/mock-interaction-ledger",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "SELECT",
+        "text": "12",
+        "href": null,
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "BODY",
+        "text": "NNAPMS 2.0Network Access Policy ManagementБизнес-контекстБизнес-процессыПотребности в коммуникацияхК",
+        "href": null,
+        "outline": "rgb(0, 0, 0) none 3px",
+        "boxShadow": "none",
+        "visible": false
+      },
+      {
+        "tag": "A",
+        "text": "NNAPMS 2.0Network Access Policy Management",
+        "href": "/prototype",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Бизнес-процессы",
+        "href": "/prototype/processes",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Потребности в коммуникациях",
+        "href": "/prototype/needs",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Ресурсы",
+        "href": "/prototype/resources",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "none",
+        "visible": true
+      },
+      {
+        "tag": "A",
+        "text": "Профили приложений",
+        "href": "/prototype/applications",
+        "outline": "oklch(0.554 0.046 257.417) solid 2px",
+        "boxShadow": "rgb(83, 160, 255) 3px 0px 0px 0px inset",
+        "visible": true
+      }
+    ]
+  }
+]

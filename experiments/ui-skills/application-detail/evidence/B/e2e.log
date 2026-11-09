@@ -1,0 +1,41 @@
+
+> napms-web@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:380590) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 26 tests using 1 worker
+
+(node:380617) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/prototype.spec.ts:4:1 › fixture has one coherent allow-only communication with honest comparison evidence (60ms)
+  ✓   2 e2e/prototype.spec.ts:62:1 › TAE facts remain independent of AP/NEP and configured is a computed interpretation (12ms)
+  ✓   3 e2e/prototype.spec.ts:88:3 › baseline fluid geometry and sidebar bounds at 1440×900 (671ms)
+  ✓   4 e2e/prototype.spec.ts:88:3 › baseline fluid geometry and sidebar bounds at 1920×1080 (638ms)
+  ✓   5 e2e/prototype.spec.ts:88:3 › baseline fluid geometry and sidebar bounds at 2560×1440 (647ms)
+  ✓   6 e2e/prototype.spec.ts:127:1 › Resources collection filtering, pagination, tabs, direct URLs and return retain context (1.0s)
+  ✓   7 e2e/prototype.spec.ts:194:1 › Resource slice stays usable at 390px and rejects invalid width preferences (598ms)
+  ✓   8 e2e/prototype.spec.ts:229:3 › Sidebar → processes → Detail → Потребности → related object (445ms)
+  ✓   9 e2e/prototype.spec.ts:229:3 › Sidebar → needs → Detail → Заявки → related object (445ms)
+  ✓  10 e2e/prototype.spec.ts:229:3 › Sidebar → resources → Detail → Endpoints → related object (455ms)
+  ✓  11 e2e/prototype.spec.ts:229:3 › Sidebar → applications → Detail → Коммуникации → related object (442ms)
+  ✓  12 e2e/prototype.spec.ts:229:3 › Sidebar → deployments → Detail → Ресурс → related object (410ms)
+  ✓  13 e2e/prototype.spec.ts:229:3 › Sidebar → requests → Detail → Бизнес-основание → related object (464ms)
+  ✓  14 e2e/prototype.spec.ts:229:3 › Sidebar → policy → Detail → Основания разрешения → related object (472ms)
+  ✓  15 e2e/prototype.spec.ts:259:1 › all fixture relations remain reachable through typed tabs and technical deep links (6.1s)
+  ✓  16 e2e/prototype.spec.ts:274:1 › Application components and directed communication lead to immutable Revision (1.5s)
+  ✓  17 e2e/prototype.spec.ts:301:1 › collection state survives breadcrumb and reload; real API stays separate (704ms)
+  ✓  18 e2e/semantic-contract.spec.ts:10:1 › every displayed policy row is an actual PolicyRule with typed status (191ms)
+  ✓  19 e2e/semantic-contract.spec.ts:25:1 › all mock requests have their own type and each DENIED has null rule provenance (357ms)
+  ✓  20 e2e/semantic-contract.spec.ts:47:1 › Application mode and immutable revision are never lifecycle states (235ms)
+  ✓  21 e2e/semantic-contract.spec.ts:58:1 › Reconciliation displays comparison outcome and never request decision status (259ms)
+(node:381328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 e2e/requests.spec.ts:74:1 › requester creates, lists and opens persisted request (654ms)
+  ✓  23 e2e/requests.spec.ts:90:1 › real ALLOWED and DENIED persist across credential switches and browser reloads (1.8s)
+  ✓  24 e2e/requests.spec.ts:131:1 › server rejects mismatched mode, isolates unrelated actor, and reloads a concurrent decision (992ms)
+  ✓  25 e2e/requests.spec.ts:160:1 › validation, 404, 401 and offline errors have safe correction/retry paths (1.0s)
+  ✓  26 e2e/requests.spec.ts:189:1 › supported Vite configuration rejects non-loopback CLI bind (657ms)
+
+  26 passed (24.7s)
