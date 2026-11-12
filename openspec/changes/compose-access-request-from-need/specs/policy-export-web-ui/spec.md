@@ -40,7 +40,7 @@ From REAL Rule Detail the user SHALL be able to request the **selected** Rule's 
 
 ### Requirement: Preserve export authority and confidential data boundaries
 
-The REAL Rule Detail and file export SHALL preserve the existing `policy.export` grants on **both** selected source and destination Resources. A Rule ID, ALLOWED decision, Requester authority, Decider authority or UI mode SHALL NOT confer export rights. Requests SHALL use authorized HTTP fetch/proxy, never token-bearing navigable URLs. The client SHALL clear protected Rule content on actor/credential changes, ignore stale responses, and not persist credentials or privileged content in local storage.
+The client SHALL enforce the existing `policy.export` grants on **both** selected Resources through server-authorized Rule Detail/export requests. A Rule ID, ALLOWED decision or UI mode SHALL NOT confer export rights. Credentials SHALL stay out of URLs and persistent browser storage. Protected Rule content and pending downloads SHALL be invalidated on actor/credential changes.
 
 #### Scenario: Requester and Decider cannot export
 - **WHEN** a Requester or Decider without `policy.export` tries a Rule detail or export request
