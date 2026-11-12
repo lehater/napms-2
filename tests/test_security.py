@@ -16,7 +16,7 @@ from test_acceptance import approved, change, decide, export, submit
 def test_openapi_docs_and_no_secrets(env, caplog, capsys):
     schema = env[3].get('/openapi.json')
     assert schema.status_code == 200
-    assert len(schema.json()['paths']) == 7
+    assert len(schema.json()['paths']) == 9
     assert env[3].get('/docs').status_code == 200
     assert schema.json()['components']['schemas']['AccessInput']['example'] == DEMO_REQUEST
     rid = approved(env)
@@ -107,7 +107,7 @@ def test_seed_repeat_and_restart(env):
         assert response.json()['rows'][0]['destinationAddress'] == '203.0.113.7'
         assert client.post('/access-requests', json=DEMO_REQUEST, headers=auth(env, 'requester')).status_code == 403
     with env[0].transaction() as c:
-        for table, count in [('resources', 2), ('actors', 3), ('grants', 6), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
+        for table, count in [('resources', 2), ('actors', 3), ('grants', 8), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
             assert c.execute(f'SELECT count(*) FROM {table}').fetchone()[0] == count
 
 

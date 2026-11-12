@@ -50,3 +50,7 @@
 .ux-real .process-form input,.ux-real .process-form textarea{border:1px solid #cbd5e1;border-radius:5px;padding:8px}
 .ux-topbar select{max-width:100%}
 .ux-real table{overflow-wrap:anywhere}
+/* REAL communication selectors contain technical UUIDs. */
+.process-form select { width: 100%; min-width: 0; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; }
+section[aria-label="Потребности REAL"] { min-width: 0; }
+section[aria-label="Потребности REAL"] td { overflow-wrap: anywhere; }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { api, ApiError, message, type BusinessProcess, type Client, type ProcessCollection } from './api'
+import Needs from './Needs'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 
@@ -105,6 +106,6 @@ function ProcessDetail({ client }: { client: Client }) {
   return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
     {!item && !error && <p role="status">Загрузка…</p>}
     {item && item.processId === processId && <><p className="ux-eyebrow">BusinessProcess · REAL</p><h1>{item.name ?? 'Название не указано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
-    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не указано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <><h2>Потребности</h2><p>Серверное чтение потребностей ещё не подключено.</p></>}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
+    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не указано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
   </section>
 }
