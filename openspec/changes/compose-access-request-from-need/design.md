@@ -19,7 +19,7 @@ Normative sources are the accepted OpenSpec Request/Decision/Policy specs and im
 
 ## Goals / Non-Goals
 
-**Goals:** bounded selection from existing Need, honest exact composition, safe GET disclosure and source-only submission with neutral errors, reconstructible PENDING detail, reuse of current decision flow.
+**Goals:** bounded selection from existing Need, honest exact composition, safe GET disclosure and source-only submission with neutral errors, reconstructible PENDING detail, reuse of current decision flow **and actual Exporter-authorized selected Rule JSON/CSV downloads**.
 
 **Non-goals:** proposal exclusions apply. No production tenant/object-ownership model is inferred from `demo-business`. No new history/catalog search or Rule-summary endpoint is needed to submit a repeated request. The UI must not assert absence of earlier requests/rules when it has not queried them. M-11 remains deferred, not PASS.
 
@@ -140,6 +140,21 @@ Keep all existing regressions. Explicitly update affected expectations: source m
 
 Implementation handoff must include exact head SHA, matching Verify run, blocking/advisory results, completed OpenSpec tasks, smoke evidence and owner acceptance in the implementation PR before any future squash merge. Specification readiness is distinct from implementation acceptance.
 
+### 7. REAL selected PolicyRule inspection and file export (approved scope extension)
+
+This addendum builds on the accepted `compose-access-request-from-need` contract in `main@b58467f9f81c2916006fe877ec4e7c1cd57a3381`. Finish the *same user journey* with two existing protected backend APIs; no additional storage, policy evaluation or aggregate export API is authorized.
+
+- The ALLOWED Request Detail displays the server-returned `policyRuleId` and a real link to `/policy-rules/{ruleId}`; DENIED shows no Rule link. The link carries only the Rule UUID. An ALLOWED decision is not a Rule-read/export grant.
+- The new REAL Rule Detail route loads `GET /policy-rules/{ruleId}` with the current authenticated actor. Show `state` (ACTIVE/INACTIVE), exact `subject`, originating Request/Decision and allowances from the server. Re-fetch after actor changes; do not display protected data cached under a prior actor. The page supports a direct URL and still works after switching Decider → Exporter, even when Exporter cannot read the originating AccessRequest.
+- The existing server enforces `policy.export` on **both source and destination Resources** for Rule Detail and export. Do not grant those rights to Requester or Decider and do not infer them from a Rule ID or UI mode; existing local-demo Exporter has the required grants. Preserve manual bearer fallback without putting credentials into URLs or persistent browser storage.
+- Export buttons request **selected Rule only** through `GET /policy/export?ruleId={ruleId}&format=json|csv` using the same authenticated fetch/proxy path. Read the returned bytes as a downloadable file (`policy-rule-{ruleId}.json` or `.csv`), with a filename derived only from validated UUID and fixed format. Browser object URLs, if used, must be revoked after initiating the download. A 200 response is not a completed download unless actual response bytes can be saved.
+- For JSON, preserve the server's `evaluationAt`, `selectedRuleId` and `rows` faithfully. For CSV, preserve the actual server CSV header/rows, not a client approximation of evaluated policy. Do not assume the local-demo proxy forwards `X-Evaluation-At` / `X-Selected-Rule-Id` headers (its current allowlist forwards content-type only); use the bytes for acceptance. No client-side policy re-evaluation or address rewriting.
+- Show clear non-disclosing loading, 401/403, missing Rule 404, network and empty/INACTIVE states. An INACTIVE Rule can be inspected by Exporter, but its JSON contains zero rows and CSV is header-only. READY vs INCOMPLETE is the server's data state, not proof of network reachability or executable firewall syntax.
+- Existing protected route/proxy patterns `/policy-rules/{uuid}` and `/policy/export` already exist; do not modify them merely to introduce the UI. Scope credential/actor changes carefully to prevent stale GETs/downloads from affecting the next session; an in-flight download must not be offered as current-session data after actor change.
+- Preserve MOCK/REAL separation and current Shell. Do not introduce a general Rule list, CRUD, all-Rules export, policy deployment, scheduler or new IAM scheme.
+
+**Extended acceptance:** the same real browser E2E creates Process/Need/Request, confirms PENDING after reload and backend restart, switches to independent Decider for ALLOWED, reaches the real Rule route, switches to Exporter and verifies actual downloaded JSON and CSV. Inspect both artifacts and assert rule ID, exact Subject, protocol/ports, READY/INCOMPLETE semantics, provenance and current evaluation fields match the existing API and persisted facts (format-specific representation allowed). A fresh test subject should have exactly one canonical Rule; DENIED has none. Negative UI/API checks reject Requester/Decider export without data leakage. Additional automated checks may seed an INACTIVE Rule to verify the existing empty-rows/header-only contracts; no Rule-state mutation UI is added.
+
 ## Risks / Trade-offs
 
 - Known UUIDs plus source request authority allow direct POST without discovery rights → retain compatibility, test successful source-only submissions and neutral unauthorized/missing/incompatible failures; residual existence/compatibility inference is not fully eliminated.
@@ -147,7 +162,7 @@ Implementation handoff must include exact head SHA, matching Verify run, blockin
 - Global `demo-business` is not tenant isolation → confine to synthetic local demo; per-Resource grants filter GET discovery; they do not conceal known UUIDs from an authorized direct submitter.
 - Live offset pages can change between requests → reset selections on refresh and revalidate transactionally; no snapshot tokens.
 - Lack of reliable POST retry identity → no automatic retry, preserve explicit repeated-request semantics.
-- This slice does not expose Rule Detail, full history or advanced visibility reasons → no claims of missing rules or working network access; existing backend verifies policy facts.
+- This slice exposes selected Rule Detail and export through existing backend, but does not expose full Rule history, all-Rules export or advanced visibility reasons → no claims of missing rules or working network access.
 
 ## Migration Plan
 
@@ -155,4 +170,4 @@ No SQLite migration: keep v3, tables, existing identities and immutability. Depl
 
 ## Readiness
 
-No unresolved P0/P1 architecture question is deferred to implementation. This is a proposed contract awaiting coordinator/owner review, including the documented residual direct-POST disclosure risk. Once approved, the implementation tasks are bounded and require no further catalog/IAM redesign. This PR neither implements nor authorizes merge.
+No unresolved P0/P1 architecture question is deferred to implementation. The original Need-to-Request contract was accepted and merged through PR #52; the selected Rule export UI extension is now proposed for review. Once this addendum is accepted, implementation tasks are bounded and require no further catalog/IAM/export-engine redesign. Specification approval is distinct from implementation acceptance; no product changes or merge are authorized by this addendum PR.
