@@ -33,7 +33,8 @@ export function Collection({ rows, columns, filters = [], remote = false, label 
   }
   const query = params.get('q') ?? ''
   const visible = rows.filter(row => Object.values(row.values).join(' ').toLowerCase().includes(query.trim().toLowerCase()) && filters.every(filter => !params.get(filter.key) || row.values[filter.key] === params.get(filter.key)))
-  const size = params.get('size') === '1' ? 1 : 2
+  const requestedSize = Number(params.get('size') ?? 20)
+  const size = [1, 2, 20, 50].includes(requestedSize) ? requestedSize : 20
   const pages = Math.max(1, Math.ceil(visible.length / size))
   const requested = Number(params.get('page') ?? 1)
   const page = Number.isInteger(requested) ? Math.max(1, Math.min(pages, requested)) : 1
@@ -42,10 +43,10 @@ export function Collection({ rows, columns, filters = [], remote = false, label 
     <div className="ux-filters">
       <label htmlFor={id + '-search'}>Поиск объектов<input id={id + '-search'} placeholder="Имя, scope или адрес…" value={query} onChange={event => update('q', event.target.value)} /></label>
       {filters.map(filter => <label key={filter.key}>{filter.title}<select aria-label={filter.title} value={params.get(filter.key) ?? ''} onChange={event => update(filter.key, event.target.value)}><option value="">Все</option>{Array.from(new Set(rows.map(row => row.values[filter.key]))).map(value => <option key={value}>{value}</option>)}</select></label>)}
-      <p role="status">Показано {visible.length} из {rows.length}</p>
+      <p role="status">Найдено {visible.length}</p>
     </div>
     <div className="ux-table-scroll">{visible.length ? <table className="ux-table"><caption className="sr-only">{label}</caption><thead><tr>{columns.map(column => <th key={column.key} scope="col">{column.title}</th>)}</tr></thead><tbody>{sliced.map(row => <tr key={row.id} data-object-id={row.id} data-object-kind={row.kind}>{columns.map((column, index) => <td key={column.key}>{column.render ? column.render(row) : index === 0 && row.path ? <Link to={row.path}>{row.values[column.key]}</Link> : row.values[column.key]}</td>)}</tr>)}</tbody></table> : <p className="ux-empty">Нет совпадений. Измените поисковый запрос.</p>}</div>
-    <div className="ux-pagination"><span>{visible.length ? (page - 1) * size + 1 : 0}–{Math.min(page * size, visible.length)} из {visible.length}</span><div><label>Строк на странице <select aria-label="Строк на странице" value={size} onChange={event => update('size', event.target.value)}><option value="1">1</option><option value="2">2</option></select></label><button aria-label="Предыдущая страница" disabled={page <= 1} onClick={() => update('page', String(page - 1))}>‹</button><span>Страница {page} из {pages}</span><button aria-label="Следующая страница" disabled={page >= pages} onClick={() => update('page', String(page + 1))}>›</button></div></div>
+    <div className="ux-pagination"><span>{visible.length ? (page - 1) * size + 1 : 0}–{Math.min(page * size, visible.length)} из {visible.length}</span><div><label>Строк на странице <select aria-label="Строк на странице" value={size} onChange={event => update('size', event.target.value)}><option value="1">1</option><option value="2">2</option><option value="20">20</option><option value="50">50</option></select></label><button aria-label="Предыдущая страница" disabled={page <= 1} onClick={() => update('page', String(page - 1))}>‹</button><span>Страница {page} из {pages}</span><button aria-label="Следующая страница" disabled={page >= pages} onClick={() => update('page', String(page + 1))}>›</button></div></div>
   </section>
 }
 export function Resources() {
@@ -55,7 +56,7 @@ export function Resources() {
     <Collection label="Resources collection" remote rows={resourceRows.map(object => ({ kind: object.kind, id: object.id, path: objectPath(object) + (context ? '?' + context : ''), values: { name: object.name, id: object.id, scope: object.fields.scope, address: address(object), site: site(object), owner: owner(object) } }))}
       columns={[{ key: 'name', title: 'Resource', render: row => <><Link to={row.path!}>{row.values.name}</Link><small>{row.id}</small></> }, { key: 'scope', title: 'Scope' }, { key: 'address', title: 'Endpoints / текущий адрес', render: row => <>{row.values.address}<small>{resourceRows.find(item => item.id === row.id)?.fields.endpoint}</small></> }, { key: 'site', title: 'Площадка' }, { key: 'owner', title: 'Ответственность' }]}
       filters={[{ key: 'scope', title: 'Scope' }, { key: 'site', title: 'Площадка' }]} />
-    <p className="ux-note">Fixture: 2 Resource, по одному Endpoint. Адрес прочитан из EndpointAddressHistory на {evaluatedAt}. OWNER не предоставляет grant.</p>
+    <p className="ux-note">Fixture: {resourceRows.length} Resource, по одному Endpoint. Адрес прочитан из EndpointAddressHistory на {evaluatedAt}. OWNER не предоставляет grant.</p>
   </>
 }
 
