@@ -34,3 +34,8 @@ def validate_subject(source, destination, revision, need, source_component, dest
             or need["component_id"] != source["component_id"]):
         raise Problem(400, "INVALID_SUBJECT", "Deployments, revision and Need do not correspond")
     return Subject(source["id"], destination["id"], revision["id"])
+
+
+def validate_process_name(name):
+    if not isinstance(name, str) or not name.strip():
+        raise Problem(422, "INVALID_INPUT", "Nonblank process name required")

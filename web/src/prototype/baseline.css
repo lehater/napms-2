@@ -35,3 +35,7 @@
 .ux-summary{font-size:16px;line-height:1.7;margin:18px 0;max-width:65ch}.ux-communication{margin-top:16px;background:#f6f9fd;border:1px solid #c8d5e3;padding:22px;border-radius:8px}.ux-direction{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:16px 0;font-size:23px;overflow-wrap:anywhere}.ux-callout{margin-top:16px;padding:14px 16px;border:1px solid #bdd0e5;border-radius:7px;background:#edf4fd;color:#294967;font-size:12px;line-height:1.7}.ux-tab-content{display:grid;gap:16px}.ux-detail-grid{grid-template-columns:minmax(0,1.2fr) minmax(300px,1fr)}
 @media(max-width:1050px){.ux-detail-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){.ux-navigation{grid-template-columns:minmax(0,1fr)}.ux-properties>div{grid-template-columns:minmax(0,1fr);gap:5px}.ux-direction{font-size:19px}.ux-communication{padding:15px}.ux-topbar{color:#475d75}}
+
+.process-form { display: grid; gap: 12px; max-width: 640px; }
+.process-form input, .process-form textarea { width: 100%; border: 1px solid var(--border, #d7dde5); border-radius: 6px; padding: 10px; }
+.process-form textarea { min-height: 120px; }
