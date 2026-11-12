@@ -1,8 +1,8 @@
 # Issue #37 — актуализация следующего REAL-среза ConnectivityNeed
 
-**Тип:** независимое архитектурное исследование, не OpenSpec и не реализация.  
-**Фактическая база:** [`main` @ `0a32b34954aef610e450076dbffe16d8e08c41f7`](https://github.com/lehater/napms-2/commit/0a32b34954aef610e450076dbffe16d8e08c41f7), проверено 2026-11-12.  
-**Доставка:** [Draft PR #38](https://github.com/lehater/napms-2/pull/38); [Issue #37](https://github.com/lehater/napms-2/issues/37).  
+**Тип:** независимое архитектурное исследование, не OpenSpec и не реализация.
+**Фактическая база:** [`main` @ `0a32b34954aef610e450076dbffe16d8e08c41f7`](https://github.com/lehater/napms-2/commit/0a32b34954aef610e450076dbffe16d8e08c41f7), проверено 2026-11-12.
+**Доставка:** [Draft PR #38](https://github.com/lehater/napms-2/pull/38); [Issue #37](https://github.com/lehater/napms-2/issues/37).
 **Вердикт исследования:** **NEEDS DECISION** по минимальной семантике Need и правам нового API. До согласования владельца продуктовый код, OpenSpec и ERD не менять.
 
 ## 1. Подтверждённые факты текущего main
