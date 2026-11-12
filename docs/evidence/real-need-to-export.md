@@ -33,4 +33,37 @@ On a network-uncertain request submission the UI does not retry automatically: c
 
 ## Verification results
 
-Pending final verification. Exact head and matching CI are recorded in the PR handoff to avoid self-referential commit hashes in this file.
+Local final checks (2026-11-13):
+
+| Command | Result |
+| --- | --- |
+| `openspec validate --all --strict` | 13/13 passed |
+| `.venv/bin/python -m pytest -q --cov=napms --cov-report=term-missing` | 165 passed, 93% total; HTTP 100%, use cases 99% |
+| `.venv/bin/python -m ruff check --select E4,E7,E9,F src tests` | Passed |
+| `npm run build --prefix web` | Typecheck and Vite build passed |
+| `npm run test:semantic --prefix web` | Passed: 16 kinds, 7 sections, 2 sentinels |
+| `NAPMS_PYTHON=/home/alex/projects/napms-2/.venv/bin/python LD_LIBRARY_PATH=/tmp/napms-browser-libs/usr/lib/x86_64-linux-gnu npm run test:e2e --prefix web` | Proxy 2/2, ordinary Playwright 37/37, local-demo Playwright 9/9 |
+| `.venv/bin/python -m ruff check src tests` | Advisory: 55 findings |
+| `.venv/bin/python -m ruff format --check src tests` | Advisory: 16 files would be reformatted |
+| `.venv/bin/python -m pyright` | Advisory: 34 errors, including unresolved local environment imports and dynamic FastAPI Actor annotations; final CI advisory outcomes recorded in PR |
+
+An initial concurrent pytest/Playwright invocation conflicted on port 5173 in an existing harness unit test. Sequential full pytest passed; no Harness or CI gate was changed. The new options route alone was added to the local-demo proxy allowlist; existing export routes and backend export remain unchanged. Normal Vite gained forwarding for the existing Rule/export APIs to preserve manual-token use.
+
+One local-demo test creates Process/Need via UI, selects Revision and both placements, confirms PENDING, compares the saved Request before/after reload and actual service stop/start against the same DB, verifies zero Decisions/Rules before ALLOWED, then confirms ALLOWED as Decider, checks exactly one Rule, follows the REAL link and switches to Exporter. Both downloads are saved with `download.saveAs`; JSON and CSV fields are compared with persisted Request/Rule facts and each other (evaluation time is evaluated independently per API call). No credentials are recorded.
+
+Additional real browser tests cover independent authorization and both missing export scopes, DENIED, INACTIVE empty/header-only downloads, missing-address INCOMPLETE retention, stale reads/downloads, dependent reset, revoked source authority, empty discovery, delayed options/POST during actor changes, double click and lost POST response without auto retry.
+
+Exact final head and matching Verify run are recorded in Draft PR #55 to avoid self-referential commit hashes here. Tasks 1.1–3.6 and 4.1–4.2 are complete. Task 4.3 remains open because owner acceptance has not been provided; automated success is not owner acceptance. No merge performed.
+
+## Actual downloaded artifacts
+
+The following are raw browser-downloaded files from the synthetic temporary local-demo run, preserved without rewriting fields. They contain only seeded documentation addresses and synthetic IDs, no credentials or confidential infrastructure. INACTIVE/INCOMPLETE variations are separately checked by the automated browser suite.
+
+
+- [policy-rule-643c503b-ec0f-4b7d-a302-593ce8198f92.json](real-need-to-export-files/policy-rule-643c503b-ec0f-4b7d-a302-593ce8198f92.json), SHA-256 `2ee2346a9005b70a974e5ad1ebd228b7dfe07055ea9c5e9b09fd4d76a97e1384`.
+
+- [policy-rule-643c503b-ec0f-4b7d-a302-593ce8198f92.csv](real-need-to-export-files/policy-rule-643c503b-ec0f-4b7d-a302-593ce8198f92.csv), SHA-256 `2914204daef6b6ea660ae4fc6067a902755a6950de6c50cb9e7926a28903dd3d`.
+
+## Remaining limits
+
+Local demo credentials/scopes are not production IAM or tenant isolation. Catalog CRUD, aggregate export and network application remain out of scope. Offsets are live pages; POST revalidates references transactionally. An uncertain POST may have persisted and requires checking the list. Manual credentials remain memory-only per route; after switching between Process/Request/Rule surfaces, re-enter the appropriate credential if prompted. Existing extended Ruff/format/Pyright findings remain advisory. Owner smoke and acceptance are pending in PR #55.
