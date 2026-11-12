@@ -6,12 +6,50 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: verify-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    outputs:
+      docs-only: ${{ steps.scope.outputs.docs-only }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Classify the changes in the tested merge commit
+        id: scope
+        run: |
+          git rev-parse --verify HEAD^2 >/dev/null
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+
+          # Disabling rename detection includes both paths when a file moves.
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", "--no-renames", "-z", "HEAD^1", "HEAD", "--"]
+          ).split(b"\0")[:-1]
+          documentation = re.compile(
+              rb"(?:README\.md|(?:docs|openspec/(?:changes|specs))/.+\.md"
+              rb"|openspec/changes/(?:[^/]+/)+\.openspec\.yaml)"
+          )
+          docs_only = bool(changed) and all(documentation.fullmatch(path) for path in changed)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"docs-only={str(docs_only).lower()}", file=output)
+          PY
   application:
     name: application
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.docs-only != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -89,6 +127,8 @@ jobs:
         run: npm run test:semantic
   web:
     name: web
+    needs: changes
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.docs-only != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
