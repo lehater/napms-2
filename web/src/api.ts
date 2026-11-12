@@ -1,3 +1,6 @@
+export type Need = { connectivityNeedId: string; processId: string; interactionId: string; componentId: string }
+export type NeedOption = { interactionRevisionId: string; interactionId: string; applicationId: string; sourceComponentId: string; destinationComponentId: string; ipProtocol: string; destinationPortStart: number; destinationPortEnd: number }
+export type NeedPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
 export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null }
 export type ProcessInput = { name: string; description: string | null; responsibleOrganization: string | null }
 export type ProcessCollection = { items: BusinessProcess[]; limit: number; offset: number; hasMore: boolean }
@@ -51,6 +54,9 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     return response.json() as Promise<T>
   }
   return {
+    needs: (id: string, offset = 0) => call<NeedPage<Need>>(`/business-processes/${encodeURIComponent(id)}/needs?limit=20&offset=${offset}`),
+    needOptions: (id: string, offset = 0) => call<NeedPage<NeedOption>>(`/business-processes/${encodeURIComponent(id)}/need-options?limit=20&offset=${offset}`),
+    createNeed: (id: string, revision: string) => call<Need>(`/business-processes/${encodeURIComponent(id)}/needs`, 'POST', { interactionRevisionId: revision }),
     processes: (offset = 0) => call<ProcessCollection>(`/business-processes?limit=20&offset=${offset}`),
     process: (id: string) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`),
     createProcess: (data: ProcessInput) => call<BusinessProcess>('/business-processes', 'POST', data),

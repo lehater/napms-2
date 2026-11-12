@@ -86,7 +86,16 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   const detail = page.url()
   expect(detail).toMatch(/business-processes\/[0-9a-f-]{36}$/)
   await page.getByRole('link', { name: 'Потребности', exact: true }).click()
-  await expect(page.getByText('Серверное чтение потребностей ещё не подключено.')).toBeVisible()
+  await expect(page.getByLabel('Коммуникация', { exact: true })).toBeVisible()
+  await page.getByLabel('Коммуникация', { exact: true }).selectOption('00000000-0000-0000-0000-000000000009')
+  await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody tr')).toHaveCount(1)
+  await expect(page.getByText('На этой странице нет доступных коммуникаций.')).toBeVisible()
+  const needsPath = new URL(detail).pathname + '/needs'
+  const headers = { Authorization: 'Bearer ' + credentials.requester.token }
+  const saved = (await (await page.request.get(needsPath, { headers })).json()).items[0]
+  const replay = await page.request.post(needsPath, { headers, data: { interactionRevisionId: '00000000-0000-0000-0000-000000000009' } })
+  expect(replay.status()).toBe(409)
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('table')).toContainText('Приёмка SQLite')
   await page.getByRole('link', { name: 'Приёмка SQLite', exact: true }).click()
@@ -101,6 +110,19 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   await login(page, credentials.requester.token)
   await expect(page.getByRole('heading', { name: 'Приёмка SQLite', exact: true })).toBeVisible()
   await expect(page.getByText('Финансы', { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Потребности', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody')).toContainText(saved.connectivityNeedId)
+  const second = await page.request.post('/business-processes', { headers, data: { name: 'Повторное использование' } })
+  const otherId = (await second.json()).processId
+  await page.goto(`/business-processes/${otherId}?tab=needs`)
+  await login(page, credentials.requester.token)
+  await page.getByLabel('Коммуникация', { exact: true }).selectOption('00000000-0000-0000-0000-000000000009')
+  expect((await page.request.post(`/business-processes/${otherId}/needs`, { headers, data: { interactionRevisionId: '00000000-0000-0000-0000-000000000009' } })).status()).toBe(201)
+  await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
+  await expect(page.getByText('Такая потребность уже существует.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody tr')).toHaveCount(1)
+
+
   const stored = await page.request.get('/business-processes', { headers: { Authorization: 'Bearer ' + credentials.requester.token } })
   const items = (await stored.json()).items
   expect(items.filter((p: { name: string }) => p.name === 'Приёмка SQLite')).toHaveLength(1)

@@ -45,6 +45,42 @@ class ProcessCollection(Strict):
     hasMore: bool
 
 
+class NeedInput(Strict):
+    interactionRevisionId: UUID
+
+
+class Need(Strict):
+    connectivityNeedId: UUID
+    processId: UUID
+    interactionId: UUID
+    componentId: UUID
+
+
+class NeedOption(Strict):
+    interactionRevisionId: UUID
+    interactionId: UUID
+    applicationId: UUID
+    sourceComponentId: UUID
+    destinationComponentId: UUID
+    ipProtocol: Literal["TCP", "UDP"]
+    destinationPortStart: int
+    destinationPortEnd: int
+
+
+class NeedCollection(Strict):
+    items: list[Need]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class NeedOptions(Strict):
+    items: list[NeedOption]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
 class AccessInput(Strict):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
     sourceDeploymentId: UUID
@@ -186,6 +222,20 @@ def create_app(db, credentials):
     def get_process(processId: UUID, who: Actor, response: Response):
         response.headers["Cache-Control"] = "no-store"
         return service.process(who, str(processId))
+
+    @app.get("/business-processes/{processId}/needs", response_model=NeedCollection)
+    def needs(processId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.needs(who, str(processId), query.limit, query.offset)
+
+    @app.get("/business-processes/{processId}/need-options", response_model=NeedOptions)
+    def need_options(processId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.needs(who, str(processId), query.limit, query.offset, options=True)
+
+    @app.post("/business-processes/{processId}/needs", status_code=201, response_model=Need, dependencies=[Depends(no_query)])
+    def create_need(processId: UUID, data: NeedInput, who: Actor):
+        return service.create_need(who, str(processId), str(data.interactionRevisionId))
 
     @app.post("/access-requests", status_code=201, response_model=AccessRequest, dependencies=[Depends(no_query)])
     def submit(data: AccessInput, who: Actor):

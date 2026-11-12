@@ -1,4 +1,5 @@
 """Transactions, authority checks and orchestration; no HTTP dependency."""
+import sqlite3
 from uuid import uuid4
 
 from .domain import Problem, effective, now, validate_subject, validate_process_name
@@ -42,6 +43,10 @@ def process_view(row):
                 responsibleOrganization=row["responsible_organization"])
 
 
+def need_view(r):
+    return dict(connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
+
+
 class Service:
     def __init__(self, db, clock=now):
         self.db, self.clock = db, clock
@@ -69,6 +74,54 @@ class Service:
             c.execute("SELECT id FROM actors LIMIT 1").fetchone()
             grant(c, actor, "business.process.read", "demo-business", self.clock())
             return process_view(find(c, "processes", pid))
+
+    def _need_access(self, c, actor, pid, action):
+        c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+        at = self.clock()
+        grant(c, actor, "business.process.read", "demo-business", at)
+        grant(c, actor, "business.need." + action, "demo-business", at)
+        find(c, "processes", pid)
+
+    def _compatible(self, c, rev):
+        source = find(c, "components", rev["source_component_id"])
+        dest = find(c, "components", rev["destination_component_id"])
+        find(c, "applications", rev["application_id"])
+        pair = (rev["application_id"], rev["source_component_id"], rev["destination_component_id"])
+        if (source["application_id"] != pair[0] or dest["application_id"] != pair[0]
+                or any(tuple(r) != pair for r in c.execute(
+                    "SELECT application_id,source_component_id,destination_component_id FROM interaction_revisions WHERE interaction_id=?", (rev["interaction_id"],)))):
+            raise Problem(400, "INVALID_COMMUNICATION", "Incompatible communication")
+
+    def needs(self, actor, pid, limit, offset, options=False):
+        with self.db.transaction() as c:
+            self._need_access(c, actor, pid, "create" if options else "read")
+            if options:
+                items = []
+                for r in c.execute("SELECT * FROM interaction_revisions ORDER BY interaction_id,id").fetchall():
+                    try:
+                        self._compatible(c, r)
+                    except Problem:
+                        continue
+                    if c.execute("SELECT 1 FROM needs WHERE process_id=? AND interaction_id=? AND component_id=?", (pid, r["interaction_id"], r["source_component_id"])).fetchone():
+                        continue
+                    items.append(dict(interactionRevisionId=r["id"], interactionId=r["interaction_id"], applicationId=r["application_id"], sourceComponentId=r["source_component_id"], destinationComponentId=r["destination_component_id"], ipProtocol=r["protocol"], destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"]))
+            else:
+                items = [need_view(r) for r in c.execute("SELECT * FROM needs WHERE process_id=? ORDER BY id", (pid,))]
+            return dict(items=items[offset:offset+limit], limit=limit, offset=offset, hasMore=len(items)>offset+limit)
+
+    def create_need(self, actor, pid, revision):
+        with self.db.transaction(write=True) as c:
+            self._need_access(c, actor, pid, "create")
+            rev = find(c, "interaction_revisions", revision)
+            self._compatible(c, rev)
+            nid = uid()
+            try:
+                c.execute("INSERT INTO needs VALUES (?,?,?,?)", (nid, pid, rev["interaction_id"], rev["source_component_id"]))
+            except sqlite3.IntegrityError as error:
+                if str(error) == "UNIQUE constraint failed: needs.process_id, needs.interaction_id, needs.component_id":
+                    raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists") from error
+                raise
+            return need_view(find(c, "needs", nid))
 
     def submit(self, actor, data):
         with self.db.transaction(write=True) as c:
