@@ -16,7 +16,7 @@ from test_acceptance import approved, change, decide, export, submit
 def test_openapi_docs_and_no_secrets(env, caplog, capsys):
     schema = env[3].get('/openapi.json')
     assert schema.status_code == 200
-    assert len(schema.json()['paths']) == 9
+    assert len(schema.json()['paths']) == 10
     assert env[3].get('/docs').status_code == 200
     assert schema.json()['components']['schemas']['AccessInput']['example'] == DEMO_REQUEST
     rid = approved(env)
@@ -74,7 +74,7 @@ def test_unsupported_query(env, extra):
 
 @pytest.mark.parametrize('field', list(DEMO_REQUEST))
 def test_malformed_and_absent_references(env, field):
-    for value, status in [('not-a-uuid', 422), (str(uuid4()), 404)]:
+    for value, status in [('not-a-uuid', 422), (str(uuid4()), 403 if field == 'sourceDeploymentId' else 404)]:
         response = env[3].post('/access-requests', json={**DEMO_REQUEST, field: value}, headers=auth(env, 'requester'))
         assert response.status_code == status
     with env[0].transaction() as c:
@@ -107,7 +107,7 @@ def test_seed_repeat_and_restart(env):
         assert response.json()['rows'][0]['destinationAddress'] == '203.0.113.7'
         assert client.post('/access-requests', json=DEMO_REQUEST, headers=auth(env, 'requester')).status_code == 403
     with env[0].transaction() as c:
-        for table, count in [('resources', 2), ('actors', 3), ('grants', 8), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
+        for table, count in [('resources', 2), ('actors', 3), ('grants', 10), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
             assert c.execute(f'SELECT count(*) FROM {table}').fetchone()[0] == count
 
 

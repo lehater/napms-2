@@ -19,7 +19,7 @@ IDS = {name: demo_id(i) for i, name in enumerate((
     "application", "sender", "receiver", "interaction", "revision", "sourceDeployment",
     "destinationDeployment", "process", "need", "requester", "decider", "exporter",
     "requestGrant", "decideGrant", "sourceExportGrant", "destinationExportGrant",
-    "processReadGrant", "processCreateGrant", "needReadGrant", "needCreateGrant"), 1)}
+    "processReadGrant", "processCreateGrant", "needReadGrant", "needCreateGrant", "sourceOptionsGrant", "destinationOptionsGrant"), 1)}
 DEMO_REQUEST = {"sourceDeploymentId": IDS["sourceDeployment"],
                 "destinationDeploymentId": IDS["destinationDeployment"],
                 "interactionRevisionId": IDS["revision"], "connectivityNeedId": IDS["need"]}
@@ -64,7 +64,9 @@ def init_demo(db, credentials):
             ("processReadGrant", "requester", "business.process.read", "demo-business"),
             ("processCreateGrant", "requester", "business.process.create", "demo-business"),
             ("needReadGrant", "requester", "business.need.read", "demo-business"),
-            ("needCreateGrant", "requester", "business.need.create", "demo-business")):
+            ("needCreateGrant", "requester", "business.need.create", "demo-business"),
+            ("sourceOptionsGrant", "requester", "access.options.read", IDS["sourceResource"]),
+            ("destinationOptionsGrant", "requester", "access.options.read", IDS["destinationResource"])):
             seed("grants", (IDS[key], IDS[actor], action, scope, None, None), "id,actor_id,action,scope,valid_from,valid_until")
 
 

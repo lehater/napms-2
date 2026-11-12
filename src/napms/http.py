@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dev import DEMO_REQUEST
 from .domain import Problem
@@ -81,6 +81,43 @@ class NeedOptions(Strict):
     hasMore: bool
 
 
+class OptionsQuery(Strict):
+    kind: Literal["revisions", "source-deployments", "destination-deployments"] = "revisions"
+    interactionRevisionId: UUID | None = None
+    limit: int = Field(default=20, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def valid_kind(self):
+        if (self.kind == "revisions") != (self.interactionRevisionId is None):
+            raise ValueError("Invalid kind/revision combination")
+        return self
+
+
+class DeploymentOption(Strict):
+    deploymentId: UUID
+    componentId: UUID
+    resourceId: UUID
+
+
+class RevisionOptions(NeedOptions):
+    kind: Literal["revisions"]
+
+
+class DeploymentOptions(Strict):
+    kind: Literal["source-deployments", "destination-deployments"]
+    items: list[DeploymentOption]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class Subject(Strict):
+    sourceDeploymentId: UUID
+    destinationDeploymentId: UUID
+    interactionRevisionId: UUID
+
+
 class AccessInput(Strict):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
     sourceDeploymentId: UUID
@@ -119,6 +156,8 @@ class Decision(Strict):
 
 
 class AccessRequest(Strict):
+    connectivityNeedId: UUID
+    subject: Subject
     requestId: UUID
     subjectId: UUID
     status: Literal["PENDING", "ALLOWED", "DENIED"]
@@ -185,6 +224,13 @@ def create_app(db, credentials):
     app.state.service = service
     bearer = HTTPBearer(auto_error=False)
 
+    @app.middleware("http")
+    async def protected_cache(request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/access-requests") or request.url.path.endswith("/access-request-options"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
     def actor(credential: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]):
         if credential and credential.scheme.lower() == "bearer":
             for token, actor_id in credentials.items():
@@ -236,6 +282,17 @@ def create_app(db, credentials):
     @app.post("/business-processes/{processId}/needs", status_code=201, response_model=Need, dependencies=[Depends(no_query)])
     def create_need(processId: UUID, data: NeedInput, who: Actor):
         return service.create_need(who, str(processId), str(data.interactionRevisionId))
+
+    def unique_options_query(request: Request):
+        keys = [key for key, _ in request.query_params.multi_items()]
+        if len(keys) != len(set(keys)):
+            raise Problem(422, "INVALID_INPUT", "Malformed or unsupported input")
+
+    @app.get("/business-processes/{processId}/needs/{connectivityNeedId}/access-request-options",
+             response_model=RevisionOptions | DeploymentOptions, dependencies=[Depends(unique_options_query)])
+    def request_options(processId: UUID, connectivityNeedId: UUID, who: Actor, query: Annotated[OptionsQuery, Query()]):
+        return service.request_options(who, str(processId), str(connectivityNeedId), query.kind,
+                                       str(query.interactionRevisionId) if query.interactionRevisionId else None, query.limit, query.offset)
 
     @app.post("/access-requests", status_code=201, response_model=AccessRequest, dependencies=[Depends(no_query)])
     def submit(data: AccessInput, who: Actor):

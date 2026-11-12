@@ -32,7 +32,8 @@ def decision_view(c, d):
 
 def request_view(c, r):
     d = c.execute("SELECT * FROM decisions WHERE request_id=?", (r["id"],)).fetchone()
-    return dict(requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
+    subject = find(c, "access_subjects", r["subject_id"])
+    return dict(connectivityNeedId=r["need_id"], subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]), requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
                 submittedAt=r["submitted_at"], requesterActorId=r["actor_id"],
                 admission=dict(sourceResourceId=r["source_resource_id"], grantId=r["grant_id"], checkedAt=r["checked_at"]),
                 decision=decision_view(c, d) if d else None)
@@ -123,15 +124,70 @@ class Service:
                 raise
             return need_view(find(c, "needs", nid))
 
+    def request_options(self, actor, pid, nid, kind, revision, limit, offset):
+        # Synthetic local demo only: business scope is not a tenant boundary.
+        with self.db.transaction() as c:
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            at = self.clock()
+            for action in ("business.process.read", "business.need.read"):
+                grant(c, actor, action, "demo-business", at)
+            find(c, "processes", pid)
+            need = find(c, "needs", nid)
+            if need["process_id"] != pid:
+                raise Problem(404, "NOT_FOUND", "Entity not found")
+            def placements(component, source=False):
+                items = []
+                for d in c.execute("SELECT d.* FROM deployments d JOIN resources r ON r.id=d.resource_id WHERE d.component_id=? ORDER BY d.id", (component,)):
+                    try:
+                        grant(c, actor, "access.options.read", d["resource_id"], at)
+                        if source:
+                            grant(c, actor, "access.request", d["resource_id"], at)
+                    except Problem:
+                        continue
+                    items.append(dict(deploymentId=d["id"], componentId=d["component_id"], resourceId=d["resource_id"]))
+                return items
+            items = []
+            selected = None
+            for r in c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? AND source_component_id=? ORDER BY id", (need["interaction_id"], need["component_id"])).fetchall():
+                try:
+                    self._compatible(c, r)
+                except Problem:
+                    continue
+                sources = placements(r["source_component_id"], True)
+                destinations = placements(r["destination_component_id"])
+                if not sources or not destinations:
+                    continue
+                if kind == "revisions":
+                    items.append(dict(interactionRevisionId=r["id"], interactionId=r["interaction_id"], applicationId=r["application_id"], sourceComponentId=r["source_component_id"], destinationComponentId=r["destination_component_id"], ipProtocol=r["protocol"], destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"]))
+                elif r["id"] == revision:
+                    selected = sources if kind == "source-deployments" else destinations
+            if kind != "revisions":
+                if selected is None:
+                    raise Problem(404, "NOT_FOUND", "Entity not found")
+                items = selected
+            page = items[offset:offset + limit + 1]
+            return dict(kind=kind, items=page[:limit], limit=limit, offset=offset, hasMore=len(page)>limit)
+
     def submit(self, actor, data):
         with self.db.transaction(write=True) as c:
-            source = find(c, "deployments", data["sourceDeploymentId"])
             at = self.clock()
+            source = c.execute("SELECT * FROM deployments WHERE id=?", (data["sourceDeploymentId"],)).fetchone()
+            if source is None:
+                raise Problem(403, "FORBIDDEN", "Insufficient authority")
             # Resolve source scope, then authorize before reading other referenced entities.
             g = grant(c, actor, "access.request", source["resource_id"], at)
             dest = find(c, "deployments", data["destinationDeploymentId"])
             rev = find(c, "interaction_revisions", data["interactionRevisionId"])
             need = find(c, "needs", data["connectivityNeedId"])
+            find(c, "processes", need["process_id"])
+            for resource in (source["resource_id"], dest["resource_id"]):
+                find(c, "resources", resource)
+            try:
+                self._compatible(c, rev)
+            except Problem as error:
+                if error.status == 404:
+                    raise
+                raise Problem(400, "INVALID_SUBJECT", "Deployments, revision and Need do not correspond") from error
             subject = validate_subject(source, dest, rev, need,
                                        find(c, "components", source["component_id"]),
                                        find(c, "components", dest["component_id"]))
@@ -143,7 +199,9 @@ class Service:
 
     def request(self, actor, rid):
         with self.db.transaction() as c:
-            r = find(c, "access_requests", rid)
+            r = c.execute("SELECT * FROM access_requests WHERE id=?", (rid,)).fetchone()
+            if r is None:
+                raise Problem(403, "FORBIDDEN", "Insufficient authority")
             if r["actor_id"] != actor:
                 grant(c, actor, "access.decide", "demo-policy", self.clock())
             return request_view(c, r)
