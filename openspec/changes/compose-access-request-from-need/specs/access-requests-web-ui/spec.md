@@ -62,6 +62,10 @@ The selected Need's communication block SHALL use existing Shell, components, De
 - **WHEN** all three choices are selected
 - **THEN** the summary shows Need, directed roles, exact Revision, stored protocol/ports, both Deployments and both Resources before a distinct confirmation action
 
+#### Scenario: Discovery authority differs from admission
+- **WHEN** business or Resource disclosure grants are absent or expire
+- **THEN** the selector UI obeys GET filtering/errors and cannot offer undisclosed choices; it does not claim that direct POST with known valid UUIDs and effective source `access.request` requires those read grants
+
 #### Scenario: Empty choices
 - **WHEN** discovery returns an empty page
 - **THEN** the UI shows no available options on that page, permits applicable paging/refresh and disables submission without asserting that no hidden objects exist
@@ -78,7 +82,7 @@ The UI SHALL clear protected composition data and confirmations on actor/credent
 - **THEN** its old data, errors and navigation do not affect the current session and prior confirmation cannot be submitted
 
 #### Scenario: Expired selection
-- **WHEN** POST rejects a choice after grants or available choices change
+- **WHEN** POST rejects a choice after source request authority expires or references become invalid
 - **THEN** the UI clears confirmation, displays a non-disclosing error and requires fresh options and confirmation before another submission
 
 #### Scenario: Double click and lost response

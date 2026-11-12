@@ -3,10 +3,10 @@
 ## MODIFIED Requirements
 
 ### Requirement: Source-only request admission
-The system SHALL check the authenticated actor's effective `access.request` grant for the source Resource at request admission time. It SHALL NOT demand a destination Resource `access.request` grant. Admission SHALL NOT itself constitute ALLOWED. Independent business-context and Resource disclosure prerequisites SHALL also apply to submitted references; request authority SHALL NOT imply those read rights.
+The system SHALL check the authenticated actor's effective `access.request` grant for the source Resource at request admission time. It SHALL NOT demand a destination Resource `access.request` grant. Admission SHALL NOT itself constitute ALLOWED. Direct POST SHALL NOT require `business.*`, `access.options.read` or any destination Resource grant. Request authority SHALL NOT imply catalog read rights or require a prior GET.
 
 #### Scenario: Source grant without destination grant (AC-05)
-- **WHEN** an actor satisfying the independent read prerequisites has an effective source Resource `access.request` grant but no destination Resource request grant and submits a valid subject
+- **WHEN** an actor without business/disclosure grants has an effective source Resource `access.request` grant but no destination Resource request grant and submits a valid subject
 - **THEN** the API accepts the request and leaves it PENDING without creating a PolicyRule
 
 #### Scenario: Missing source grant (AC-05)
@@ -15,7 +15,7 @@ The system SHALL check the authenticated actor's effective `access.request` gran
 
 #### Scenario: Source permission is not catalog visibility
 - **WHEN** an actor has source `access.request` but lacks a required business or selected Resource read grant
-- **THEN** direct POST is rejected under the safe reference error contract and cannot bypass option visibility
+- **THEN** GET discovery is restricted, while direct POST with valid compatible references succeeds as PENDING without granting catalog visibility
 
 ### Requirement: Protected request retrieval
 The API SHALL allow the submitting actor or an authorized decision maker to retrieve an AccessRequest and its optional terminal decision without exposing it to unrelated actors. Missing and unauthorized request IDs SHALL produce the same generic 403 response. Detail responses and errors SHALL use `Cache-Control: no-store`.
@@ -50,7 +50,7 @@ The API SHALL provide `GET /business-processes/{processId}/needs/{connectivityNe
 - **THEN** the API returns generic 422 `INVALID_INPUT` without echoing input, reading protected facts for the response or writing records
 
 ### Requirement: Independent placement disclosure
-Composition SHALL require `business.process.read` and `business.need.read` on `demo-business`. Placement disclosure SHALL require explicit effective `access.options.read` on each Resource UUID. This grant SHALL expose only minimal composition references, not addresses or Resource Detail. Business, request, decision and export grants SHALL NOT imply it.
+GET options discovery SHALL require `business.process.read` and `business.need.read` on `demo-business`. Placement disclosure SHALL require explicit effective `access.options.read` on each Resource UUID. This grant SHALL expose only minimal composition references, not addresses or Resource Detail. Business, request, decision and export grants SHALL NOT imply it.
 
 #### Scenario: Need reader without placement rights
 - **WHEN** an actor can read the Need but has no eligible readable source/destination pair
@@ -58,7 +58,7 @@ Composition SHALL require `business.process.read` and `business.need.read` on `d
 
 #### Scenario: Destination is independently protected
 - **WHEN** an actor can request from a readable source but lacks `access.options.read` on a compatible destination Resource
-- **THEN** that destination is excluded and direct POST with its ID cannot reveal it or create a request
+- **THEN** that destination is excluded from GET options without hidden counts; a compatible direct POST with known UUIDs and source request authority remains admissible
 
 #### Scenario: Local demo provisioning
 - **WHEN** explicit demo initialization is run for fresh or existing v3 storage
@@ -92,18 +92,18 @@ Selection SHALL filter compatibility and authority before sorting and paging, us
 
 #### Scenario: Concurrent grant change
 - **WHEN** a grant changes after a GET pins its snapshot
-- **THEN** that GET uses one consistent snapshot/time and a subsequent GET or POST observes the committed change
+- **THEN** that GET uses one consistent snapshot/time and a subsequent GET observes changed read grants and POST observes changed source request authority; read-grant changes do not add POST prerequisites
 
 ### Requirement: Transactional composition revalidation
-The existing four-UUID `POST /access-requests` SHALL recheck business reads, both selected Resource disclosure grants, source-only request authority and all Need/Revision/Deployment relationships in one write transaction at one time. Process SHALL be derived from Need. No option response SHALL authorize a later write. Errors SHALL leave no partial Subject, Request, Decision, Rule or allowance records.
+The existing four-UUID `POST /access-requests` SHALL use the trusted server actor and recheck effective source-only `access.request` and all Need/Revision/Deployment relationships, including direction, Components, Resources, Application and all-revision consistency in one write transaction at one time. Process SHALL be derived from Need. No option response SHALL authorize a later write. Errors SHALL leave no partial Subject, Request, Decision, Rule or allowance records.
 
 #### Scenario: Changed grants after selection
-- **WHEN** business/source grants expire or are revoked before POST acquires its write transaction
+- **WHEN** source `access.request` grants expire or are revoked before POST acquires its write transaction
 - **THEN** POST returns 403 and persists nothing
 
-#### Scenario: Destination disclosure revoked
-- **WHEN** destination `access.options.read` expires after selection and before submission
-- **THEN** POST returns the same 404 as a missing destination, with no partial writes
+#### Scenario: Read grants revoked
+- **WHEN** business or either Resource `access.options.read` grants expire or are revoked after selection, but source `access.request` remains effective and references remain valid
+- **THEN** direct POST still accepts a PENDING request; subsequent GET discovery uses the changed read grants
 
 #### Scenario: Tampered subject
 - **WHEN** client IDs select reversed roles, a wrong Application, an unrelated Revision or a Need with a mismatching source participant
@@ -114,22 +114,34 @@ The existing four-UUID `POST /access-requests` SHALL recheck business reads, bot
 - **THEN** the Subject insertion is rolled back with the entire failed submission
 
 #### Scenario: Same subject with another Need
-- **WHEN** another readable Process owns a compatible Need and an authorized actor submits the same exact triple using that Need
+- **WHEN** another existing Process owns a compatible Need and an authorized actor submits the same exact triple using that Need
 - **THEN** a distinct PENDING Request references the same Subject and its own Need, without creating a Rule
 
 ### Requirement: Non-disclosing reference errors
-Composition SHALL return generic 401 for invalid credentials and 403 for missing business reads before object lookup. POST SHALL return identical 403 for missing source or insufficient source read/request authority. Other missing/unreadable references SHALL return identical 404; semantic 400 SHALL occur only after references are authorized. Errors SHALL contain no object IDs, counts or diagnostic details.
+GET and POST SHALL authenticate before protected lookup and use neutral errors without object IDs, protected metadata, addresses, counts or per-object diagnostics. GET SHALL gate business reads before context lookup. POST SHALL authorize source request scope before resolving remaining references, without business/disclosure gates. Errors SHALL leave no partial writes.
+
+#### Scenario: Invalid credential
+- **WHEN** GET or POST receives an invalid credential
+- **THEN** it returns generic 401 without protected lookup
+
+#### Scenario: Inaccessible GET context
+- **WHEN** a business-authorized options caller references missing/inaccessible context or an unselectable Revision
+- **THEN** GET returns uniform 404 without protected details
+
+#### Scenario: Residual direct POST inference
+- **WHEN** a source-authorized caller submits known UUIDs without catalog read rights
+- **THEN** valid references can produce a saved Request, missing references produce generic 404 and incompatible references generic 400; these responses and author-visible audit references can still reveal existence/compatibility in local demo, so complete concealment is not claimed
 
 #### Scenario: Probe protected context
-- **WHEN** a caller without business read grants probes real and random Process/Need IDs or submitted references
-- **THEN** each well-formed operation returns the same 403 without protected fields
+- **WHEN** a caller without business read grants probes real and random Process/Need IDs through GET options
+- **THEN** each well-formed GET returns the same 403 without protected fields
 
 #### Scenario: Probe source or destination
-- **WHEN** an actor with business reads probes absent versus unauthorized sources, or an authorized source with absent versus unreadable destinations
-- **THEN** source failures are identical 403 and destination failures are identical 404, without partial records
+- **WHEN** an actor probes absent versus unauthorized sources, or an authorized source with missing destination/Need/Revision references
+- **THEN** source failures are identical 403 before other reference resolution, and missing-reference failures are generic 404, without partial records
 
 #### Scenario: Visible incompatibility
-- **WHEN** selected references are readable and within the Need's Interaction scope but their roles, Application or participant relationships conflict
+- **WHEN** source request authority is effective and existing references conflict in Revision membership, roles, Application or Need participant relationships
 - **THEN** POST returns 400 `INVALID_SUBJECT` without per-object diagnostics
 
 ### Requirement: Reconstructible request references
