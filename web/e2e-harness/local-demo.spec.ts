@@ -7,7 +7,7 @@ import { once } from 'node:events'
 
 const root = resolve(import.meta.dirname, '../..')
 const python = process.env.NAPMS_PYTHON || join(root, '.venv/bin/python')
-type Harness = { stop: () => Promise<void>; start: () => Promise<void>; file: string; privateTokens: () => Promise<string[]> }
+type Harness = { sql: (sql: string, params?: unknown[]) => unknown[][]; stop: () => Promise<void>; start: () => Promise<void>; file: string; privateTokens: () => Promise<string[]> }
 const test = base.extend<{}, { harness: Harness }>({
   harness: [async ({}, use) => {
     const dir = await mkdtemp(join(tmpdir(), 'napms-harness-'))
@@ -28,7 +28,12 @@ const test = base.extend<{}, { harness: Harness }>({
     }
     try {
       await start()
-      await use({ stop, start, file, privateTokens })
+      function sql(statement: string, params: unknown[] = []): unknown[][] {
+        const result = spawnSync(python, ['-c', 'import sqlite3,json,sys; c=sqlite3.connect(sys.argv[1]); r=c.execute(sys.argv[2],json.loads(sys.argv[3])); print(json.dumps(r.fetchall())); c.commit(); c.close()', db, statement, JSON.stringify(params)], {encoding:'utf8'})
+        if (result.status !== 0) throw new Error('Test database operation failed')
+        return JSON.parse(result.stdout)
+      }
+      await use({ stop, start, file, privateTokens, sql })
       const tokens = await privateTokens()
       expect(tokens.some(token => logs.includes(token)), 'Service logs exclude private credentials').toBe(false)
       const assets = await readdir(join(root, 'web/dist/assets'))
@@ -73,9 +78,28 @@ test('one-command actor switching preserves independent grants and actual persis
   await expect(page.getByLabel('Demo actor', { exact: true })).toHaveCount(1)
   await expect(page.getByLabel('Demo mode')).toHaveCount(0)
   await page.getByRole('link', { name: 'Новая заявка', exact: true }).click()
-  await page.getByRole('button', { name: 'Создать заявку', exact: true }).click()
+  await page.getByRole('link', {name:'Выбрать процесс и потребность REAL'}).click()
+  await page.getByRole('link', {name:'Harness acceptance',exact:true}).click()
+  await page.getByRole('link', {name:'Потребности',exact:true}).click()
+  await page.locator('tbody button').first().click()
+  await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Подтверждаю состав заявки', {exact:true}).check()
+  await page.getByRole('button', {name:'Подтвердить заявку',exact:true}).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
   const requestUrl = page.url()
+  expect(harness.sql('SELECT count(*) FROM decisions')).toEqual([[0]])
+  expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[0]])
+  await page.reload()
+  await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+  await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
+  await harness.stop(); await harness.start()
+  await page.reload()
+  await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+  await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
+  await expect(page.locator('dt').filter({hasText:/^connectivityNeedId$/})).toBeVisible()
+
   await page.getByLabel('Demo actor', { exact: true }).selectOption('decider')
   await expect(page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
@@ -85,6 +109,37 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
   await page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true }).click()
   await expect(page.getByText('ALLOWED', { exact: true }).first()).toBeVisible()
+  const ruleLink = page.getByRole('link', {name:'Открыть PolicyRule REAL',exact:true})
+  const rulePath = await ruleLink.getAttribute('href')
+  expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[1]])
+  await ruleLink.click()
+  await expect(page.getByRole('alert')).toContainText('403')
+  await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
+  await expect(page.getByText(/ · ACTIVE$/)).toBeVisible()
+  for (const format of ['json','csv'] as const) {
+    const pendingDownload = page.waitForEvent('download')
+    await page.getByRole('button', {name:'Скачать '+format.toUpperCase(),exact:true}).click()
+    const download = await pendingDownload
+    expect(download.suggestedFilename()).toBe(`policy-rule-${rulePath!.split('/').pop()}.${format}`)
+    const target = test.info().outputPath(download.suggestedFilename())
+    await download.saveAs(target)
+    const bytes = await readFile(target,'utf8')
+    expect(bytes).toContain(rulePath!.split('/').pop()!)
+    expect(bytes).toContain('TCP')
+    expect(bytes).toContain('443')
+    expect(bytes).toContain('READY')
+    expect(bytes).toContain('evaluationAt')
+    expect(bytes).toContain('decisionId')
+    if (format === 'json') {
+      const body = JSON.parse(bytes)
+      expect(body.rows).toHaveLength(1)
+      expect(body.rows[0].requestId).toBe(requestUrl.split('/').pop())
+      expect(body.rows[0].evaluationAt).toBe(body.evaluationAt)
+      expect(body.rows[0].interactionRevisionId).toBe('00000000-0000-0000-0000-000000000009')
+    }
+  }
+  await page.goto(requestUrl)
+  await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('exporter')
   await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('anonymous')
@@ -109,7 +164,8 @@ test('one-command actor switching preserves independent grants and actual persis
       else if (url === processUrl) await expect(page.getByRole('heading', {name:'Harness acceptance',exact:true})).toBeVisible()
       else if (url === requestUrl) await expect(page.getByText('ALLOWED', {exact:true}).first()).toBeVisible()
       else if (url === '/access-requests') await expect(page.getByRole('table')).toBeVisible()
-      else await expect(page.getByRole('button', {name: url.startsWith('/business') ? 'Сохранить' : 'Создать заявку',exact:true})).toBeVisible()
+      else if (url.startsWith('/business')) await expect(page.getByRole('button', {name:'Сохранить',exact:true})).toBeVisible()
+      else await expect(page.getByRole('link', {name:'Выбрать процесс и потребность REAL'})).toBeVisible()
       await expect(page.locator('.ux-shell')).toHaveCount(1)
       await expect(page.getByRole('navigation', {name:'Prototype navigation'}).getByRole('link')).toHaveCount(7)
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(size.width)
@@ -246,6 +302,177 @@ test('real collection pagination survives detail tabs, breadcrumbs and reload', 
     await page.goto(path)
     await expect(page.getByRole('heading', {name:'Страница не найдена',exact:true})).toBeVisible()
     await expect(page.getByRole('link', {name:'На главную',exact:true})).toBeVisible()
+  }
+  expect(harness.file).toBeTruthy()
+})
+
+const demoInput = { sourceDeploymentId:'00000000-0000-0000-0000-00000000000a',destinationDeploymentId:'00000000-0000-0000-0000-00000000000b',interactionRevisionId:'00000000-0000-0000-0000-000000000009',connectivityNeedId:'00000000-0000-0000-0000-00000000000d' }
+function actorHeaders(actor: string) { return {Origin:'http://127.0.0.1:5173','X-NAPMS-Dev':'1','X-NAPMS-Demo-Actor':actor} }
+
+async function selectedRule(request: import('@playwright/test').APIRequestContext) {
+  const created = await request.post('/access-requests',{headers:actorHeaders('requester'),data:demoInput})
+  expect(created.status()).toBe(201)
+  const pending = await created.json()
+  const decision = await request.post(`/access-requests/${pending.requestId}/decision`,{headers:actorHeaders('decider'),data:{outcome:'ALLOWED'}})
+  expect(decision.status()).toBe(201)
+  return (await decision.json()).policyRuleId as string
+}
+
+async function downloaded(page: import('@playwright/test').Page, format: 'json'|'csv') {
+  const waiting = page.waitForEvent('download')
+  await page.getByRole('button',{name:'Скачать '+format.toUpperCase(),exact:true}).click()
+  const download = await waiting
+  const target = test.info().outputPath(download.suggestedFilename())
+  await download.saveAs(target)
+  return readFile(target,'utf8')
+}
+
+test('REAL Rule download boundaries, missing address retention and INACTIVE files', async ({page,request,harness}) => {
+  const id = await selectedRule(request)
+  await page.goto('/policy-rules/'+id)
+  await expect(page.getByRole('alert')).toContainText('401')
+  for (const actor of ['requester','decider']) {
+    await page.getByLabel('Demo actor',{exact:true}).selectOption(actor)
+    await expect(page.getByRole('alert')).toContainText('403')
+    await expect(page.getByRole('button',{name:'Скачать JSON',exact:true})).toHaveCount(0)
+    for (const format of ['json','csv']) expect((await request.get(`/policy/export?ruleId=${id}&format=${format}`,{headers:actorHeaders(actor)})).status()).toBe(403)
+  }
+  for (const resource of ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002']) {
+    harness.sql("UPDATE grants SET valid_until='2000-01-01T00:00:00Z' WHERE action='policy.export' AND scope=?",[resource])
+    try {
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+      await page.getByRole('button',{name:'Обновить PolicyRule',exact:true}).click()
+      await expect(page.getByRole('alert')).toContainText('403')
+      for (const format of ['json','csv']) expect((await request.get(`/policy/export?ruleId=${id}&format=${format}`,{headers:actorHeaders('exporter')})).status()).toBe(403)
+    } finally {harness.sql("UPDATE grants SET valid_until=NULL WHERE action='policy.export' AND scope=?",[resource])}
+  }
+  await page.getByRole('button',{name:'Обновить PolicyRule',exact:true}).click()
+  await expect(page.getByRole('button',{name:'Скачать JSON',exact:true})).toBeVisible()
+  harness.sql("UPDATE endpoints SET address=NULL,kind=NULL WHERE id='00000000-0000-0000-0000-000000000004'")
+  try {
+    const json = JSON.parse(await downloaded(page,'json'))
+    expect(json.rows[0].readiness).toBe('INCOMPLETE')
+    expect(json.rows[0].destinationAddress).toBeNull()
+    expect(json.rows[0].ruleId).toBe(id)
+    const csv = await downloaded(page,'csv')
+    expect(csv).toContain('INCOMPLETE')
+    expect(csv).toContain(id)
+    expect(csv.trim().split('\n')).toHaveLength(2)
+  } finally {harness.sql("UPDATE endpoints SET address='192.0.2.20',kind='HOST' WHERE id='00000000-0000-0000-0000-000000000004'")}
+  harness.sql("UPDATE policy_rules SET state='INACTIVE' WHERE id=?",[id])
+  try {
+    await page.getByRole('button',{name:'Обновить PolicyRule',exact:true}).click()
+    await expect(page.getByText(/ · INACTIVE$/)).toBeVisible()
+    expect(JSON.parse(await downloaded(page,'json')).rows).toEqual([])
+    const csv = await downloaded(page,'csv')
+    expect(csv.trim().split('\n')).toHaveLength(1)
+    expect(csv).toContain('evaluationAt')
+  } finally {harness.sql("UPDATE policy_rules SET state='ACTIVE' WHERE id=?",[id])}
+  await page.goto('/policy-rules/ffffffff-ffff-ffff-ffff-ffffffffffff')
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+  await expect(page.getByRole('alert')).toContainText('не найдены')
+})
+
+test('late Rule reads and downloads cannot cross actor boundary', async ({page,request,harness}) => {
+  const id = await selectedRule(request)
+  for (const path of [`/policy-rules/${id}`,`/policy/export?ruleId=${id}&format=json`]) {
+    await page.goto('/policy-rules/'+id)
+    if (path.startsWith('/policy/export')) {
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+      await expect(page.getByRole('button',{name:'Скачать JSON',exact:true})).toBeVisible()
+    }
+    let release!: () => void, received!: () => void
+    const gate = new Promise<void>(resolve=>{release=resolve}), held = new Promise<void>(resolve=>{received=resolve})
+    let downloads = 0
+    const onDownload = () => {downloads++}
+    page.on('download',onDownload)
+    await page.route('**'+path,async route=>{
+      if (route.request().headers()['x-napms-demo-actor'] !== 'exporter') {await route.continue();return}
+      const response=await route.fetch({headers:{...await route.request().allHeaders(),origin:'http://127.0.0.1:5173','sec-fetch-site':'same-origin'}})
+      expect(response.status()).toBe(200);received();await gate;await route.fulfill({response})
+    })
+    try {
+      if (path.startsWith('/policy/export')) await page.getByRole('button',{name:'Скачать JSON',exact:true}).click()
+      else await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+      await held
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+      await expect(page.getByRole('alert')).toContainText('403')
+    } finally {release();await page.unrouteAll({behavior:'wait'})}
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+    expect(downloads).toBe(0)
+    await expect(page.getByRole('button',{name:'Скачать JSON',exact:true})).toHaveCount(0)
+    page.off('download',onDownload)
+  }
+  expect(harness.file).toBeTruthy()
+})
+
+async function openComposition(page: import('@playwright/test').Page) {
+  await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+  await page.locator('tbody button').first().click()
+  await page.getByLabel('Revision',{exact:true}).selectOption({index:1})
+  await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
+  await page.getByLabel('Destination Deployment',{exact:true}).selectOption({index:1})
+  await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
+}
+
+test('composition resets, empty/error discovery and uncertain POST remain safe',async ({page,harness})=>{
+  await openComposition(page)
+  await page.getByRole('button',{name:'Обновить · Source Deployment',exact:true}).click()
+  await expect(page.getByLabel('Source Deployment',{exact:true})).toHaveValue('')
+  await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
+  await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
+  await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
+  harness.sql("UPDATE grants SET valid_until='2000-01-01T00:00:00Z' WHERE action='access.request'")
+  try {
+    await page.getByRole('button',{name:'Подтвердить заявку',exact:true}).click()
+    await expect(page.getByRole('region',{name:'Запрос из потребности'}).getByRole('alert')).toContainText('403')
+    await expect(page.getByText('На этой странице нет доступных вариантов.')).toBeVisible()
+    await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
+  } finally {harness.sql("UPDATE grants SET valid_until=NULL WHERE action='access.request'")}
+  await openComposition(page)
+  const before = harness.sql('SELECT count(*) FROM access_requests')[0][0] as number
+  let posts = 0
+  await page.route('**/access-requests',async route=>{
+    if (route.request().method() !== 'POST') {await route.continue();return}
+    posts++
+    const response=await route.fetch({headers:{...await route.request().allHeaders(),origin:'http://127.0.0.1:5173','sec-fetch-site':'same-origin'}})
+    expect(response.status()).toBe(201)
+    await route.abort('failed')
+  })
+  await page.getByRole('button',{name:'Подтвердить заявку',exact:true}).dblclick()
+  await expect(page.getByRole('alert')).toContainText('Результат отправки неизвестен')
+  expect(posts).toBe(1)
+  expect(harness.sql('SELECT count(*) FROM access_requests')).toEqual([[before+1]])
+  await page.unrouteAll({behavior:'wait'})
+  await expect(page.getByRole('link',{name:'Проверить список заявок',exact:true})).toBeVisible()
+})
+
+test('composition delayed options and POST do not restore old context or navigate after actor switch',async ({page,harness})=>{
+  for (const submit of [false,true]) {
+    if (submit) await openComposition(page)
+    else {
+      await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+    }
+    let release!:()=>void, received!:()=>void
+    const gate=new Promise<void>(r=>{release=r}),held=new Promise<void>(r=>{received=r})
+    await page.route(submit?'**/access-requests':'**/access-request-options?**',async route=>{
+      if (submit && route.request().method()!=='POST') {await route.continue();return}
+      const response=await route.fetch({headers:{...await route.request().allHeaders(),origin:'http://127.0.0.1:5173','sec-fetch-site':'same-origin'}})
+      expect(response.status()).toBe(submit?201:200);received();await gate;await route.fulfill({response})
+    })
+    try {
+      if(submit) await page.getByRole('button',{name:'Подтвердить заявку',exact:true}).click()
+      else await page.locator('tbody button').first().click()
+      await held
+      if(!submit) await expect(page.getByText('Загрузка Revision…',{exact:true})).toBeVisible()
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('decider')
+      await expect(page.getByRole('alert')).toContainText('403')
+    } finally {release();await page.unrouteAll({behavior:'wait'})}
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+    await expect(page).toHaveURL(/business-processes\/.*tab=needs$/)
+    await expect(page.getByRole('region',{name:'Запрос из потребности'})).toHaveCount(0)
   }
   expect(harness.file).toBeTruthy()
 })

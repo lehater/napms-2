@@ -8,6 +8,7 @@ export const actors = ['anonymous', 'requester', 'decider', 'exporter'] as const
 const origin = 'http://127.0.0.1:5173'
 const uuid = '[0-9a-fA-F-]{36}'
 const paths = [
+  { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}/access-request-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/need-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes(?:/${uuid})?$`), methods: ['GET', 'POST'] },

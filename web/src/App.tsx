@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, Route, Routes, useNavigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { ApiError, api, message, type AccessInput, type AccessRequest, type Client, type Collection, type Outcome } from './api'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { ApiError, api, message, type AccessRequest, type Client, type Collection, type Outcome } from './api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDemoProfile } from './DemoProfile'
@@ -58,7 +58,7 @@ export default function App() {
         {!token && !profile.enabled ? <section className="panel"><h1>Введите демонстрационный credential</h1><p>Выберите режим и введите token из приватного локального файла.</p></section> :
           <div key={epoch + ':' + mode}><Routes>
             <Route index element={<RequestList client={client} />} />
-            <Route path="new" element={<NewRequest client={client} />} />
+            <Route path="new" element={<NewRequest />} />
             <Route path=":requestId" element={<RequestDetail client={client} mode={profile.enabled ? (profile.actor === 'decider' ? 'decider' : 'requester') : mode} />} />
             <Route path="*" element={<h1>Страница не найдена</h1>} />
           </Routes></div>}
@@ -93,35 +93,8 @@ function RequestList({ client }: { client: Client }) {
   </section>
 }
 
-const demo: AccessInput = {
-  sourceDeploymentId: '00000000-0000-0000-0000-00000000000a',
-  destinationDeploymentId: '00000000-0000-0000-0000-00000000000b',
-  interactionRevisionId: '00000000-0000-0000-0000-000000000009',
-  connectivityNeedId: '00000000-0000-0000-0000-00000000000d',
-}
-function NewRequest({ client }: { client: Client }) {
-  const [data, setData] = useState<AccessInput>(demo)
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const submitting = useRef(false)
-  const alive = useRef(true)
-  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  const navigate = useNavigate()
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    if (submitting.current) return
-    submitting.current = true; setBusy(true); setError('')
-    try { const r = await client.create(data); if (alive.current) navigate('/access-requests/' + r.requestId) }
-    catch (e) { if (alive.current) setError(message(e)) }
-    finally { submitting.current = false; if (alive.current) setBusy(false) }
-  }
-  return <section className="panel space-y-5"><div><h1>Новая заявка</h1><p>Ссылки на публичный demo fixture заполнены. Допуск создаёт заявку PENDING.</p></div>
-    <ErrorNotice text={error} />
-    <form className="process-form" onSubmit={submit}>
-      {(Object.keys(demo) as (keyof AccessInput)[]).map(key => <div className="space-y-2" key={key}><label htmlFor={key}>{key}</label><Input id={key} value={data[key]} onChange={e => setData({ ...data, [key]: e.target.value })} required pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" title="Введите UUID" disabled={busy} /></div>)}
-      <Button type="submit" disabled={busy}>{busy ? 'Создание…' : 'Создать заявку'}</Button>
-    </form>
-  </section>
+function NewRequest() {
+  return <section className="panel"><h1>Новая заявка</h1><p>Выберите сохранённую потребность процесса, затем Revision и два Deployment. Допуск создаёт PENDING, а не разрешение.</p><Link to="/business-processes">Выбрать процесс и потребность REAL</Link></section>
 }
 
 function Evidence({ entries }: { entries: Record<string, string | null> }) {
@@ -147,9 +120,10 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     <ErrorNotice text={error} />
     {!request && !error && <p role="status">Загрузка заявки…</p>}
     {feedback && <p role="status">{feedback}</p>}
-    {request && request.requestId === requestId && <><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt }} />
+    {request && request.requestId === requestId && <><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} />
       <h2>Основания допуска</h2><Evidence entries={request.admission} />
       </>}{decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}</>}
+      {request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть PolicyRule REAL</Link>}
       {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
     </>}
   </section>

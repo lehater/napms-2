@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, message, type Client, type Need, type NeedOption, type NeedPage } from './api'
+import ComposeRequest from './ComposeRequest'
 import { Button } from './components/ui/button'
 
 function explain(e: unknown) {
@@ -11,6 +12,7 @@ function explain(e: unknown) {
   return message(e)
 }
 export default function Needs({ client, processId }: { client: Client; processId: string }) {
+  const [selected, setSelected] = useState<Need | null>(null)
   const [needs, setNeeds] = useState<NeedPage<Need> | null>(null)
   const [options, setOptions] = useState<NeedPage<NeedOption> | null>(null)
   const [offset, setOffset] = useState(0), [optionOffset, setOptionOffset] = useState(0)
@@ -45,8 +47,9 @@ export default function Needs({ client, processId }: { client: Client; processId
     <p>REAL · Потребность обосновывает коммуникацию и не разрешает доступ.</p>
     {error && <p role="alert">{error}</p>}
     {!needs && !error && <p role="status">Загрузка потребностей…</p>}
-    {needs && <>{needs.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Потребность</th><th>Interaction</th><th>Исходный Component</th></tr></thead><tbody>{needs.items.map(n => <tr key={n.connectivityNeedId}><td>{n.connectivityNeedId}</td><td>{n.interactionId}</td><td>{n.componentId}</td></tr>)}</tbody></table></div> : <p>На этой странице нет потребностей.</p>}
+    {needs && <>{needs.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Потребность</th><th>Interaction</th><th>Исходный Component</th></tr></thead><tbody>{needs.items.map(n => <tr key={n.connectivityNeedId}><td><button onClick={() => setSelected(n)}>{n.connectivityNeedId}</button></td><td>{n.interactionId}</td><td>{n.componentId}</td></tr>)}</tbody></table></div> : <p>На этой странице нет потребностей.</p>}
       <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button><Button variant="outline" disabled={!needs.hasMore} onClick={() => setOffset(offset + 20)}>Следующие потребности</Button></>}
+    {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
     <h3>Создать потребность</h3>
     {optionError && <p role="alert">{optionError}</p>}
     {!options && !optionError && <p role="status">Загрузка коммуникаций…</p>}

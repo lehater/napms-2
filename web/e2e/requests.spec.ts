@@ -64,11 +64,19 @@ async function login(page: Page, token: string, mode: 'requester' | 'decider' = 
   await page.getByRole('button', { name: 'Применить token', exact: true }).click()
   if (expectActive) await expect(page.getByRole('button', { name: 'Очистить credential' })).toBeVisible()
 }
-async function create(page: Page) {
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
-  await page.getByRole('link', { name: 'Новая заявка', exact: true }).click()
-  await page.getByRole('button', { name: 'Создать заявку', exact: true }).click()
-  await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
+async function create(page: Page, token: string) {
+  await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
+  try { await page.getByLabel('Bearer token', {exact:true}).fill(token) } catch { throw new Error('Could not enter private credential') }
+  await page.getByRole('button', {name:'Применить token',exact:true}).click()
+  await page.locator('tbody button').first().click()
+  await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})
+  await page.getByLabel('Подтверждаю состав заявки', {exact:true}).check()
+  await page.getByRole('button', {name:'Подтвердить заявку',exact:true}).click()
+  await expect(page).toHaveURL(/access-requests\/[0-9a-f-]{36}$/)
+  await login(page, token)
+  await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
   return page.url().split('/').pop()!
 }
 
@@ -76,7 +84,7 @@ test('requester creates, lists and opens persisted request', async ({ page, cred
   await page.goto('/access-requests')
   await login(page, credentials.requester.token)
   await expect(page.getByText('Нет доступных заявок.')).toBeVisible()
-  const id = await create(page)
+  const id = await create(page, credentials.requester.token)
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
   await page.getByRole('link', { name: id, exact: true }).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
@@ -92,7 +100,7 @@ test('real ALLOWED and DENIED persist across credential switches and browser rel
   await page.goto('/access-requests')
   await login(page, credentials.requester.token)
   for (const outcome of ['ALLOWED', 'DENIED'] as const) {
-    const id = await create(page)
+    const id = await create(page, credentials.requester.token)
     await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
     await page.getByRole('link', { name: id, exact: true }).click()
     await page.getByLabel('Demo mode').selectOption('decider')
@@ -133,7 +141,7 @@ test('real ALLOWED and DENIED persist across credential switches and browser rel
 test('server rejects mismatched mode, isolates unrelated actor, and reloads a concurrent decision', async ({ page, credentials }) => {
   await page.goto('/access-requests')
   await login(page, credentials.requester.token)
-  const id = await create(page)
+  const id = await create(page, credentials.requester.token)
   await page.getByLabel('Demo mode').selectOption('decider')
   await login(page, credentials.requester.token, 'decider')
   await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
@@ -162,19 +170,15 @@ test('server rejects mismatched mode, isolates unrelated actor, and reloads a co
 test('validation, 404, 401 and offline errors have safe correction/retry paths', async ({ page, credentials }) => {
   await page.goto('/access-requests/new')
   await login(page, credentials.decider.token)
-  await page.getByRole('button', { name: 'Создать заявку', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
-  await page.getByRole('button', { name: 'Очистить credential' }).click()
-  await login(page, credentials.requester.token)
-  await create(page)
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
-  await page.getByRole('link', { name: 'Новая заявка', exact: true }).click()
-  await page.getByLabel('destinationDeploymentId', { exact: true }).fill('00000000-0000-0000-0000-000000000001')
-  await page.getByRole('button', { name: 'Создать заявку', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('не найдены')
+  await expect(page.getByRole('link', {name:'Выбрать процесс и потребность REAL'})).toBeVisible()
+  const invalid = await page.request.post('/access-requests', {headers:{Authorization:'Bearer '+credentials.decider.token},data:{sourceDeploymentId:'00000000-0000-0000-0000-00000000000a',destinationDeploymentId:'00000000-0000-0000-0000-00000000000b',interactionRevisionId:'00000000-0000-0000-0000-000000000009',connectivityNeedId:'00000000-0000-0000-0000-00000000000d'}})
+  expect(invalid.status()).toBe(403)
+  await create(page, credentials.requester.token)
+  const absent = await page.request.post('/access-requests', {headers:{Authorization:'Bearer '+credentials.requester.token},data:{sourceDeploymentId:'00000000-0000-0000-0000-00000000000a',destinationDeploymentId:'00000000-0000-0000-0000-000000000001',interactionRevisionId:'00000000-0000-0000-0000-000000000009',connectivityNeedId:'00000000-0000-0000-0000-00000000000d'}})
+  expect(absent.status()).toBe(404)
   await page.goto('/access-requests/00000000-0000-0000-0000-000000000001')
   await login(page, credentials.requester.token)
-  await expect(page.getByRole('alert')).toContainText('не найдены')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByRole('button', { name: 'Очистить credential' }).click()
   await login(page, 'invalid-local-test-credential', 'requester', false)
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')

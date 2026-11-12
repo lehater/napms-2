@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import App from './App'
+import PolicyRule from './PolicyRule'
 import { DemoProfile, useDemoProfile } from './DemoProfile'
 import BusinessProcesses from './BusinessProcesses'
 import Prototype from './prototype/Prototype'
@@ -13,6 +14,7 @@ function Layout() {
  return <Shell><div key={profile.actor}><Routes>
   <Route path="/" element={<Navigate to="/business-processes" replace />} />
   <Route path="/business-processes/*" element={<BusinessProcesses />} />
+  <Route path="/policy-rules/:ruleId" element={<PolicyRule />} />
   <Route path="/access-requests/*" element={<App />} />
   <Route path="/prototype/:section?/:objectId?" element={<Prototype />} />
   <Route path="*" element={<NotFound />} />
