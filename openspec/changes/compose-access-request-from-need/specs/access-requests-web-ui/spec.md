@@ -23,7 +23,7 @@ The client SHALL compose a request within a selected saved Need on the existing 
 - **THEN** they can reach REAL BusinessProcesses and select a saved Need without entering four identifiers or opening MOCK Simulation
 
 ### Requirement: Read scoped list and persisted detail
-The client SHALL read the list via authenticated `GET /access-requests`, paginate with the defined limit/offset contract, open individual requests using the existing `GET /access-requests/{requestId}`, and display server-provided Need and exact subject references, IDs, timestamps, admission, status and decision evidence. It SHALL not hide unauthorized rows solely on the client or reconstruct saved facts from a draft.
+The client SHALL read the list via authenticated `GET /access-requests`, paginate with the defined limit/offset contract, open individual requests using the existing `GET /access-requests/{requestId}`, and display server-provided Need and exact subject references, IDs, timestamps, admission, status and decision evidence. It SHALL not hide unauthorized rows solely on the client or reconstruct saved facts from a draft. For ALLOWED decisions carrying a server-provided policyRuleId, Detail SHALL offer a REAL link to `/policy-rules/{ruleId}`; the link does not confer `policy.export` authority. DENIED SHALL never render a fabricated Rule link.
 
 #### Scenario: Newly submitted request visible
 - **WHEN** a requester successfully creates a request and returns to their list
@@ -37,12 +37,20 @@ The client SHALL read the list via authenticated `GET /access-requests`, paginat
 - **WHEN** a requester and a decision maker access the list using their distinct actual credentials
 - **THEN** each sees only records allowed by backend authorization, regardless of the displayed UI mode
 
+#### Scenario: Allowed Request to authorized Rule
+- **WHEN** a Decider confirms ALLOWED and the saved Request reports a policyRuleId
+- **THEN** the UI offers a REAL Rule Detail link preserving the Rule ID across role switching; a separately authorized Exporter can open it even without being authorized to read the original Request
+
+#### Scenario: DENIED request has no policy
+- **WHEN** the saved Request is DENIED with a null policyRuleId
+- **THEN** the UI shows the terminal decision without a Rule or policy-export action
+
 #### Scenario: Historical composition after restart
 - **WHEN** the browser reloads and backend restarts against the same database before a saved Request is opened
 - **THEN** its Need and exact three-part subject are restored from the protected Request GET without requiring renewed composition read grants
 
 ### Requirement: Full real-backend browser verification
-The implementation SHALL include Playwright verification using supported loopback processes, temporary SQLite and real FastAPI, with no mocked API or recorded credentials. One E2E SHALL cover UI Process/Need creation, exact selection, PENDING submission, reload, actual backend restart, Demo actor switch, ALLOWED and canonical Rule verification through existing backend. Existing DENIED, visibility and authorization coverage SHALL remain.
+The implementation SHALL include Playwright verification using supported loopback processes, temporary SQLite and real FastAPI, with no mocked API or recorded credentials. One E2E SHALL cover UI Process/Need creation, exact selection, PENDING submission, reload, actual backend restart, Demo actor switch, ALLOWED, real Rule detail and actual selected-rule JSON/CSV file downloads. Existing DENIED, visibility and authorization coverage SHALL remain.
 
 #### Scenario: Independent complete E2E run
 - **WHEN** the documented local Playwright test runs against an initialized temporary demo environment
@@ -50,7 +58,7 @@ The implementation SHALL include Playwright verification using supported loopbac
 
 #### Scenario: Need to request to canonical rule
 - **WHEN** Requester creates a Process and Need, selects Revision and both Deployments, reviews and confirms, reloads, restarts backend and reopens the saved PENDING Request, then switches Demo actor to Decider and confirms ALLOWED
-- **THEN** the same Need/subject survives, existing decision UI shows the persisted outcome and Rule ID, and an authorized Exporter backend read confirms the canonical Rule's subject and origin
+- **THEN** the same Need/subject survives, existing decision UI shows the persisted outcome and Rule ID, and a separately authorized Exporter opens REAL Rule Detail and downloads JSON and CSV whose contents confirm the canonical Rule's subject, traffic, readiness and origin
 - **AND** no Decision or Rule existed for this fresh subject before ALLOWED and no UUID input or MOCK route was needed
 
 ## ADDED Requirements
