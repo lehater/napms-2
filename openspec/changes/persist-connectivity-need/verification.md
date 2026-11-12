@@ -21,9 +21,12 @@ The final evidence-only commit receives its own Verify run; its exact SHA and CI
 
 Fresh schema v3, v1/v2 upgrade, historical preservation and atomic duplicate refusal; SQLite uniqueness and concurrent creation; consistent revisions and Application roles; independent read/create/parent grants; strict DTO/pagination and safe errors; actual browser reload/backend restart; reuse across processes; replay and stale form 409; existing AccessRequest/Decision/Rule/Export and MOCK regressions.
 
-## Remaining acceptance
+## Independent architecture review and owner acceptance
 
-Task 4.2 remains unchecked: independent review and owner manual acceptance have not occurred. No merge or archive was performed.
+- Independent architecture review of PR #51 implementation HEAD `4a652378b6f64402ebdb89accc3f8b52fbafc5fd`: **ACCEPT, no P0/P1 blockers**. Recorded as GitHub review #5881472827. Checked SQLite migration and uniqueness, domain semantics, server authority, scoped API, REAL/MOCK isolation, HTTP/SQLite/Playwright regressions.
+- Non-blocking P2: full result materialization before pagination in demo-only Need service; P3: verbose UUID labels in the UI. No expansion of scope for this slice.
+- The owner stated that the REAL flow was manually checked and explicitly accepted PR #51 in the coordinating chat on 2026-11-12. This records the owner's report; the reviewer did not rerun the manual scenario on the owner's workstation.
+- OpenSpec task 4.2 is complete. No merge was performed at the time of this evidence entry; final squash merge follows required CI checks.
 
 Source-side only; demo-business authority; no Need lifecycle/businessBasis, standalone Interaction catalogue, or AccessRequest composition.
 
