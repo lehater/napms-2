@@ -161,3 +161,63 @@ def test_read_snapshot_and_seed_upgrade(env):
     with env[0].transaction() as c:
         assert c.execute('PRAGMA user_version').fetchone()[0] == 3
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
+
+
+def test_filter_before_paging_and_compatible_deployments(env):
+    visible, hidden = str(uuid4()), str(uuid4())
+    with env[0].transaction(write=True) as c:
+        c.execute('INSERT INTO resources VALUES (?)', (hidden,))
+        c.execute('INSERT INTO deployments VALUES (?,?,?)', (hidden,IDS['sender'],hidden))
+        c.execute('INSERT INTO deployments VALUES (?,?,?)', (visible,IDS['sender'],IDS['sourceResource']))
+        # Wrong role on the source Resource must not appear among sources.
+        c.execute('INSERT INTO deployments VALUES (?,?,?)', (str(uuid4()),IDS['receiver'],IDS['sourceResource']))
+    query = '?kind=source-deployments&interactionRevisionId='+IDS['revision']+'&limit=1'
+    first = options(env,query).json()
+    second = options(env,query+'&offset=1').json()
+    assert first['hasMore'] and not second['hasMore']
+    assert [first['items'][0]['deploymentId'],second['items'][0]['deploymentId']] == sorted([IDS['sourceDeployment'],visible])
+    assert hidden not in str(first)+str(second)
+
+
+def test_other_need_same_subject_and_unrelated_revision(env):
+    pid,nid,revision = str(uuid4()),str(uuid4()),str(uuid4())
+    with env[0].transaction(write=True) as c:
+        c.execute('INSERT INTO processes(id,name) VALUES (?,?)',(pid,'Independent justification'))
+        c.execute('INSERT INTO needs VALUES (?,?,?,?)',(nid,pid,IDS['interaction'],IDS['sender']))
+        c.execute('INSERT INTO interaction_revisions SELECT ?,?,application_id,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(revision,str(uuid4())))
+    first = submit(env)
+    a = decide(env,first)
+    second = env[3].post('/access-requests',headers=auth(env,'requester'),json={**DEMO_REQUEST,'connectivityNeedId':nid}).json()
+    assert first['subjectId'] == second['subjectId'] and first['requestId'] != second['requestId']
+    assert decide(env,second)['policyRuleId'] == a['policyRuleId']
+    before = counts(env)
+    response = env[3].post('/access-requests',headers=auth(env,'requester'),json={**DEMO_REQUEST,'interactionRevisionId':revision})
+    assert response.status_code == 400
+    assert counts(env) == before
+
+
+def test_expired_disclosure_seed_is_not_renewed(env):
+    change(env,'UPDATE grants SET valid_until=? WHERE id=?',('2000-01-01T00:00:00Z',IDS['sourceOptionsGrant']))
+    init_demo(env[0],env[1])
+    assert options(env).json()['items'] == []
+    assert submit(env)['status'] == 'PENDING'
+
+
+@pytest.mark.parametrize('mismatch', ['need-participant', 'application', 'destination-role'])
+def test_incompatible_saved_references_have_no_partial_writes(env, mismatch):
+    data = dict(DEMO_REQUEST)
+    with env[0].transaction(write=True) as c:
+        if mismatch == 'need-participant':
+            identifier = str(uuid4())
+            c.execute('INSERT INTO needs VALUES (?,?,?,?)',(identifier,IDS['process'],IDS['interaction'],IDS['receiver']))
+            data['connectivityNeedId'] = identifier
+        elif mismatch == 'destination-role':
+            data['destinationDeploymentId'] = IDS['sourceDeployment']
+        else:
+            app,rev = str(uuid4()),str(uuid4())
+            c.execute('INSERT INTO applications VALUES (?)',(app,))
+            c.execute('INSERT INTO interaction_revisions SELECT ?,?, ?,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(rev,str(uuid4()),app))
+            data['interactionRevisionId'] = rev
+    response = env[3].post('/access-requests',json=data,headers=auth(env,'requester'))
+    assert response.status_code == 400
+    assert counts(env) == [0]*5

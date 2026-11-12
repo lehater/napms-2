@@ -89,6 +89,8 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByRole('button', {name:'Подтвердить заявку',exact:true}).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
   const requestUrl = page.url()
+  const readPending = async () => (await (await page.request.get(new URL(requestUrl).pathname,{headers:actorHeaders('requester')})).json())
+  const pendingFacts = await readPending()
   expect(harness.sql('SELECT count(*) FROM decisions')).toEqual([[0]])
   expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[0]])
   await page.reload()
@@ -99,6 +101,7 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
   await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
   await expect(page.locator('dt').filter({hasText:/^connectivityNeedId$/})).toBeVisible()
+  expect(await readPending()).toEqual(pendingFacts)
 
   await page.getByLabel('Demo actor', { exact: true }).selectOption('decider')
   await expect(page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true })).toHaveCount(0)
@@ -116,6 +119,9 @@ test('one-command actor switching preserves independent grants and actual persis
   await expect(page.getByRole('alert')).toContainText('403')
   await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
   await expect(page.getByText(/ · ACTIVE$/)).toBeVisible()
+  const storedRule = await (await page.request.get(rulePath!,{headers:actorHeaders('exporter')})).json()
+  expect(storedRule.subject).toEqual(pendingFacts.subject)
+  let exportedRow: Record<string, unknown> = {}
   for (const format of ['json','csv'] as const) {
     const pendingDownload = page.waitForEvent('download')
     await page.getByRole('button', {name:'Скачать '+format.toUpperCase(),exact:true}).click()
@@ -133,9 +139,23 @@ test('one-command actor switching preserves independent grants and actual persis
     if (format === 'json') {
       const body = JSON.parse(bytes)
       expect(body.rows).toHaveLength(1)
+      exportedRow = body.rows[0]
+      expect(body.rows[0].subjectId).toBe(storedRule.subjectId)
+      expect(body.rows[0].decisionId).toBe(storedRule.originatingDecision.decisionId)
+      expect(body.rows[0].connectivityNeedId).toBe(pendingFacts.connectivityNeedId)
+      expect(body.rows[0].sourceResourceId).toBe('00000000-0000-0000-0000-000000000001')
+      expect(body.rows[0].destinationResourceId).toBe('00000000-0000-0000-0000-000000000002')
+      expect(Number.isNaN(Date.parse(body.evaluationAt))).toBe(false)
       expect(body.rows[0].requestId).toBe(requestUrl.split('/').pop())
       expect(body.rows[0].evaluationAt).toBe(body.evaluationAt)
       expect(body.rows[0].interactionRevisionId).toBe('00000000-0000-0000-0000-000000000009')
+    } else {
+      const [columns, values] = bytes.trim().split(/\r?\n/).map(line => line.split(','))
+      const row = Object.fromEntries(columns.map((key,index)=>[key,values[index]]))
+      for (const [key,value] of Object.entries(exportedRow)) {
+        if (key === 'evaluationAt') expect(Number.isNaN(Date.parse(row[key]))).toBe(false)
+        else expect(row[key]).toBe(value === null ? '' : String(value))
+      }
     }
   }
   await page.goto(requestUrl)

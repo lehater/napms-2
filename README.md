@@ -92,10 +92,18 @@ credential. Перезапустите `napms-dev serve` с той же SQLite �
 `business.need.create` и `business.process.read`; grants выдаются только requester. Изменение/удаление процесса в этом срезе не предусмотрено.
 
 Выберите requester и вручную введите его token из приватного `var/dev-credentials.json`
-в маскированное поле Bearer token. Создайте заявку с публичными demo UUID, откройте список
-и детали. Переключите mode на decider, заново введите соответствующий token и подтвердите
+в маскированное поле Bearer token. Откройте сохранённую потребность на вкладке «Потребности», выберите Revision, Source Deployment
+и Destination Deployment из серверных вариантов, проверьте сводку и отдельно подтвердите заявку.
+Откроется сохранённая PENDING с Need и точным Subject; UUID вручную не вводятся.
+`/access-requests/new` ведёт к выбору процесса и потребности. Переключите mode на decider, заново введите соответствующий token и подтвердите
 ALLOWED или DENIED. После переключения на requester и повторного ввода token перечитайте
-статус. DENIED хранит `policyRuleId=null` и не отзывает ранее созданные Rules.
+статус. ALLOWED даёт ссылку на REAL `/policy-rules/{ruleId}`. На ней независимо
+переключитесь на Exporter (либо введите его bearer token) для просмотра и скачивания
+настоящих JSON/CSV выбранного Rule. Requester и Decider этих export grants не получают.
+INACTIVE экспортируется без строк; отсутствие адреса сохраняет строку INCOMPLETE.
+Для обновления существующей v3 SQLite явно повторите `init-demo`: добавятся два
+Requester `access.options.read` grant без замены credential и продления истёкших grants.
+DENIED хранит `policyRuleId=null` и не отзывает ранее созданные Rules.
 
 Mode — только подсказка интерфейса: полномочия проверяет backend по token/grants.
 Смена mode или Clear credential удаляют token, отображённые данные и ожидающее подтверждение.
