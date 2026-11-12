@@ -15,7 +15,7 @@
 - [x] 3.2 Add a real browser E2E create Process → create Need → option disappears for that Process → reload → backend restart. Verify Interaction reuse across Process and direct/replayed duplicate POST returns 409; preserve MOCK isolation.
 
 ## 4. Verification and owner acceptance
-- [ ] 4.1 Run OpenSpec strict, pytest, web build, full E2E, semantic-contract and CI. Record evidence.
+- [x] 4.1 Run OpenSpec strict, pytest, web build, full E2E, semantic-contract and CI. Record evidence.
 - [ ] 4.2 Independent review of migration, authorization, domain consistency, UI and REAL/MOCK separation. Owner manually accepts the real flow before squash merge.
 
 ## Manual acceptance
