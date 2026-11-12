@@ -16,7 +16,7 @@
 
 ## 4. Verification and owner acceptance
 - [x] 4.1 Run OpenSpec strict, pytest, web build, full E2E, semantic-contract and CI. Record evidence.
-- [ ] 4.2 Independent review of migration, authorization, domain consistency, UI and REAL/MOCK separation. Owner manually accepts the real flow before squash merge.
+- [x] 4.2 Independent review of migration, authorization, domain consistency, UI and REAL/MOCK separation. Owner manually accepts the real flow before squash merge.
 
 ## Manual acceptance
 Start existing one-command local demo, select requester. Create a BusinessProcess. On its `Потребности` tab, select a server-provided source communication and create a Need. Reload and restart backend against the same SQLite to confirm persistence. Confirm that the already-used Interaction is absent from the current Process's creation options; submit a duplicate via an API replay/stale request (including a different Revision if available) and confirm 409. Then create a Need for another Process using the same Interaction. Verify no AccessRequest or Rule appears.
