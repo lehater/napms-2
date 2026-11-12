@@ -1,3 +1,6 @@
+export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null }
+export type ProcessInput = { name: string; description: string | null; responsibleOrganization: string | null }
+export type ProcessCollection = { items: BusinessProcess[]; limit: number; offset: number; hasMore: boolean }
 export type Outcome = 'ALLOWED' | 'DENIED'
 export type AccessInput = {
   sourceDeploymentId: string
@@ -46,6 +49,9 @@ export function api(token: string, unauthenticated: () => void) {
     return response.json() as Promise<T>
   }
   return {
+    processes: (offset = 0) => call<ProcessCollection>(`/business-processes?limit=20&offset=${offset}`),
+    process: (id: string) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`),
+    createProcess: (data: ProcessInput) => call<BusinessProcess>('/business-processes', 'POST', data),
     list: (offset = 0) => call<Collection>(`/access-requests?limit=20&offset=${offset}`),
     request: (id: string) => call<AccessRequest>(`/access-requests/${encodeURIComponent(id)}`),
     create: (data: AccessInput) => call<AccessRequest>('/access-requests', 'POST', data),

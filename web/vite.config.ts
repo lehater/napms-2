@@ -20,6 +20,10 @@ export default defineConfig({
   server: {
     host: '127.0.0.1', port: 5173, strictPort: true,
     proxy: {
+      '/business-processes': {
+        target: 'http://127.0.0.1:8000',
+        bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
+      },
       '/access-requests': {
         target: 'http://127.0.0.1:8000',
         // Browser navigation must reach the SPA; fetch requests reach FastAPI.

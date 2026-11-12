@@ -234,6 +234,10 @@ for (const [sectionId, id, tab, targetId] of journeys) {
     await expect(nav.getByRole('link')).toHaveText(sections.map(item => item.title))
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
     await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
+    if (sectionId === 'processes') {
+      await expect(page).toHaveURL(/\/business-processes$/)
+      await page.getByRole('link', { name: /MOCK Simulation:/ }).click()
+    }
     const rows = page.locator('tbody tr')
     const expected = visibleCollection(sectionId)
     await expect(rows).toHaveCount(Math.min(2, expected.length))
