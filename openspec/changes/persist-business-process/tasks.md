@@ -15,7 +15,7 @@
 - [x] 3.3 Add Playwright against actual FastAPI/SQLite for create → list → detail → refresh/re-authentication → backend restart, negative authorization and API failure; ensure existing browser tests remain green.
 
 ## 4. Delivery gates
-- [ ] 4.1 Run Python suite, TypeScript build, semantic-contract checks, full Playwright, OpenSpec strict and GitHub CI; record exact command results and commit SHA.
+- [x] 4.1 Run Python suite, TypeScript build, semantic-contract checks, full Playwright, OpenSpec strict and GitHub CI; record exact command results and commit SHA.
 - [x] 4.2 Independent coordinator review of migration, authorization and REAL/MOCK source separation; provide manual UI acceptance steps. Keep PR Draft; merge only after owner's explicit acceptance.
 
 ## Acceptance script for the owner

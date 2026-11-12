@@ -23,4 +23,10 @@ A separate agent reviewed migration, authorization and REAL/MOCK separation. No 
 
 Accepted limitations from the design remain: immutable Processes have no edit/delete flow; historical names may be unknown; real Needs reading is not implemented; authentication/catalog scope is explicitly local demo. These are scope boundaries, not newly accepted exceptions.
 
-Manual owner acceptance is documented in `tasks.md` and README. PR remains Draft; no merge is authorized. Commit SHA and GitHub CI results will be recorded after publication.
+Manual owner acceptance is documented in `tasks.md` and README. PR remains Draft; no merge is authorized. Implementation commit: `721eb4e6fecf45fd997a442e139f5fa081052eb8`.
+
+## GitHub CI
+
+[Verify run 43204164476](https://github.com/lehater/napms-2/actions/runs/43204164476), for implementation commit `721eb4e6fecf45fd997a442e139f5fa081052eb8`: **success** for all four jobs — `application`, `web`, `semantic-contract`, `validate`. This includes CI's real FastAPI/SQLite browser tests, production build, Python suite and OpenSpec strict.
+
+The final evidence-only commit closes task 4.1; its SHA and final CI link are recorded in the PR conversation to avoid embedding a commit's own hash inside itself. No runtime code changed after the verified implementation commit.
