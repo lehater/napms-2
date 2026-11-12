@@ -11,6 +11,10 @@ NAPMS 1.0 используется только как источник знан
 
 ## Установка и запуск
 
+Для совместного запуска FastAPI/React и выбора demo actor без копирования токенов
+используйте [явный профиль local-demo](#запуск-одной-командой-без-копирования-токенов)
+после установки зависимостей. Ниже сохранён ручной диагностический запуск.
+
 Из свежего клона:
 
 ```bash
@@ -220,3 +224,51 @@ Use «Сценарное состояние» (or `&scenario=A|B|C`) to reproduc
 Confirm submission, then switch the demonstration role to Decider (or enable «MOCK режим принятия решения»). Neither ALLOWED nor DENIED is preselected: choose one, inspect its confirmation panel and separately confirm that outcome. Completed decisions cannot be changed. «Открыть PolicyRule» shows the declared permission and provenance; it does not prove network availability. Switch back to Requester to inspect the saved result. Repeated ALLOWED reuses the canonical Rule, including an INACTIVE Rule without reactivating it; DENIED creates no Rule and revokes none. Role selection is mock context, not real authorization; protected Rule viewing is an explicitly permitted mock `policy.export` context.
 
 SPA navigation preserves React simulation state. «Сбросить mock-state» or a full reload resets it without changing historical fixtures. The mock never calls the real API; the separate real API UI remains available.
+
+## Запуск одной командой без копирования токенов
+
+После установки Python-зависимостей и `npm ci` в `web/`, из корня репозитория:
+
+```bash
+.venv/bin/python -m napms.dev run --profile local-demo
+```
+
+Команда проверяет порты 8000/5173, вызывает существующий безопасный `init-demo`
+(включая миграцию SQLite), запускает FastAPI и Vite, ждёт их готовности и печатает
+ссылку. `Ctrl-C` останавливает оба сервиса. Повторный запуск сохраняет SQLite,
+credentials, grants и пользовательские данные. Можно задать `--db` и `--credentials`
+с путями вне `web/`. При занятых портах сначала остановите ручные процессы.
+Ничего автоматически не скачивается и не устанавливается.
+
+Откройте <http://127.0.0.1:5173/business-processes>. В общем контроле **Demo actor**
+выберите Requester: можно создать процесс и заявку. Переключитесь на Decider:
+создание/чтение процесса вернёт настоящий 403, а решение заявки разрешено.
+Requester с выбранным **Demo mode = Decider** по-прежнему получит 403 при решении:
+режим экрана — подсказка, полномочия определяет FastAPI. Exporter не получает права
+создания/решения. «Без авторизации» проверяет настоящий backend 401.
+Смена actor удаляет формы, защищённые данные и ожидающие подтверждения; выбор
+сохраняется при переходах React и сбрасывается при полной перезагрузке страницы.
+MOCK Simulation имеет собственную независимую роль и фиктивные данные.
+
+В этом профиле браузер передаёт только имя demo actor и специальный header.
+Node-плагин Vite читает существующий приватный credentials-файл (обычно
+`var/dev-credentials.json`, regular file, без symlink, mode 0600) и подставляет
+Bearer только при вызове фиксированного FastAPI `127.0.0.1:8000`.
+Токены не возвращаются React, не попадают в URL, storage или production bundle.
+Cookies/сессии не используются. FastAPI и server-held grants не меняются.
+
+Граница: только доверенная локальная разработка. Требуются loopback peer, точный
+Host `127.0.0.1:5173`, same-origin контекст и `X-NAPMS-Dev: 1`; для POST обязателен
+точный Origin `http://127.0.0.1:5173`. Cross-origin/null Origin, preflight, неизвестные
+actors и конфликтующий Authorization отклоняются. Vite не обслуживает файлы вне
+`web/`, credentials внутри `web/` запрещены. Произвольный локальный процесс и
+зловредный same-origin JS не входят в эту demo-защиту; это не production IAM.
+
+Активация требует одновременно dev server mode `local-demo` и server-only
+`NAPMS_LOCAL_DEMO=1`; supervisor задаёт их сам. Build/preview с этими флагами
+отказывают в запуске. Без профиля прежний ручной bearer workflow остаётся доступен.
+Нельзя выставлять этот профиль наружу, использовать forwarding или remote proxy.
+
+`npm run test:e2e` последовательно запускает proxy unit checks, прежние браузерные
+регрессии и отдельный harness E2E с реальными FastAPI/SQLite, переключением actor,
+перезапуском, 401/403, CSRF и production-отказами. Перед запуском освободите порты.

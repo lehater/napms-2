@@ -195,3 +195,12 @@ test('supported Vite configuration rejects non-loopback CLI bind', () => {
     expect(result.stderr).toContain('Only 127.0.0.1 or ::1 is supported')
   }
 })
+
+
+test('normal development never enables actor substitution', async ({ request, credentials }) => {
+  const profile = await request.get('/__napms_dev/profile', { headers: { 'X-NAPMS-Dev': '1', Origin: 'http://127.0.0.1:5173' } })
+  expect(profile.headers()['content-type']).not.toContain('application/json')
+  const response = await request.get('/business-processes', { headers: { 'X-NAPMS-Dev': '1', 'X-NAPMS-Demo-Actor': 'requester' } })
+  expect(response.status()).toBe(401)
+  expect(Boolean(credentials.requester.actorId)).toBe(true)
+})

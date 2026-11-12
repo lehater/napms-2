@@ -20,10 +20,12 @@ export type AccessRequest = {
 }
 export type Collection = { items: AccessRequest[]; limit: number; offset: number; hasMore: boolean }
 export class ApiError extends Error {
-  constructor(public status: number, public code: string) { super(code) }
+  constructor(public status: number, public code: string, public localDemo = false) { super(code) }
 }
 export function message(error: unknown): string {
   if (!(error instanceof ApiError)) return 'Network unavailable. Retry when the local API is running.'
+  if (error.localDemo && error.status === 401) return 'Authentication required. Select a Demo actor.'
+  if (error.localDemo && error.status === 403) return 'Permission denied by the server. The selected Demo actor has insufficient grants.'
   switch (error.status) {
     case 401: return 'Credential expired or invalid. Enter a valid token again.'
     case 403: return 'Permission denied by the server. Check the token and grants.'
@@ -33,18 +35,18 @@ export function message(error: unknown): string {
     default: return 'The API could not complete the operation. Please retry.'
   }
 }
-export function api(token: string, unauthenticated: () => void) {
+export function api(token: string, unauthenticated: () => void, demoActor?: string) {
   async function call<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
     const response = await fetch(path, {
       method, cache: 'no-store',
-      headers: { Accept: 'application/json', Authorization: `Bearer ${token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
+      headers: { Accept: 'application/json', ...(demoActor === undefined ? { Authorization: `Bearer ${token}` } : { 'X-NAPMS-Dev': '1', 'X-NAPMS-Demo-Actor': demoActor }), ...(body ? { 'Content-Type': 'application/json' } : {}) },
       ...(body ? { body: JSON.stringify(body) } : {}),
     })
     if (!response.ok) {
       // Only consume the standardized code. Never render/log arbitrary server input.
       const payload = await response.json().catch(() => null)
       if (response.status === 401) unauthenticated()
-      throw new ApiError(response.status, typeof payload?.error?.code === 'string' ? payload.error.code : 'API_ERROR')
+      throw new ApiError(response.status, typeof payload?.error?.code === 'string' ? payload.error.code : 'API_ERROR', demoActor !== undefined)
     }
     return response.json() as Promise<T>
   }
