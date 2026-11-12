@@ -56,13 +56,13 @@ const test = base.extend<{}, { credentials: Credentials }>({
   }, { scope: 'worker' }],
 })
 
-async function login(page: Page, token: string, mode: 'requester' | 'decider' = 'requester') {
+async function login(page: Page, token: string, mode: 'requester' | 'decider' = 'requester', expectActive = true) {
   await page.getByLabel('Demo mode').selectOption(mode)
   // Suppress fill call details even on failure: tokens must never appear in reports.
   try { await page.getByLabel('Bearer token', { exact: true }).fill(token) }
   catch { throw new Error('Could not enter private demo credential') }
   await page.getByRole('button', { name: 'Use token', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Clear credential' })).toBeVisible()
+  if (expectActive) await expect(page.getByRole('button', { name: 'Clear credential' })).toBeVisible()
 }
 async function create(page: Page) {
   await page.getByRole('link', { name: 'New request', exact: true }).click()
@@ -171,7 +171,7 @@ test('validation, 404, 401 and offline errors have safe correction/retry paths',
   await login(page, credentials.requester.token)
   await expect(page.getByRole('alert')).toContainText('not found')
   await page.getByRole('button', { name: 'Clear credential' }).click()
-  await login(page, 'invalid-local-test-credential')
+  await login(page, 'invalid-local-test-credential', 'requester', false)
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
   await expect(page.getByRole('alert')).toContainText('invalid')
   await page.goto('/access-requests')
