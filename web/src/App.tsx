@@ -3,6 +3,7 @@ import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-rou
 import { ApiError, api, message, type AccessInput, type AccessRequest, type Client, type Collection, type Outcome } from './api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useDemoProfile } from './DemoProfile'
 import { Badge } from '@/components/ui/badge'
 
 type Mode = 'requester' | 'decider'
@@ -13,13 +14,15 @@ function Status({ value }: { value: AccessRequest['status'] }) {
 }
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>('requester')
+  const profile = useDemoProfile()
+  const [mode, setMode] = useState<Mode>(profile.actor === 'decider' ? 'decider' : 'requester')
   const [token, setToken] = useState('')
   const [draft, setDraft] = useState('')
   const [epoch, setEpoch] = useState(0)
   const [notice, setNotice] = useState('')
   function clear() { setToken(''); setDraft(''); setEpoch(e => e + 1) }
-  const client = useMemo(() => api(token, () => { clear(); setNotice('Credential expired or invalid. Enter a valid token again.') }), [token])
+  const manualClient = useMemo(() => api(token, () => { clear(); setNotice('Credential expired or invalid. Enter a valid token again.') }), [token])
+  const client = profile.client ?? manualClient
   return <div className="min-h-screen bg-slate-50 text-slate-950">
     <header className="border-b bg-white"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
       <Link className="text-xl font-semibold tracking-tight" to="/access-requests">NAPMS <span className="text-slate-400">/</span> <span className="text-base font-normal">Access requests</span></Link>
@@ -34,18 +37,18 @@ export default function App() {
             <option value="requester">Requester</option><option value="decider">Decider</option>
           </select>
           <p className="text-xs text-slate-500">Display hint only. The server checks the token’s grants.</p>
-          {token ? <><p className="text-sm" role="status">Credential active · {mode}</p><Button variant="outline" onClick={() => { clear(); setNotice('') }}>Clear credential</Button></> :
+          {!profile.enabled && <>{token ? <><p className="text-sm" role="status">Credential active · {mode}</p><Button variant="outline" onClick={() => { clear(); setNotice('') }}>Clear credential</Button></> :
             <form className="space-y-3" onSubmit={e => { e.preventDefault(); setToken(draft.trim()); setDraft(''); setNotice('') }}>
               <label className="text-sm" htmlFor="token">Bearer token</label>
               <Input id="token" type="password" value={draft} autoComplete="off" onChange={e => setDraft(e.target.value)} required />
               <Button type="submit" disabled={!draft.trim()}>Use token</Button>
-            </form>}
-          <p className="text-xs text-slate-500">Stored in this tab’s memory. Re-enter after refresh or mode change.</p>
+            </form>}</>}
+          {!profile.enabled && <p className="text-xs text-slate-500">Stored in this tab’s memory. Re-enter after refresh or mode change.</p>}
         </section>
       </aside>
       <main className="min-w-0 space-y-5">
         <ErrorNotice text={notice} />
-        {!token ? <section className="panel"><h1>Enter a demo credential</h1><p>Choose a mode and paste its token from your private local credential file.</p></section> :
+        {!token && !profile.enabled ? <section className="panel"><h1>Enter a demo credential</h1><p>Choose a mode and paste its token from your private local credential file.</p></section> :
           <div key={epoch + ':' + mode}><Routes>
             <Route path="/access-requests" element={<RequestList client={client} />} />
             <Route path="/access-requests/new" element={<NewRequest client={client} />} />

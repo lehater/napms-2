@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from 'vite'
+import { localDemoPlugin } from './dev/local-demo'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath } from 'node:url'
@@ -14,22 +15,30 @@ const loopbackOnly: Plugin = {
     }
   },
 }
-export default defineConfig({
-  plugins: [react(), tailwindcss(), loopbackOnly],
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
-  server: {
-    host: '127.0.0.1', port: 5173, strictPort: true,
-    proxy: {
-      '/business-processes': {
-        target: 'http://127.0.0.1:8000',
-        bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
-      },
-      '/access-requests': {
-        target: 'http://127.0.0.1:8000',
-        // Browser navigation must reach the SPA; fetch requests reach FastAPI.
-        bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
+export default defineConfig(({ command, mode, isPreview }) => {
+  const requested = mode === 'local-demo' || process.env.NAPMS_LOCAL_DEMO === '1'
+  const demo = command === 'serve' && !isPreview && mode === 'local-demo' && process.env.NAPMS_LOCAL_DEMO === '1'
+  if (requested && !demo) throw new Error('Local demo requires explicit dev profile; build and preview cannot activate it')
+  return {
+    plugins: [react(), tailwindcss(), loopbackOnly, ...(demo ? [localDemoPlugin()] : [])],
+    define: { __NAPMS_LOCAL_DEMO__: JSON.stringify(demo) },
+    resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+    server: {
+      host: '127.0.0.1', port: 5173, strictPort: true,
+      cors: demo ? false : undefined,
+      fs: { strict: true, allow: [fileURLToPath(new URL('.', import.meta.url))] },
+      proxy: {
+        '/business-processes': {
+          target: 'http://127.0.0.1:8000',
+          bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
+        },
+        '/access-requests': {
+          target: 'http://127.0.0.1:8000',
+          // Browser navigation must reach the SPA; fetch requests reach FastAPI.
+          bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
+        },
       },
     },
-  },
-  preview: { host: '127.0.0.1', port: 5173, strictPort: true },
+    preview: { host: '127.0.0.1', port: 5173, strictPort: true },
+  }
 })

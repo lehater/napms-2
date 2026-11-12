@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, message, type BusinessProcess, type Client, type ProcessCollection } from './api'
+import { useDemoProfile } from './DemoProfile'
 import { Shell } from './prototype/Shell'
 
 function errorMessage(error: unknown) {
@@ -12,11 +13,13 @@ function ErrorNotice({ error, retry }: { error: string; retry?: () => void }) {
   return error && <div><p role="alert">{error}</p>{retry && <button onClick={retry}>Повторить</button>}</div>
 }
 export default function BusinessProcesses() {
+  const profile = useDemoProfile()
   const [token, setToken] = useState(''), [draft, setDraft] = useState(''), [notice, setNotice] = useState('')
-  const client = useMemo(() => api(token, () => { setToken(''); setDraft(''); setNotice('Credential expired or invalid. Enter a valid token again.') }), [token])
+  const manualClient = useMemo(() => api(token, () => { setToken(''); setDraft(''); setNotice('Credential expired or invalid. Enter a valid token again.') }), [token])
+  const client = profile.client ?? manualClient
   return <Shell section="processes" real>
     <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/prototype">NAPMS</Link><span>/</span><Link to="/business-processes">Бизнес-процессы</Link></nav>
-    <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
+    {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
       <strong>REAL · локальный демонстрационный каталог</strong>
       <p>Сервер проверяет отдельные права чтения и создания. Ответственная организация — описание, не полномочие.</p>
       <ErrorNotice error={notice} />
@@ -25,8 +28,8 @@ export default function BusinessProcesses() {
         <button disabled={!draft.trim()}>Use token</button>
       </form>}
       <p>Credential хранится только в памяти вкладки. После обновления страницы введите его снова.</p>
-    </section>
-    {!token ? <p>Введите локальный credential из приватного файла сервера.</p> : <Routes>
+    </section>}
+    {!token && !profile.enabled ? <p>Введите локальный credential из приватного файла сервера.</p> : <Routes>
       <Route index element={<ProcessList client={client} />} />
       <Route path="new" element={<NewProcess client={client} />} />
       <Route path=":processId" element={<ProcessDetail client={client} />} />

@@ -82,12 +82,24 @@ def loopback(host):
 
 def main():
     parser = argparse.ArgumentParser(description="NAPMS local development only")
-    parser.add_argument("command", choices=("init-demo", "serve"))
+    parser.add_argument("command", choices=("init-demo", "serve", "run"))
     parser.add_argument("--db", default="var/napms.sqlite3")
     parser.add_argument("--credentials", default="var/dev-credentials.json")
     parser.add_argument("--host", default="127.0.0.1", type=loopback)
     parser.add_argument("--port", default=8000, type=int)
+    parser.add_argument("--profile", choices=("local-demo",))
     args = parser.parse_args()
+    if args.command == "run":
+        if args.profile != "local-demo" or args.host != "127.0.0.1" or args.port != 8000:
+            parser.error("run requires --profile local-demo and default loopback host/port")
+        from .harness import run
+        try:
+            run(args.db, args.credentials)
+        except RuntimeError as error:
+            parser.exit(1, f"Local demo: {error}\n")
+        return
+    if args.profile is not None:
+        parser.error("--profile is supported only by run")
     if args.command == "init-demo":
         init_demo(Database(args.db), args.credentials)
         print("Demo initialized; credentials in private local file. No permissions decided.")
