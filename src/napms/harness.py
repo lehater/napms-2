@@ -63,7 +63,7 @@ def run(db_path, credentials_path):
                 if time.monotonic() >= deadline:
                     raise RuntimeError('Local startup timed out; check ports and service prerequisites')
                 time.sleep(0.1)
-        print('NAPMS LOCAL DEMO ready: http://127.0.0.1:5173/business-processes — Ctrl-C stops both services', flush=True)
+        print('NAPMS LOCAL DEMO ready: http://127.0.0.1:5173/ — Ctrl-C stops both services', flush=True)
         while all(p.poll() is None for p in children):
             time.sleep(0.2)
         raise RuntimeError('Local service stopped unexpectedly; both services have been stopped')

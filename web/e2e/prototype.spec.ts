@@ -234,6 +234,10 @@ for (const [sectionId, id, tab, targetId] of journeys) {
     await expect(nav.getByRole('link')).toHaveText(sections.map(item => item.title))
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
     await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
+    if (sectionId === 'requests') {
+      await expect(page).toHaveURL(/\/access-requests$/)
+      await page.getByRole('link', { name: 'Заявки MOCK →', exact: true }).click()
+    }
     if (sectionId === 'processes') {
       await expect(page).toHaveURL(/\/business-processes$/)
       await page.getByRole('link', { name: /MOCK Simulation:/ }).click()
@@ -330,10 +334,10 @@ test('collection state survives breadcrumb and reload; real API stays separate',
   await expect(page.getByRole('button', { name: 'Следующая страница' })).toBeDisabled()
   await page.getByLabel('Поиск объектов').fill('absent')
   await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
-  await page.getByRole('navigation', { name: 'Real API navigation' }).getByRole('link', { name: 'Новая заявка →' }).click()
-  await expect(page).toHaveURL(/\/access-requests\/new$/)
+  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
+  await expect(page).toHaveURL(/\/access-requests$/)
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
-  await page.getByRole('link', { name: 'UX-0 prototype · MOCK' }).click()
+  await page.getByRole('link', { name: 'MOCK Simulation →' }).click()
   await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveCount(0)
   await page.goto('/prototype/resources/missing')

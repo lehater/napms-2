@@ -68,7 +68,7 @@ const test = base.extend<{}, { backend: { credentials: Credentials; stop: () => 
 async function login(page: Page, token: string) {
   try { await page.getByLabel('Bearer token', { exact: true }).fill(token) }
   catch { throw new Error('Could not enter private demo credential') }
-  await page.getByRole('button', { name: 'Use token', exact: true }).click()
+  await page.getByRole('button', { name: 'Применить token', exact: true }).click()
 }
 
 test('REAL Process persists through refresh and actual backend restart; MOCK remains isolated', async ({ page, backend }) => {
@@ -85,6 +85,7 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   await expect(page.getByRole('heading', { name: 'Приёмка SQLite', exact: true })).toBeVisible()
   const detail = page.url()
   expect(detail).toMatch(/business-processes\/[0-9a-f-]{36}$/)
+  await page.getByRole('link', { name: 'Потребности', exact: true }).click()
   await expect(page.getByText('Серверное чтение потребностей ещё не подключено.')).toBeVisible()
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('table')).toContainText('Приёмка SQLite')
@@ -115,16 +116,16 @@ test('REAL Process authorization, failed POST and actual API outage have safe re
   const { credentials } = backend
   await page.goto('/business-processes')
   await login(page, 'invalid-local-test-credential')
-  await expect(page.getByRole('alert')).toContainText('invalid')
+  await expect(page.getByRole('alert')).toContainText('недействителен')
   await expect(page.getByLabel('Bearer token')).toHaveValue('')
   await login(page, credentials.decider.token)
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByRole('link', { name: 'Создать бизнес-процесс', exact: true }).click()
   await page.getByLabel('Название', { exact: true }).fill('Нельзя сохранить')
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await expect(page).toHaveURL(/\/business-processes\/new$/)
-  await page.getByRole('button', { name: 'Clear credential' }).click()
+  await page.getByRole('button', { name: 'Очистить credential' }).click()
   await login(page, credentials.requester.token)
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('table')).not.toContainText('Нельзя сохранить')
