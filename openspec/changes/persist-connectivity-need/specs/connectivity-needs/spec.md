@@ -32,11 +32,15 @@ SQLite SHALL enforce uniqueness of each Need's `(process_id,interaction_id,compo
 - **THEN** the system upgrades safely to v3, retains all historical identities and relationships and allows new authorized Need creation
 
 ### Requirement: Authorized compatible source-Interaction options
-The authorized `GET /business-processes/{processId}/need-options` SHALL expose only compatible stored Revision selectors for source-side Need creation. All Revisions of an Interaction MUST agree on the Application and directed component pair. The server SHALL filter candidates before pagination and SHALL NOT expose unrelated or protected catalog metadata.
+The authorized `GET /business-processes/{processId}/need-options` SHALL expose only compatible, not-yet-used source-side Revision selectors for that Process. All Revisions of one Interaction MUST agree on the Application and directed component pair. Candidates SHALL be filtered before pagination and ordered deterministically; unrelated or protected catalog facts SHALL remain undisclosed.
 
 #### Scenario: Compatible revision
 - **WHEN** an authorized actor reads options for an existing Process with consistent source/destination roles
 - **THEN** the server returns only the allowed compatible options and their exact stored technical facts
+
+#### Scenario: Existing Need is not proposed again
+- **WHEN** a Process already owns a Need for an Interaction and its source Component
+- **THEN** options for that Process exclude all Revisions of the already-used Interaction, while other Processes may still select it
 
 #### Scenario: Ambiguous or inconsistent interaction
 - **WHEN** the available Revisions with one Interaction ID disagree about Application, source or destination role
@@ -80,8 +84,8 @@ The existing BusinessProcess detail `Потребности` tab SHALL use the R
 - **THEN** the saved Need appears in the REAL tab after browser reload, re-authentication and backend restart using the same SQLite file, without a MOCK API route
 
 #### Scenario: Duplicate attempt
-- **WHEN** the user attempts to create the already existing Need for the same Process and Interaction
-- **THEN** the UI communicates a non-destructive conflict and does not display a second Need
+- **WHEN** the user attempts to repeat a stale form submission or its request for a Need that already exists
+- **THEN** the UI communicates the server's non-destructive conflict, does not display a second Need and refreshes available options
 
 ### Requirement: Full regressions and security acceptance
 The change SHALL include real FastAPI/SQLite integration and browser tests for persistence, source-side consistency, dedicated grants, invalid inputs, duplicates, schema upgrades, restart and unchanged Request/Decision/Rule behavior. It SHALL not weaken existing security gates or require owner replay of MOCK Simulation.
