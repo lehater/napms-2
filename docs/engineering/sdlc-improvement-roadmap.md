@@ -36,9 +36,9 @@
 | 1 — готово | [#7 — Quality Gates](https://github.com/lehater/napms-2/issues/7) | Ruff, Pyright, coverage; минимальная оценка security-проверок | PR #12 merged; baseline и quality gates в CI |
 | 2 — готово | [#8 — SDLC Observability](https://github.com/lehater/napms-2/issues/8) | Метрики PR/CI/retries и доступных агентных артефактов | PR #14 merged; Issue закрыт |
 | 3 — готово | [#9 — DeepEval spike](https://github.com/lehater/napms-2/issues/9) | Проверка дополнительной ценности agent evals | PR #15 merged; Issue закрыт; не принят обязательный LLM-judge gate |
-| 4 — пересмотрен | [#10 — Harness Improvement Loop](https://github.com/lehater/napms-2/issues/10) | Анализ подтверждённых Quality Escapes и ограниченные изменения процесса | PR #16/#17 закрыты без внедрения A/B; Issue требует синхронизации постановки с принятой политикой |
+| 4 — пересмотрен | [#10 — Harness Improvement Loop](https://github.com/lehater/napms-2/issues/10) | Анализ подтверждённых Quality Escapes и ограниченные изменения процесса | PR #16/#17 закрыты без внедрения A/B; Issue #10 актуализирован под evidence-first RCA |
 
-Историческая последовательность SDLC-01/02/03/04 завершена как исследовательская инициатива; новые продуктовые срезы не зависят от самостоятельных экспериментов Harness.
+SDLC-01/02/03 завершены; экспериментальная подготовка SDLC-04 закрыта. Issue #10 остаётся открытым для ограниченных улучшений процесса, не блокируя новые продуктовые срезы.
 
 Ссылки на Issues содержат **конкретные требования и критерии завершения**. Этот документ определяет цель, порядок и границы; текущий статус работы смотреть в Issues и PR, а не по истории чатов.
 
