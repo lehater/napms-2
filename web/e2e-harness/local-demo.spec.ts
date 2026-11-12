@@ -85,6 +85,9 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
   await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})
+  const selectedNeed = await page.locator('tbody button').first().innerText()
+  await expectSummary(page, selectedNeed)
+  await expect(page.getByRole('button', {name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Подтверждаю состав заявки', {exact:true}).check()
   await page.getByRole('button', {name:'Подтвердить заявку',exact:true}).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
@@ -440,6 +443,7 @@ test('composition resets, empty/error discovery and uncertain POST remain safe',
   await openComposition(page)
   await page.getByRole('button',{name:'Обновить · Source Deployment',exact:true}).click()
   await expect(page.getByLabel('Source Deployment',{exact:true})).toHaveValue('')
+  await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
   await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
@@ -495,4 +499,41 @@ test('composition delayed options and POST do not restore old context or navigat
     await expect(page.getByRole('region',{name:'Запрос из потребности'})).toHaveCount(0)
   }
   expect(harness.file).toBeTruthy()
+})
+
+
+async function expectSummary(page: import('@playwright/test').Page, needId: string, revision = '00000000-0000-0000-0000-000000000009', protocol = 'TCP', ports = '443–443') {
+  // Scope every assertion to the confirmation summary, not selector labels above it.
+  const summary = page.getByRole('group', {name:'Сводка заявки',exact:true})
+  await expect(summary).toBeVisible()
+  for (const [label,value] of Object.entries({
+    Need:needId,
+    Interaction:'00000000-0000-0000-0000-000000000008',
+    Revision:revision,
+    'Направление Components':'00000000-0000-0000-0000-000000000006 → 00000000-0000-0000-0000-000000000007',
+    'Протокол':protocol,
+    'Порты назначения':ports,
+    'Source Deployment':'00000000-0000-0000-0000-00000000000a',
+    'Source Resource':'00000000-0000-0000-0000-000000000001',
+    'Destination Deployment':'00000000-0000-0000-0000-00000000000b',
+    'Destination Resource':'00000000-0000-0000-0000-000000000002',
+  })) await expect(summary.locator('dt').filter({hasText:new RegExp('^'+label+'$')}).locator('..').locator('dd')).toHaveText(value)
+  await expect(summary.getByLabel('Подтверждаю состав заявки',{exact:true})).not.toBeChecked()
+}
+
+test('confirmation summary contains the selected backend facts and resets with Revision',async ({page,harness})=>{
+  const alternate = 'ffffffff-ffff-ffff-ffff-fffffffffff1'
+  harness.sql("INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',5353,5355 FROM interaction_revisions WHERE id=?",[alternate,demoInput.interactionRevisionId])
+  await openComposition(page)
+  await page.getByLabel('Revision',{exact:true}).selectOption(alternate)
+  await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
+  await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
+  await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
+  await page.getByLabel('Destination Deployment',{exact:true}).selectOption({index:1})
+  await expectSummary(page,demoInput.connectivityNeedId,alternate,'UDP','5353–5355')
+  await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
+  await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeEnabled()
+  await page.getByRole('button',{name:'Обновить · Revision',exact:true}).click()
+  await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
+  await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
 })

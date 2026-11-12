@@ -67,3 +67,11 @@ The following are raw browser-downloaded files from the synthetic temporary loca
 ## Remaining limits
 
 Local demo credentials/scopes are not production IAM or tenant isolation. Catalog CRUD, aggregate export and network application remain out of scope. Offsets are live pages; POST revalidates references transactionally. An uncertain POST may have persisted and requires checking the list. Manual credentials remain memory-only per route; after switching between Process/Request/Rule surfaces, re-enter the appropriate credential if prompted. Existing extended Ruff/format/Pyright findings remain advisory. Owner smoke and acceptance are pending in PR #55.
+
+## P1 review correction: self-contained confirmation summary
+
+Addresses [review #5883125261](https://github.com/lehater/napms-2/pull/55#pullrequestreview-5883125261) in the same PR. `ComposeRequest` now retains the selected backend option objects rather than only their IDs. The confirmation group itself displays Need, Interaction, exact Revision, directed source/destination Components, actual protocol and destination port interval, and both Deployment/Resource IDs. Submission still sends exactly the existing four IDs. Option reload/page/context reset clears the selected facts and confirmation together.
+
+The complete REAL E2E asserts all summary fields **inside the confirmation group before confirmation**. A further real browser case switches from TCP/443 to another stored Revision with UDP/5353–5355, checks its summary, and verifies that changing/reloading Revision removes the old summary and disables confirmation. The existing source-refresh, actor-change, uncertain POST and download regressions also pass.
+
+Post-correction local verification: `npm run build --prefix web`, `openspec validate --all --strict` (13/13), `npm run test:semantic --prefix web`, and the full documented `npm run test:e2e --prefix web` command (proxy 2/2, ordinary Playwright 37/37, local-demo 10/10) pass. Backend and CI/Harness code are unchanged. The new exact HEAD and matching CI results are recorded in the PR follow-up. OpenSpec remains 16/17; 4.3 requires actual owner acceptance. Existing advisory debt remains separately recorded above; no larger-dataset performance or visual provenance refinement is claimed by this correction.
