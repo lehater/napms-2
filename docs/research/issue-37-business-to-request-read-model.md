@@ -12,7 +12,7 @@
 | Product | [`docs/product.md`](../product.md) закрепляет последовательные срезы React → FastAPI → SQLite с ручной/автоматической приёмкой и обязательной серверной авторизацией; расширенный Visibility UX M-11 отложен | Следующий срез должен дать самостоятельное пользовательское действие, а не общий read framework |
 | BusinessProcess | [`storage.py`](../../src/napms/storage.py), [`use_cases.py`](../../src/napms/use_cases.py), [`http.py`](../../src/napms/http.py): SQLite `user_version=2`; `processes(id,name,description,responsible_organization)`; POST/list/detail `/business-processes` уже работают | Предлагавшаяся в старом #38 миграция Process v1→v2 **выполнена**; дублировать API/метаданные нельзя |
 | Авторизация Process | `business.process.read` и `business.process.create` на `demo-business` проверяются сервером отдельно. Bearer сопоставляется с actor в локальном профиле | Эти права нельзя автоматически считать правами на создание Need или просмотр всех Communication |
-| ConnectivityNeed | `needs(id,process_id NOT NULL FK,interaction_id NOT NULL,component_id NOT NULL FK)`. Для `interaction_id` нет FK; у Need отсутствуют `title`, `description`, `state` и отдельный API | Нельзя создать «пустую Need» или правдиво показать текстовое бизнес-обоснование без отдельного решения и изменения модели |
+| ConnectivityNeed | В SQLite v2: `needs(id,process_id NOT NULL FK,interaction_id NOT NULL,component_id NOT NULL FK)`; нет FK для Interaction и UNIQUE тройки; нет `businessBasis`, lifecycle и API | В текущем срезе обязательны ссылки и новая DB-уникальность. Текст обоснования и статус отложены |
 | Коммуникации | `interaction_revisions` содержит `interaction_id`, `application_id`, source/destination Component, протокол TCP/UDP и destination port range. Таблицы `interactions` нет; `components` и `applications` имеют только ID/FK | Существующий Revision может служить источником проверяемого выбора Interaction и исходной роли, но не является самой Need |
 | Размещения | `deployments` содержит Component/Resource; `resources` и `applications` не имеют display-name. В [`dev.py`](../../src/napms/dev.py) есть согласованный синтетический набор (одна Revision TCP/443, два Component, две Deployment, одна исходная Need) | Для **создания Need** Deployment/Resource/адреса пока не требуются; подписи в UI возможны только из действительно хранимых фактов, а не из MOCK |
 | Существующий Request | `POST /access-requests` принимает четыре UUID: две Deployment, Revision и Need. [`validate_subject`](../../src/napms/domain.py) проверяет соответствие Need–Revision–source Component, роли одного Application, source/destination Deployment | Проверки должны сохраниться в будущем полном NID-first маршруте; этот срез не меняет Request |
@@ -27,7 +27,7 @@
 | Понятие | Назначение / вход | Устойчивый результат | В какой момент требуется |
 |---|---|---|---|
 | **BusinessProcess** | Описать процесс и его бизнес-контекст | Устойчивый Process | Уже REAL |
-| **ConnectivityNeed** | Зафиксировать, что **Process нуждается в направленной Interaction с определённой исходной ролью Component** | `Need(id,process_id,interaction_id,component_id)`; бизнес-обоснование, **не разрешение** | После выбора существующей коммуникации (для текущей физической модели) |
+| **ConnectivityNeed** | Зафиксировать потребность Process в переиспользуемой Interaction со стороны **source Component** (текущий срез) | Уникальная тройка `(process_id,interaction_id,component_id)`, отдельный Need ID; потребность **не является разрешением** | После выбора существующей коммуникации |
 | **Interaction** | Дать устойчивую смысловую идентичность направленной коммуникации между ролями одного Application | `interaction_id`, разделяемый ревизиями; самостоятельной SQL-строки пока нет | Для сохранения Need |
 | **InteractionRevision** | Неизменяемая traffic-семантика определённой Interaction | Exact Revision ID + protocol/ports, source/destination Component | Может быть техническим **селектором** Interaction при создании Need; exact Revision требуется позднее при AccessRequest |
 | **ComponentDeployment** | Привязать роль Component к Resource независимо от IP | Конкретный source/destination участник | При составлении AccessRequest, **не** при создании Need |
@@ -66,12 +66,12 @@
 |---|---|---|---|
 | Пользовательский результат | Пользователь привязывает выбранную коммуникацию к **новому или существующему** Process и видит сохранённую связь | Виден ранее созданный/seeded Need, но новые Process невозможно связать с Need | Можно выразить намерение до выбора участников, если сначала утвердить иной доменный контракт |
 | Вход | `processId` + выбранная existing Revision как селектор Interaction/source Component | `processId` | Process + новая бизнес-формулировка, без обязательных нынешних ссылок |
-| Выход | Новая полноценная SQLite `needs` запись и авторизованный list/detail-in-tab | Список уже имеющихся `needs` | Новая форма неполной записи, не представимая текущей `needs` без изменения схемы |
+| Выход | Новая минимальная `needs` запись, уникальная по тройке, и авторизованный list/detail-in-tab | Список уже имеющихся `needs` | Новая форма неполной записи, не представимая текущей `needs` без изменения схемы |
 | SQLite | **Малая миграция v2→v3**: UNIQUE индекс `(process_id,interaction_id,component_id)`, проверка существующих дубликатов, INSERT и demo-grants | Без миграции | Nullable FK/новая сущность/статус + миграция и новый контракт |
 | FastAPI | Узкие Need list, candidate selection, create; не общий каталог | Один scoped Need GET | Новое сохранение и последующее завершение намерения |
 | React | Вкладка «Потребности»: список и форма выбора существующей коммуникации | Вкладка: список и открытие связи | Отдельный жизненный цикл и UX незавершённости |
 | Зависимость от отсутствующих каталогов | Только проверяемые Revision/Component из существующей SQLite, с техническими labels; не нужен полный Interaction CRUD | Существующая seeded Need; для честного описания всё равно нужны linked references | Требует предметного решения и будущего связывания |
-| Миграционный риск | Низкий; риск неоднозначности Interaction/Need остаётся семантическим | Низкий | Высокий |
+| Миграционный риск | Небольшой, но реальный: UNIQUE индекс требует атомарной миграции и проверки исторических дубликатов | Низкий | Высокий |
 | E2E / самостоятельная приёмка | Один write→read→restart плюс 401/403/404/422 и consistency; **проверяемое действие** | Один read→restart; недостаточен для новой связи | Более длинный flow с новой моделью |
 
 **Выбор: A — минимальная Need, без AccessRequest.** Владелец подтвердил: `participant = source Component`, Interaction переиспользуется, тройка уникальна на уровне БД, `businessBasis` и lifecycle отложены. B не создаёт новой Need; C преждевременно меняет модель. Это функционально минимальная Need, а не полная сущность логической ERD.
@@ -128,7 +128,7 @@
 | Приоритет | Решение или риск | Что необходимо до реализации |
 |---|---|---|
 | **P0** | Некорректный вариант создаёт Need со ссылкой на несогласованную Interaction/Component; либо GET раскрывает чужие Communication IDs | Обязательные server-side consistency и scope/field checks + отрицательные тесты; security не переносится вместе с M-11 |
-| **P1 — решение владельца** | Достаточна ли Need как факт `(Process,Interaction,source Component)` без собственного текстового бизнес-основания? Можно ли создавать несколько Need с одинаковой тройкой? | Утвердить узкий контракт A или сначала дополнить предметную модель отдельным обоснованием; не вводить уникальность неявно |
+| **РЕШЕНО** | Need = `(Process,Interaction,source Component)`; одинаковая тройка запрещена, `businessBasis` отложен | В OpenSpec описать SQLite UNIQUE и 409 для дубликата; разные Process свободно переиспользуют Interaction |
 | **P1 — решение владельца** | Можно ли разрешать Interaction через существующую Revision до отдельного persisted Interaction? Какие поля кандидатов видит demo requester? | Утвердить технический selector и правила отклонения неоднозначных revisions; ограничить раскрытие фактов |
 | **P1 — решение владельца** | Новые действия `business.need.read/create` на `demo-business`, а также required `business.process.read` | Подтвердить authority boundary и подготовку demo grants; не расширять существующие `business.process.create`/`access.request` |
 | **P1** | Отсутствие человекочитаемых имён Component/Interaction и Need делает выбор непонятным при множестве вариантов | На первой итерации использовать только реальные ID/направление/traffic; не копировать MOCK labels. При провале приёмки отдельно согласовать minimal display migration |
@@ -136,7 +136,7 @@
 | **P2** | Иммутабельную Need нельзя исправить или удалить; повторные идентичные Need могут быть плохо различимы | Ограничение пилота объявить явно; edit/retire и дедупликация требуют самостоятельного жизненного цикла |
 | **P3** | Технические идентификаторы в первом UI | Отложить улучшение подписей до подтверждения значимости |
 
-**Вердикт: NEEDS DECISION.** Выбрано направление A, но принятие его семантики и scope нового действия принадлежит владельцу. После согласования — отдельный узкий OpenSpec/change и один реальный React → FastAPI → SQLite срез; этот Draft PR фиксирует только исследование.
+**Вердикт: READY FOR ARCHITECTURE REVIEW.** Владелец принял направление A, source-only participant, DB-уникальность тройки, переиспользование Interaction и отложенные `businessBasis`/lifecycle. Отдельные `business.need.read/create` и `business.process.read` остаются рекомендуемой границей локального demo, точные правила для OpenSpec. Этот Draft PR фиксирует только исследование, без реализации.
 
 ## 9. Граница проверки документа
 
