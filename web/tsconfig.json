@@ -7,5 +7,5 @@
     "baseUrl": ".", "paths": { "@/*": ["./src/*"] },
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "vite.config.ts", "playwright.config.ts", "e2e"]
+  "include": ["src", "vite.config.ts", "playwright.config.ts", "e2e", "e2e-harness", "playwright.harness.config.ts"]
 }

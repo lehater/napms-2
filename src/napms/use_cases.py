@@ -1,7 +1,7 @@
 """Transactions, authority checks and orchestration; no HTTP dependency."""
 from uuid import uuid4
 
-from .domain import Problem, effective, now, validate_subject
+from .domain import Problem, effective, now, validate_subject, validate_process_name
 
 
 def uid():
@@ -37,9 +37,38 @@ def request_view(c, r):
                 decision=decision_view(c, d) if d else None)
 
 
+def process_view(row):
+    return dict(processId=row["id"], name=row["name"], description=row["description"],
+                responsibleOrganization=row["responsible_organization"])
+
+
 class Service:
     def __init__(self, db, clock=now):
         self.db, self.clock = db, clock
+
+    def create_process(self, actor, data):
+        with self.db.transaction(write=True) as c:
+            grant(c, actor, "business.process.create", "demo-business", self.clock())
+            validate_process_name(data["name"])
+            pid = uid()
+            c.execute("INSERT INTO processes(id,name,description,responsible_organization) VALUES (?,?,?,?)",
+                      (pid, data["name"], data.get("description"), data.get("responsibleOrganization")))
+            return process_view(find(c, "processes", pid))
+
+    def list_processes(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            grant(c, actor, "business.process.read", "demo-business", self.clock())
+            rows = c.execute("SELECT * FROM processes ORDER BY name ASC,id ASC LIMIT ? OFFSET ?",
+                             (limit + 1, min(offset, 2**63 - 1))).fetchall()
+            return dict(items=[process_view(r) for r in rows[:limit]], limit=limit,
+                        offset=offset, hasMore=len(rows) > limit)
+
+    def process(self, actor, pid):
+        with self.db.transaction() as c:
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            grant(c, actor, "business.process.read", "demo-business", self.clock())
+            return process_view(find(c, "processes", pid))
 
     def submit(self, actor, data):
         with self.db.transaction(write=True) as c:

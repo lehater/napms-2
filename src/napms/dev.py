@@ -18,7 +18,8 @@ IDS = {name: demo_id(i) for i, name in enumerate((
     "sourceResource", "destinationResource", "sourceEndpoint", "destinationEndpoint",
     "application", "sender", "receiver", "interaction", "revision", "sourceDeployment",
     "destinationDeployment", "process", "need", "requester", "decider", "exporter",
-    "requestGrant", "decideGrant", "sourceExportGrant", "destinationExportGrant"), 1)}
+    "requestGrant", "decideGrant", "sourceExportGrant", "destinationExportGrant",
+    "processReadGrant", "processCreateGrant"), 1)}
 DEMO_REQUEST = {"sourceDeploymentId": IDS["sourceDeployment"],
                 "destinationDeploymentId": IDS["destinationDeployment"],
                 "interactionRevisionId": IDS["revision"], "connectivityNeedId": IDS["need"]}
@@ -39,28 +40,30 @@ def init_demo(db, credentials):
                        for role in ("requester", "decider", "exporter")}, f, indent=2)
     db.initialize()
     with db.transaction(write=True) as c:
-        def seed(table, values):
-            c.execute(f"INSERT OR IGNORE INTO {table} VALUES ({','.join('?' for _ in values)})", values)
+        def seed(table, values, columns):
+            c.execute(f"INSERT OR IGNORE INTO {table} ({columns}) VALUES ({','.join('?' for _ in values)})", values)
         for key in ("sourceResource", "destinationResource"):
-            seed("resources", (IDS[key],))
-        seed("endpoints", (IDS["sourceEndpoint"], IDS["sourceResource"], "192.0.2.10", "HOST"))
-        seed("endpoints", (IDS["destinationEndpoint"], IDS["destinationResource"], "192.0.2.20", "HOST"))
-        seed("applications", (IDS["application"],))
+            seed("resources", (IDS[key],), "id")
+        seed("endpoints", (IDS["sourceEndpoint"], IDS["sourceResource"], "192.0.2.10", "HOST"), "id,resource_id,address,kind")
+        seed("endpoints", (IDS["destinationEndpoint"], IDS["destinationResource"], "192.0.2.20", "HOST"), "id,resource_id,address,kind")
+        seed("applications", (IDS["application"],), "id")
         for key in ("sender", "receiver"):
-            seed("components", (IDS[key], IDS["application"]))
-        seed("interaction_revisions", (IDS["revision"], IDS["interaction"], IDS["application"], IDS["sender"], IDS["receiver"], "TCP", 443, 443))
+            seed("components", (IDS[key], IDS["application"]), "id,application_id")
+        seed("interaction_revisions", (IDS["revision"], IDS["interaction"], IDS["application"], IDS["sender"], IDS["receiver"], "TCP", 443, 443), "id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end")
         for deployment, component, resource in (("sourceDeployment", "sender", "sourceResource"), ("destinationDeployment", "receiver", "destinationResource")):
-            seed("deployments", (IDS[deployment], IDS[component], IDS[resource]))
-        seed("processes", (IDS["process"],))
-        seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]))
+            seed("deployments", (IDS[deployment], IDS[component], IDS[resource]), "id,component_id,resource_id")
+        seed("processes", (IDS["process"], "Демонстрационный процесс"), "id,name")
+        seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]), "id,process_id,interaction_id,component_id")
         for role in ("requester", "decider", "exporter"):
-            seed("actors", (IDS[role],))
+            seed("actors", (IDS[role],), "id")
         for key, actor, action, scope in (
             ("requestGrant", "requester", "access.request", IDS["sourceResource"]),
             ("decideGrant", "decider", "access.decide", "demo-policy"),
             ("sourceExportGrant", "exporter", "policy.export", IDS["sourceResource"]),
-            ("destinationExportGrant", "exporter", "policy.export", IDS["destinationResource"])):
-            seed("grants", (IDS[key], IDS[actor], action, scope, None, None))
+            ("destinationExportGrant", "exporter", "policy.export", IDS["destinationResource"]),
+            ("processReadGrant", "requester", "business.process.read", "demo-business"),
+            ("processCreateGrant", "requester", "business.process.create", "demo-business")):
+            seed("grants", (IDS[key], IDS[actor], action, scope, None, None), "id,actor_id,action,scope,valid_from,valid_until")
 
 
 def load_credentials(path):
@@ -79,12 +82,24 @@ def loopback(host):
 
 def main():
     parser = argparse.ArgumentParser(description="NAPMS local development only")
-    parser.add_argument("command", choices=("init-demo", "serve"))
+    parser.add_argument("command", choices=("init-demo", "serve", "run"))
     parser.add_argument("--db", default="var/napms.sqlite3")
     parser.add_argument("--credentials", default="var/dev-credentials.json")
     parser.add_argument("--host", default="127.0.0.1", type=loopback)
     parser.add_argument("--port", default=8000, type=int)
+    parser.add_argument("--profile", choices=("local-demo",))
     args = parser.parse_args()
+    if args.command == "run":
+        if args.profile != "local-demo" or args.host != "127.0.0.1" or args.port != 8000:
+            parser.error("run requires --profile local-demo and default loopback host/port")
+        from .harness import run
+        try:
+            run(args.db, args.credentials)
+        except RuntimeError as error:
+            parser.exit(1, f"Local demo: {error}\n")
+        return
+    if args.profile is not None:
+        parser.error("--profile is supported only by run")
     if args.command == "init-demo":
         init_demo(Database(args.db), args.credentials)
         print("Demo initialized; credentials in private local file. No permissions decided.")

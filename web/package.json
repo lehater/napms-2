@@ -10,8 +10,9 @@
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
-    "test:e2e": "playwright test",
-    "test:semantic": "node --experimental-strip-types scripts/check-semantic-contract.mjs"
+    "test:e2e": "npm run test:proxy && playwright test && playwright test --config playwright.harness.config.ts",
+    "test:semantic": "node --experimental-strip-types scripts/check-semantic-contract.mjs",
+    "test:proxy": "node --experimental-strip-types --test dev/local-demo.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",

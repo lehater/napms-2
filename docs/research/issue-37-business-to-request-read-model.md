@@ -1,178 +1,143 @@
-# Issue #37 — domain-backed путь BusinessProcess → AccessRequest → PolicyRule
+# Issue #37 — актуализация следующего REAL-среза ConnectivityNeed
 
-**Тип:** независимое архитектурное исследование / предложение, НЕ реализация.  
-**База:** [main @ 642a6f8f5d7e903641068887bd5a32ae6ea466d3](https://github.com/lehater/napms-2/commit/642a6f8f5d7e903641068887bd5a32ae6ea466d3), проверено 2026-11-09.  
-**Задача:** [#37](https://github.com/lehater/napms-2/issues/37).  
-**Статус:** REVIEW PROPOSED. До согласования не изменять OpenSpec/ERD/product code.  
-**Отдельно:** [Issue #36](https://github.com/lehater/napms-2/issues/36) — экспорт и Rule Detail вне предлагаемого среза.
+**Тип:** независимое архитектурное исследование, не OpenSpec и не реализация.  
+**Фактическая база:** [`main` @ `0a32b34954aef610e450076dbffe16d8e08c41f7`](https://github.com/lehater/napms-2/commit/0a32b34954aef610e450076dbffe16d8e08c41f7), проверено 2026-11-12.  
+**Доставка:** [Draft PR #38](https://github.com/lehater/napms-2/pull/38); [Issue #37](https://github.com/lehater/napms-2/issues/37).  
+**Вердикт исследования:** **NEEDS DECISION** по минимальной семантике Need и правам нового API. До согласования владельца продуктовый код, OpenSpec и ERD не менять.
 
-## 1. Факты из main и проверка гипотезы
+## 1. Подтверждённые факты текущего main
 
-1. **Основной gap подтверждён.** В [HTTP API](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/http.py#L156-L188) есть POST/GET/list заявок, POST решения, GET Rule по ID и export. Read endpoints для BusinessProcess, Need, Application, ComponentDeployment отсутствуют. [Клиент](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/src/api.ts#L48-L55) вызывает только request/list/create/decide. [Форма](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/src/App.tsx#L84-L110) подставляет четыре известных UUID.
-2. **Процессы и предметные связи действительно сохраняются**, однако [SQLite v1](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/storage.py#L6-L28) содержит для процессов, приложений и ресурсов только ID; для Need — process_id, interaction_id, component_id; для revision — полную ссылку на роли и простой traffic clause (TCP/UDP + диапазон destination-портов). Таблицы Interaction нет; её ID хранится в Need/Revision строковым ref без FK на Interaction.
-3. **Server-side semantic check уже есть:** [validate_subject](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/domain.py#L28-L36) требует соответствия компонентов, Application, Need.interaction и Need.participant source Component; [submit](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/use_cases.py#L44-L60) проверяет source grant до чтения destination/revision/need. Но самостоятельного Interaction-объекта сейчас проверить нельзя.
-4. **Existing authority:** [grants](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/storage.py#L15-L20) = actor/action/scope/validity. [Demo seed](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/dev.py#L17-L63) выдаёт requester право access.request только на source Resource; decider — access.decide на demo-policy; exporter — policy.export на source и destination. Других операций чтения каталога не определено.
-5. **MOCK ≠ REAL:** [UI Baseline v0.2](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/docs/research/ui-baseline-v0.2/README.md#L11-L55) закрепляет три группы/семь коллекций и их семантику; [prototype/data.ts](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/src/prototype/data.ts#L1-L26) явно маркирует фиктивные ID и запрещает использовать их в SQLite. [main.tsx](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/src/main.tsx#L1-L11) маршрутизирует /prototype независимо от реального App.
-6. **Логическая ERD — не физическая SQL:** [persistent-state-erd.md](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/docs/research/persistent-state-erd.md#L1-L21) имеет статус RESEARCH и не предписывает миграцию целого графа. В частности, история адресов/Site/Responsible/TAE/NEP/NEO из ERD не является объёмом #37.
-7. **Хранимый результат уже доказуем:** [decide](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/use_cases.py#L85-L98) атомарно создаёт/переиспользует один Rule для exact subject при ALLOWED; DENIED не создаёт Rule. Ответ GET заявки включает decision.policyRuleId, но **не содержит Need ID и составляющих subject**, хотя они в SQL есть ([request_view](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/use_cases.py#L32-L37)).
-8. **Rule detail защищён отдельно:** [Service._rule](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/use_cases.py#L100-L119) требует policy.export на ОБА Resource; [принятый контракт](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/openspec/specs/policy-export/spec.md#L82-L91) запрещает чтение Rule Detail без этих grants. Выдача Rule ID в доступной автору заявке уже поддержана и не равна полному Rule Detail.
-9. **Существующие тесты:** [backend acceptance](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/tests/test_acceptance.py), [security](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/tests/test_security.py), [listing](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/tests/test_listing.py) и [Playwright real API](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/e2e/requests.spec.ts) проверяют четырёх-UUID сценарий; [prototype.spec.ts](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/e2e/prototype.spec.ts) проверяет исключительно mock-навигацию. Теста, где UI получает реальные варианты выбора от backend, нет.
-
-## 2. Матрица Domain → SQLite → use case → HTTP → REAL UI → gap
-
-| Сущность/роль | SQLite v1 | Существующий use case/API | REAL UI | Минимальный разрыв |
-|---|---|---|---|---|
-| BusinessProcess | processes(id) | нет read | нет | displayName, description; scoped discovery |
-| ConnectivityNeed | needs(id,process_id,interaction_id,component_id) | find при submit, validate_subject | нет | title/businessBasis; scoped drill-down |
-| Application | applications(id) | косвенно при validate | нет | displayName в контексте |
-| Component | components(id,application_id) | find при validate | нет | name роли в контексте |
-| Interaction | отдельной таблицы нет | сравнение interaction_id | нет | canonical identity + purpose и строгая согласованность |
-| InteractionRevision | id,interaction_id,application_id,source/destination component_id, protocol, ports | find + validate при submit, export | нет | список exact revision с понятным traffic и полным UUID |
-| ComponentDeployment | deployments(id,component_id,resource_id) | find при submit | нет | разрешённые source + релевантные destination варианты |
-| Resource | resources(id) | source grant, export scopes | нет | displayName участника; не раскрывать чужие IP/owners |
-| ResourceEndpoint | endpoints(id,resource_id,address,kind) | export (вне #37) | нет | не обязателен для выбора subject; identity не менять |
-| AccessSubject | access_subjects с UNIQUE(source,destination,revision) | insert-or-ignore + validate | subjectId | раскрыть точную тройку в авторизованном Request Detail |
-| AccessRequest | requests + admission evidence | submit/request/list | есть, ввод 4 UUID | отправлять выбранные сервером ссылки; показывать Need |
-| AccessDecision | decisions | decide, в request_view | есть | сохранить без нового CRUD |
-| PolicyRule | policy_rules + allowances | ALLOWED create/reuse; GET с policy.export | ID в Decision | итог как Rule ID/состояние заявки; Rule Detail только с grant |
-| AuthorityGrant | actors/grants | grant, effective; request/list/decide/export | только 401/403 | контракт видимости request-context |
-
-Матрица относится к **физической SQLite версии 1**, а не к логической ERD или к mock-объектам. Элементы ERD, не участвующие в пути, сознательно не мигрируются.
-
-## 3. Сравнение read-подходов и выбор
-
-| Критерий | Семь+ типизированных каталогов GET | Сценарная scoped request-context projection |
+| Область | Факт и источник | Последствие |
 |---|---|---|
-| KISS / первый E2E | много DTO/маршрутов/состояний | один QueryService + два GET |
-| DDD | пригодно для самостоятельной жизни каталогов позже | application-level композиция refs без переноса владения доменом |
-| Безопасность | отдельный authz для каждого каталога/связи | один явный scope/полевая проекция; нет unrestricted search |
-| Переиспользование | выше при самостоятельных CRUD/catalog use cases | только данный сценарий; расширение по спросу |
-| Множество узлов | generic клиентская склейка и N+1 | серверная композиция в одной read-транзакции |
-| Цена будущего роста | ниже, если каталоги реально потребуются | понадобятся отдельные endpoints позднее |
+| Product | [`docs/product.md`](../../product.md) закрепляет последовательные срезы React → FastAPI → SQLite с ручной/автоматической приёмкой и обязательной серверной авторизацией; расширенный Visibility UX M-11 отложен | Следующий срез должен дать самостоятельное пользовательское действие, а не общий read framework |
+| BusinessProcess | [`storage.py`](../../src/napms/storage.py), [`use_cases.py`](../../src/napms/use_cases.py), [`http.py`](../../src/napms/http.py): SQLite `user_version=2`; `processes(id,name,description,responsible_organization)`; POST/list/detail `/business-processes` уже работают | Предлагавшаяся в старом #38 миграция Process v1→v2 **выполнена**; дублировать API/метаданные нельзя |
+| Авторизация Process | `business.process.read` и `business.process.create` на `demo-business` проверяются сервером отдельно. Bearer сопоставляется с actor в локальном профиле | Эти права нельзя автоматически считать правами на создание Need или просмотр всех Communication |
+| ConnectivityNeed | `needs(id,process_id NOT NULL FK,interaction_id NOT NULL,component_id NOT NULL FK)`. Для `interaction_id` нет FK; у Need отсутствуют `title`, `description`, `state` и отдельный API | Нельзя создать «пустую Need» или правдиво показать текстовое бизнес-обоснование без отдельного решения и изменения модели |
+| Коммуникации | `interaction_revisions` содержит `interaction_id`, `application_id`, source/destination Component, протокол TCP/UDP и destination port range. Таблицы `interactions` нет; `components` и `applications` имеют только ID/FK | Существующий Revision может служить источником проверяемого выбора Interaction и исходной роли, но не является самой Need |
+| Размещения | `deployments` содержит Component/Resource; `resources` и `applications` не имеют display-name. В [`dev.py`](../../src/napms/dev.py) есть согласованный синтетический набор (одна Revision TCP/443, два Component, две Deployment, одна исходная Need) | Для **создания Need** Deployment/Resource/адреса пока не требуются; подписи в UI возможны только из действительно хранимых фактов, а не из MOCK |
+| Существующий Request | `POST /access-requests` принимает четыре UUID: две Deployment, Revision и Need. [`validate_subject`](../../src/napms/domain.py) проверяет соответствие Need–Revision–source Component, роли одного Application, source/destination Deployment | Проверки должны сохраниться в будущем полном NID-first маршруте; этот срез не меняет Request |
+| Policy | `access.request` на исходный Resource; `access.decide` на `demo-policy`; `policy.export` на оба Resource. ALLOWED создаёт/переиспользует один Rule на exact subject; DENIED не создаёт Rule | Need сама по себе не создаёт permission; права доступа к Rule Detail не расширяются |
+| UI | [`BusinessProcesses.tsx`](../../web/src/BusinessProcesses.tsx) содержит REAL list/create/detail и вкладку «Потребности» с честной заглушкой. [`web/src/prototype/`](../../web/src/prototype/) содержит отдельные MOCK-сценарии | Новый путь помещается в существующую вкладку без второго Shell и без перехода в Simulation |
+| Источники модели | [`docs/domain.md`](../domain.md) — принятые доменные смыслы; [логическая ERD](persistent-state-erd.md) имеет статус RESEARCH, не физическая SQLite; [OpenSpec BusinessProcess](../../openspec/changes/persist-business-process/specs/business-processes/spec.md) — уже реализованный контракт | Не выводить обязательную миграцию всего графа из логической ERD |
 
-**Рекомендуется второй подход:** один read-only application service (условно RequestContextQueryService) поверх существующей SQLite, с двумя маршрутами. Это **не** новый каталог, не CRUD-framework и не новая доменная сущность. QueryService подготавливает допустимые варианты выбора и ничего не сохраняет.
+**Граница подтверждения:** SQLite v2 позволяет вставку новых Need, несмотря на immutable UPDATE/DELETE triggers. Однако FK проверяет `process_id` и `component_id`, но не самостоятельное существование/направленность `interaction_id` и не согласованность приложения между Revision и Component. Эти проверки необходимы в use case.
 
-Предлагаемый HTTP контракт (имена provisional, после утверждения — OpenSpec):
+## 2. Предметное разграничение и инварианты
 
-1. **GET /access-request-context/processes?limit=20&offset=0** → { items: [{processId, name, description}], limit, offset, hasMore }. Выдавать только процессы, для которых текущему actor доступен минимум один валидный source-bound кандидат Need/Revision/Deployment. Фильтрация полномочий **до** pagination. Не возвращать чужие IDs, global total, candidate counts.
-2. **GET /access-request-context/processes/{processId}?limit=20&offset=0** → { process: {processId,name,description}, needs: [{connectivityNeedId,title,businessBasis, application:{id,name}, interaction:{id,purpose,sourceComponent:{id,name},destinationComponent:{id,name}}, revisions:[{interactionRevisionId,ipProtocol,destinationPortStart,destinationPortEnd, sourceDeployments:[{deploymentId,resourceId,displayName}],destinationDeployments:[{deploymentId,resourceId,displayName}]}]}],limit,offset,hasMore }. Каждая revision связывает только подходящие конкретно ей размещённые роли. Порядок детерминированный; если нет видимого Process, ответ indistinguishable 404. Никаких IP, scope histories, secrets, Rule/Decision и недоступных объектов.
-3. **POST /access-requests** остаётся прежним: четыре UUID поля. Сервер **повторно** проверяет authority и validate_subject в write-транзакции; GET-ответ и выбор в UI не являются разрешением, а устаревший grant блокирует admission.
-
-Для текущего одного demo Process второй GET достаточно для Process → Need → communication → Revision → source/destination selection. Отдельный GET каждого Domain Entity не нужен. В будущих больших каталогах можно выделить самостоятельные read use cases по доказанной необходимости.
-
-**Инвариант query:** возвращать candidate только если needs.component_id == revision.source_component_id == source_deployment.component_id; needs.interaction_id == revision.interaction_id; destination_deployment.component_id == revision.destination_component_id; оба Component принадлежат Application revision; source Resource имеет effective access.request на один server evaluationAt. Предпочитать INNER JOIN; неконсистентные записи не превращать в «выбираемые». Не предполагать отдельный статус ACTIVE для Need/Revision, пока его нет в SQLite.
-
-## 4. Видимость / read authorization (проект решения, требует согласования)
-
-**Факт:** в [grants schema](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/storage.py#L15-L20) и [seed](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/dev.py#L58-L63) существуют только access.request, access.decide, policy.export; отдельного catalog.read нет. Общая object-read visibility для защищённых BusinessProcess/Need/Resource в N2 **ещё не специфицирована**.
-
-**Минимальная политика именно для request-composition, не глобального просмотра каталога:**
-
-- Выдавать **только узкую проекцию вариантов подачи** actor с effective access.request на конкретный source Resource. Это scoped discovery для действия подачи, а не право читать произвольные Resource/BusinessProcess, включая их защищённые атрибуты. Наличие Need, ответственность или role-label не создают grant.
-- Фильтровать по текущему actor/source grant до JOIN-output и pagination. В response возвращать только минимальные названия и IDs **участников, необходимых для выбора**; address, site, owner, authority scope, unrelated objects и grants не включать. Имена destination и бизнес-контекста могут быть чувствительными: **для данного среза подтвердить, что разрешённые к показу метаданные demo fixture безопасны**, иначе их не выдавать и не запускать реальную discovery над защищёнными каталогами.
-- Нет доступа / нет найденного процесса: одинаковый 404 (для прямого ID) или пустой filtered list, без tenant/global totals. Невалидные query fields — 422; bearer — 401. Cache-Control: no-store; не записывать token/protected payload в логи/browser persistent state. Транзакционный снимок и однократный clock при проверке grant.
-- Право **просмотра произвольного каталожного объекта** не приравнивается к **праву создать заявку**. Этот срез вовсе не вводит общий объектный GET для read-only наблюдателей. Просмотр своего ранее созданного AccessRequest остаётся разрешённым и после окончания grant; отдельный decider видит запросы по действующему access.decide, но это не даёт права их создавать.
-- access.decide (demo-policy) и policy.export (оба Resource scope) остаются независимыми. Запрос на доступ к destination не требует destination access.request, но **раскрытие destination metadata** требует отдельного явного решения о минимально допустимых полях. Система с реальными защищёнными каталогами должна иметь отдельную модель object-read authority до их подключения, а не неявное «всем аутентифицированным всё».
-- Никакие поля actorId, role, grantId, scope, adminMode в запросе не расширяют видимость/адмиссию. Сервер получает actor из bearer, grant из БД.
-- Примечание по pre-existing leak: [submit](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/use_cases.py#L44-L52) сначала делает find(source deployment), затем grant; для неизвестного source и известного unauthorized source отличаются 404/403. Это потенциальный existence oracle за рамками локального изолированного dev-профиля. Не копировать его в GET discovery; для будущего публичного deployment нормализовать и отдельно ревьюить POST-контракт/тесты.
-
-**Security decision gate:** если владелец считает даже names/IDs доступных через source-linked Need/destination защищёнными, указанная авторизация недостаточна. Тогда до подключения не-demo данных нужен отдельный предметный контракт read visibility (возможно action/scope в существующем механизме grants), но **не вводить новую permission автоматически** в #37.
-
-## 5. Минимальные изменения данных и SQLite
-
-**Предлагаемая v2 (только новый real read path):**
-
-| Физическая сущность | Добавить | Причина / вывод |
-|---|---|---|
-| processes | name TEXT NULL, description TEXT NULL | Заголовок и назначение Process |
-| needs | title TEXT NULL, business_basis TEXT NULL | Узнаваемая Need и обоснование |
-| applications | name TEXT NULL | Имя профиля коммуникации |
-| components | name TEXT NULL | Имена source/destination ролей |
-| resources | name TEXT NULL | Узнаваемые Resource при выборе deployments |
-| interactions (НОВАЯ небольшая таблица) | id PRIMARY KEY, application_id, source_component_id, destination_component_id, purpose TEXT NULL | Устойчивое самостоятельное основание коммуникации; одна семантика на несколько неизменяемых revisions; восстановить целостность, ныне выраженную только строкой interaction_id |
-| interaction_revisions | **без обязательных новых колонок** | Вывести exact UUID + TCP/UDP + destination ports из уже сохранённых данных |
-| deployments/endpoints/requests/decisions/rules/grants | без новых колонок для этого шага | Deployment отображается как Component@Resource; read не требует IP/history; Rule/Request identity уже сохраняется |
-
-**Миграционная оговорка:** [Database.initialize/transaction](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/storage.py#L41-L65) поддерживают только user_version 0/1; триггеры запрещают UPDATE даже metadata в ряде immutable таблиц; [init_demo](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/dev.py#L41-L55) использует positional INSERT VALUES, который сломается после ADD COLUMN. Нужны явная v1→v2 миграция в транзакции, обновление версии/trigger/transaction checks, named-column INSERT в fixture, тест повторного init и миграции с сохранением всех исторических Request/Decision/Rule. Не подменять неизменяемые исторические факты программными display labels из mock.
-
-**Данные v1:** NULL для неизвестных описаний — честный результат; UI может показывать «без названия · short UUID» без выдачи фиктивной бизнес-семантики. Нельзя автоматически backfill неизвестный businessBasis/interaction purpose из mock. Для нового dev seed записать отдельно подготовленные реальные (но синтетические) display values в SQLite в момент создания; не переносить mock-* IDs/объекты. Для ранее созданного Interaction сопоставить один существующий interaction_id с непротиворечивыми refs из revisions; при противоречии миграция должна сообщить об ошибке, а не изобретать участников. Перестройка старых FK может быть отложена при явной server-side проверке Interaction против Need/Revision на чтении/submit.
-
-Требование к новой Interaction: один id, application и направленные source/destination Components согласованы со всеми его Revisions; новые/старые Need ссылаются на этот id. Это небольшой semantic consistency fix, а не перенос полной логической ERD. Если миграция Interaction окажется несоразмерна прототипу, допустим упрощённый read-only вывод направления из revisions **без фиктивного Interaction name** как временный вариант; однако самостоятельный Interaction тогда останется подтверждённым Gap, не «реализованным».
-
-## 6. Изменения API и UI с проверяемой причиной
-
-| Приоритет | Изменение | Контракт | Проверяемый результат |
+| Понятие | Назначение / вход | Устойчивый результат | В какой момент требуется |
 |---|---|---|---|
-| P0 | Scoped RequestContextQueryService + 2 GET | новый request-context OpenAPI, authz, SQL joins | Реальный список Process/Need/candidates, ни одного чужого protected ID |
-| P1 | Минимальные display facts + Interaction identity; v2 migration/seed | SQLite schema/version + synthetic fixture | Объекты различимы; v1 данные сохранены; никаких mock-* |
-| P1 | Расширить **авторизованный** GET /access-requests/{id} и list-схему одинаково: добавить connectivityNeedId и subject {sourceDeploymentId,destinationDeploymentId,interactionRevisionId} | additive AccessRequest DTO | После reload можно проверить сохранённую Need и **exact** subject, не полагаясь на client state |
-| P1 | REAL navigation: Process → Need → communication → exact revision → deployments → submit | real React routes; вызов 2 GET и существующего POST | Создание без ручного ввода четырёх UUID; только значения, полученные от backend |
-| P1 | Сохранить backend submit/decide checks, расширить проверку Interaction consistency если вводится таблица | use_cases/domain invariants | Подмена ревизии/ролей/Need/чужого source отклоняется без записи |
-| P1 | Разделить факт ALLOWED и Rule Detail | existing request/decision DTO + policy-export spec | requester видит Rule ID/provenance, но не может читать protected /policy-rules/{id} без policy.export |
-| P2 | Вынести правило видимости + response shape в будущий OpenSpec change только после решения | new spec, accepted baseline unchanged до review | Семантика авторизации проверяется контрактными тестами |
-| P2 | Не добавлять revisionNumber/status наугад | SQLite remains exact UUID + traffic | Не симулируется «актуальная»/«последняя» ревизия без источника |
+| **BusinessProcess** | Описать процесс и его бизнес-контекст | Устойчивый Process | Уже REAL |
+| **ConnectivityNeed** | Зафиксировать, что **Process нуждается в направленной Interaction с определённой исходной ролью Component** | `Need(id,process_id,interaction_id,component_id)`; бизнес-обоснование, **не разрешение** | После выбора существующей коммуникации (для текущей физической модели) |
+| **Interaction** | Дать устойчивую смысловую идентичность направленной коммуникации между ролями одного Application | `interaction_id`, разделяемый ревизиями; самостоятельной SQL-строки пока нет | Для сохранения Need |
+| **InteractionRevision** | Неизменяемая traffic-семантика определённой Interaction | Exact Revision ID + protocol/ports, source/destination Component | Может быть техническим **селектором** Interaction при создании Need; exact Revision требуется позднее при AccessRequest |
+| **ComponentDeployment** | Привязать роль Component к Resource независимо от IP | Конкретный source/destination участник | При составлении AccessRequest, **не** при создании Need |
+| **AccessRequest** | Запросить permission для exact `(source Deployment,destination Deployment,Revision)` с Need как основанием | PENDING → ALLOWED/DENIED, authority evidence | Позже, после Need; Need не является частью identity AccessSubject |
 
-**UI маршруты (предлагаемые, без изменения /prototype и нынешних /access-requests):** /business-processes → /business-processes/:processId → /business-processes/:processId/needs/:needId → /access-requests/new (выбор передан состоянием/route params, без секретов) → /access-requests/:requestId. При прямом открытии Need-detail вновь читать server-backed context, не доверять старому состоянию браузера. Breadcrumbs, tabs и таблицы придерживаются [UI v0.2](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/docs/research/ui-baseline-v0.2/README.md#L30-L46), но не требуется превращать все 7 mock-коллекций в real.
+Ответы на предметные вопросы:
 
-В форме: source Resource/Deployment выбирается из доступных, revision подтверждается по направлению + TCP/UDP/портам + полному exact UUID, destination Deployment только из валидного набора для выбранной revision. Не делать вывод «HTTPS» исключительно по TCP/443. Оставить явное подтверждение before POST; 201 → persisted request detail. При 403/409/race состояние перечитывается; при token switch защищённые данные очищаются. Режим requester/decider — UI-подсказка, не authority.
+1. **Need до выбора конкретных размещений — да.** Deployment, адрес, точная Revision и AccessRequest не входят в идентичность Need.
+2. **Need до выбора Interaction и Component — нет в текущей модели.** Эти обязательные ссылки составляют сохраняемый факт. Заполненная только Process запись означала бы **другое** понятие: предварительное бизнес-намерение, которое ни доменным контрактом, ни SQLite v2 не утверждено.
+3. **Неполное заполнение допустимо только в несохранённой форме UI.** Ввод nullable FK/состояния DRAFT ради формы означал бы изменение модели; оно не рекомендуется.
+4. **Минимальный путь без самостоятельного каталога Interaction:** выбрать серверный вариант, полученный из существующей непротиворечивой Revision; сервер выводит `interaction_id` и `source_component_id`, повторно валидирует и сохраняет Need. Это **технический способ разрешения ссылок**, а не семантическая привязка Need к конкретной ревизии.
+5. **Согласованность:** оба Component принадлежат Application Revision; источник совпадает с источником направленной Interaction; одна `interaction_id` не должна обозначать несовместимые пары участников/профили среди доступных Revision. Несогласованный набор — ошибка данных, а не вариант выбора. Need должна ссылаться на существующий Process; некорректный/неразрешённый вариант не сохраняется.
+6. **История и полномочия:** Need не выдаёт `access.request`; добавочная Need не меняет existing exact subject/Rule/Decision; immutable связи и source-only request authority сохраняются ([`docs/domain.md`](../domain.md), D-03/D-04/D-06…D-09).
 
-## 7. Один связанный synthetic E2E
+**Открытая семантика:** SQLite v2 не различает две Need с одинаковой тройкой `(process,interaction,source component)`, кроме ID, и не хранит собственного текста «зачем». В [логической модели](persistent-state-erd.md) Need — самостоятельное обоснование; нельзя объявлять любую повторную тройку дубликатом или, напротив, утверждать, что текстовое обоснование не нужно, без решения владельца. Не создавать UNIQUE/статус/описание автоматически.
 
-**Fixture из текущего [dev.py](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/src/napms/dev.py#L13-L63):**
-- Resource source ID = UUID(1), destination ID = UUID(2); Endpoint адреса 192.0.2.10 и 192.0.2.20 (эти IP **не** идентичности subject).
-- Application UUID(5), source Component UUID(6), destination Component UUID(7), Interaction UUID(8), immutable Revision UUID(9), traffic TCP/443.
-- Source Deployment UUID(10), destination Deployment UUID(11), BusinessProcess UUID(12), Need UUID(13).
-- Requester UUID(14) имеет access.request на Resource UUID(1); decider UUID(15) — access.decide на demo-policy. Exporter UUID(16) имеет отдельные policy.export, не используется в этом E2E.
-- Display metadata должны создаваться новым coherent real demo seed, **не из mock fixture**. Начальных AccessSubject/Request/Decision/Rule нет.
+## 3. Ранее предложено в PR #38, но не принято
 
-**E2E сценарий** (реальный браузер + FastAPI + временная SQLite, как в [текущем requests.spec.ts](https://github.com/lehater/napms-2/blob/642a6f8f5d7e903641068887bd5a32ae6ea466d3/web/e2e/requests.spec.ts#L12-L71)):
-1. Requester с действительным token заходит на реальную страницу BusinessProcess, видит авторизованный процесс UUID(12) с понятным названием. UI запрашивает scoped process list; ручные UUID inputs отсутствуют.
-2. Открывает Process Detail → Need UUID(13) с businessBasis. В Need видит профили, направленную Interaction UUID(8), source/destination Component и единственную точную immutable Revision UUID(9): TCP/443.
-3. Выбирает source Deployment UUID(10) на Resource UUID(1) и destination Deployment UUID(11) на Resource UUID(2). UI показывает semantic summary и полный revision UUID. POST /access-requests отправляет ровно четыре ID, полученные из API.
-4. Backend вновь проверяет source access.request + соответствие Need/Revision/deployments, сохраняет новый PENDING Request, subject, authority evidence. GET /access-requests/{id} после reload подтверждает Need ID и exact triple.
-5. Переключение на настоящий decider credential; POST decision=ALLOWED; decision.policyRuleId не null. В БД один canonical ACTIVE PolicyRule с точным subject; Rule связан с ALLOWED decision и request (тест может проверить SQL, но UI requester не получает скрытый Rule Detail).
-6. Requester снова входит и открывает ту же Request Detail. Видит ALLOWED, decisionId, policyRuleId, Need и exact subject, подтверждённые новым server GET. Никакого claims про эффективную политику, реальные пакеты или export.
+В первоначальной редакции #38 (база `642a6f8` от 2026-11-09) для полного Process → Request были предложены `RequestContextQueryService`, два `GET /access-request-context/...`, display fields почти всех каталогов, отдельная таблица Interaction, расширение Request DTO и v1→v2 миграция.
 
-**Негативные проверки (в том же изолированном тестовом наборе):**
-- source без effective access.request: не видит чужой candidate context, POST даёт 403, **ни Request, ни DENIED** не создаются;
-- direct GET чужого Process ID не различим с несуществующим; поиск/offset не сообщает hidden counts, IDs, метаданные;
-- подменённая Need, reverse deployments, несовместимая revision или Component другого Application отклоняются; count(Request/Subject/Rule) неизменен;
-- истёкший grant между GET и POST: POST даёт 403;
-- requester не может POST ALLOWED, decider не получает access.request автоматически;
-- DENIED на **отдельном новом subject/изолированном fresh state** сохраняет decision с policyRuleId=null, не создаёт новый Rule; DENIED после прежнего ALLOWED **не удаляет** существующий Rule;
-- повторное ALLOWED по тому же exact subject даёт прежний ruleId, дополнительные decision evidence сохраняются;
-- requester/decider без policy.export не могут GET protected /policy-rules/{id}; не вводить обходной Rule Detail.
+| Историческое предложение | Статус после PR #44–#46 и продуктовой стратегии |
+|---|---|
+| Создать Process read API, добавить Process name/description и выполнить v1→v2 | **Уже реализовано**; исключить из следующего среза |
+| Общий RequestContextQueryService и два GET с составлением всего exact subject | **Не принято и преждевременно**: следующий пользовательский шаг — создать/прочитать Need, а не AccessRequest |
+| Добавить имена Resource/Application/Component, Need.title/businessBasis, Interaction.purpose | **Отложено**: display data нет в SQLite; добавлять только после доказанного сценария, не заполнять из MOCK |
+| Создать отдельную persisted Interaction и FK | **Не принято**: доменный смысл устойчивой Interaction подтверждён, но для одной новой Need хватит серверного разрешения ссылки через Revision. Контроль согласованности пока прикладной |
+| Расширить Request Detail исходной Need и exact subject | **Сохраняется как кандидат будущего NID-first** (RI-08/SG-06 по применимости), не часть создания Need |
+| Scoped discovery с фильтрацией до pagination, запрет скрытых IDs/counts | **Сохранить как security-принцип** для любого нового GET, но не как оправдание общего каталога |
+| Негативные проверки authority и межсущностной совместимости | **Сохранить и сузить** до реальных операций Need; существующий POST Request отдельно не ослаблять |
 
-**Acceptance gate:** никакого ввода известных 4 UUID в UI; все selectable IDs взяты из реального authenticated GET; одно реальное POST/ALLOWED; подтверждение из независимого GET/SQLite; no mock references; негативная security/semantics матрица PASS. Тестовый код и CI в рамках будущей реализации, не этого исследовательского PR.
+Это исследование не отменяет полезные исходные выводы о независимости Need и PolicyRule, immutable exact Revision/AccessSubject, source-only `access.request`, несовпадении MOCK и REAL, защите Rule Detail и потенциальном source-existence oracle существующего POST Request. Последний остаётся отдельным вопросом hardening перед нелокальным использованием.
 
-## 8. Риски (P0–P3)
+## 4. Выбор следующего вертикального среза
 
-| Уровень | Риск | Решение до реализации |
+| Критерий | A. Создать полную Need | B. Только прочитать существующие Need | C. Потребность без Interaction |
+|---|---|---|---|
+| Пользовательский результат | Пользователь привязывает выбранную коммуникацию к **новому или существующему** Process и видит сохранённую связь | Виден ранее созданный/seeded Need, но новые Process невозможно связать с Need | Можно выразить намерение до выбора участников, если сначала утвердить иной доменный контракт |
+| Вход | `processId` + выбранная existing Revision как селектор Interaction/source Component | `processId` | Process + новая бизнес-формулировка, без обязательных нынешних ссылок |
+| Выход | Новая полноценная SQLite `needs` запись и авторизованный list/detail-in-tab | Список уже имеющихся `needs` | Новая форма неполной записи, не представимая текущей `needs` без изменения схемы |
+| SQLite | **Без миграции**; нужен INSERT и минимальная новая demo-grant fixture | Без миграции | Nullable FK/новая сущность/статус + миграция и новый контракт |
+| FastAPI | Узкие Need list, candidate selection, create; не общий каталог | Один scoped Need GET | Новое сохранение и последующее завершение намерения |
+| React | Вкладка «Потребности»: список и форма выбора существующей коммуникации | Вкладка: список и открытие связи | Отдельный жизненный цикл и UX незавершённости |
+| Зависимость от отсутствующих каталогов | Только проверяемые Revision/Component из существующей SQLite, с техническими labels; не нужен полный Interaction CRUD | Существующая seeded Need; для честного описания всё равно нужны linked references | Требует предметного решения и будущего связывания |
+| Миграционный риск | Низкий; риск неоднозначности Interaction/Need остаётся семантическим | Низкий | Высокий |
+| E2E / самостоятельная приёмка | Один write→read→restart плюс 401/403/404/422 и consistency; **проверяемое действие** | Один read→restart; недостаточен для новой связи | Более длинный flow с новой моделью |
+
+**Выбор: A — минимальная полная Need, без AccessRequest.** B не удовлетворяет задаче связывания только что созданного реального Process; C преждевременно меняет модель. A следует KISS/YAGNI **при условии**, что владелец принимает «потребность = Process + направленная Interaction + исходный participant Component» как достаточный первый сохраняемый факт. Если требуется отдельный ввод бизнес-основания или несколько различимых Need на одну тройку, согласовать модель прежде реализации.
+
+## 5. Минимальный технический контракт A — предложение для review
+
+Ниже **возможный** HTTP-контракт, не действующая API-спецификация. Имена маршрутов/permission окончательно принять перед OpenSpec:
+
+| Метод | Путь | Вход → ответ | Ответственность |
+|---|---|---|---|
+| GET | `/business-processes/{processId}/needs?limit=20&offset=0` | → `{items:[{connectivityNeedId,processId,interactionId,componentId}],limit,offset,hasMore}` | Прочитать сохранённые Need данного Process; сортировка по ID, без ложных display facts и скрытых глобальных counts |
+| GET | `/business-processes/{processId}/need-options` | → `{items:[{interactionRevisionId,interactionId,applicationId,sourceComponentId,destinationComponentId,ipProtocol,destinationPortStart,destinationPortEnd}]}` | Предоставить **только** разрешённые непротиворечивые селекторы коммуникации для создания Need, не все каталоги/Deployments/Resources |
+| POST | `/business-processes/{processId}/needs` | `{interactionRevisionId:UUID}` → 201 с минимальным Need DTO | В **одной write transaction** разрешить ссылку через Revision, проверить Process и directed Component/Application, сохранить `needs(id,process_id,interaction_id,component_id)` с server UUID |
+
+Привязка к Revision — **лишь способ выбрать Interaction при отсутствии отдельного Interaction GET**. Поле `interactionRevisionId` не хранится в Need. При нескольких ревизиях одной Interaction UI объединяет варианты по устойчивой Interaction/source роли; транспорт показывается как пример доступных revisions, но **не как свойство Need**. Если актуальная группировка семантически неоднозначна, сервер отклоняет выбор и не создаёт Need. Не обозначать TCP/443 как HTTPS и не объявлять несуществующий статус CURRENT/ACTIVE.
+
+**Минимальное изменение кода будущего среза:**
+
+- `storage.py`: новую таблицу/колонки/`user_version=3` **не добавлять**. Существующая FK/immutable схема достаточна для INSERT. Демонстрационный seed может добавить только явно выданные grants, сохраняя неизменность старых IDs и повторяемость `init-demo`.
+- `domain.py` / `use_cases.py`: прикладная проверка соответствия Revision/Components/Application, существования Process и выдачи нового ID; проверка authority до чтения защищённых сведений; атомарная запись; не создавать Request/Rule.
+- `http.py`: три узкие операции с Pydantic Strict DTO, UUID, 1…100 limit/offset, единым error envelope и `Cache-Control: no-store` для защищённых GET. Никакого нового универсального QueryService.
+- `web/src/BusinessProcesses.tsx` и `api.ts`: заменить заглушку на REAL список и небольшую форму на уже существующей вкладке. После 201 перечитать серверные данные; по прямому URL/reload заново GET. При ошибке не подменять MOCK. Смена actor/credentials очищает защищённое состояние. MOCK Simulation остаётся отдельной и необязательной.
+
+**Предлагаемая политика доступа (нуждается в одобрении):** новый независимый `business.need.read` для GET списка и `business.need.create` для POST и узкого GET options, оба со scope `demo-business`; для связанных операций также требуется `business.process.read`. Сервер извлекает actor из доверенного bearer/local-demo proxy, использует существующий `grants` + validity window, один evaluation time и транзакционный snapshot. Только явно подготовленному demo actor добавляются эти действия. Ни `business.process.create`, ни `access.request`, ни ответственность организации **не дают** разрешения создавать Need.
+
+Существующий scope `demo-business` покрывает локальный демонстрационный каталог, а не объектную авторизацию произвольных производственных Process и Communication. Нельзя распространять этот узкий read policy на защищённые каталоги без отдельного решения. Если даже технические IDs/traffic нельзя раскрывать demo субъекту, GET options должен оставаться закрыт до уточнения read authority (SG-01/SG-05). Permission names — кандидат, а не принятый контракт.
+
+**HTTP негативные проверки:** без credential → 401; с действительным actor без требуемого action/scope или с истёкшим grant → 403 без защищённых полей и записи; неизвестный `processId` после авторизации → 404; некорректный UUID/body/лишнее поле/limit/offset → 422; отсутствующий/недоступный вариант Revision не раскрывает сторонние metadata и не создаёт Need (безопасная 404/422 семантика требует фиксации); несовпадающие роли, чужой Application, внутренне противоречивые revisions → отказ без INSERT, не «неполная Need». Для одного `interaction_id` проверять непротиворечивость participant pairs; после смены grant повторно авторизовать POST, не доверяя GET. Чтение Need неизвестного Process/чужого scope не должно раскрывать existence. Проверить отсутствие у нового API возможности подставить `actorId`/`grantId`/`scope`.
+
+## 6. Один реальный E2E-критерий приёмки A
+
+**Вход:** временная SQLite v2 с coherent `dev.py` seed: source/destination Components одного Application, одна Revision TCP/443, допустимая directed Interaction; явные grants на Process и Need. Реальный браузер, React и FastAPI, без `mock-*` и без сети production.
+
+1. Авторизованный Requester открывает REAL `/business-processes` и **создаёт новый BusinessProcess**. Проверяет выданный сервером `processId`.
+2. На его вкладке «Потребности» видит пустую реальную коллекцию, получает с сервера разрешённый вариант коммуникации (Interaction, исходная/целевая роль; техническая Revision как селектор), выбирает его.
+3. Отправляет POST; сервер создаёт **ровно одну новую Need** в `needs` с FK на Process, устойчивой Interaction и исходный Component; не создаёт AccessRequest/Decision/Rule.
+4. Пользователь обновляет страницу и повторно входит при необходимости; GET вкладки возвращает тот же Need ID и связи. Перезапускает backend против той же SQLite и убеждается, что данные сохранены.
+5. В изолированных негативных тестах проверяются 401/403/404/422, истечение и отсутствие grants, недопустимый/подменённый Revision, несовпадение Application/участников, невозможность разузнать скрытый вариант через ошибки или paging, отсутствие каких-либо частичных INSERT; старый Request/Decision/Rule regression suite продолжает работать.
+
+**Acceptance:** новое пользовательское действие создаёт устойчивую корректную связь; после reload/restart она воспроизводится без памяти React; серверная authority обязательна; ни один MOCK объект не участвует. Это **не** доказательство завершённости полного NID-first Request flow.
+
+## 7. Сознательно отложено
+
+- Создание AccessRequest из Need, выбор exact Revision и source/destination Deployments для Request, весь workflow ALLOWED/DENIED/PolicyRule и общий Rule catalog.
+- Отдельная persisted Interaction, каталоги Interaction/Revision/Resource/Application, full CRUD, расширение Request DTO и RequestContextQueryService из #38.
+- Новые Need.description/title/businessBasis, отображаемые имена других каталогов, уникальность Need triple, состояние черновика, nullable FK и целевая миграция ERD.
+- Общий Visibility UX M-11 (DEFERRED, не PASS), production IAM, сетевые проверки и автоматическое применение политики.
+- Issue #36: отдельный Rule Detail/export scope. Existing grants `access.request`, `access.decide`, `policy.export` остаются в силе.
+
+При переходе к следующему полноценному NID-first срезу повторно открыть вопрос read disclosure destination metadata, Request detail `connectivityNeedId`/exact subject (SG-06), Revision/deployment compatibility и существующего source-existence oracle POST Request. Не переписывать их решения сейчас.
+
+## 8. Вопросы владельца и риски
+
+| Приоритет | Решение или риск | Что необходимо до реализации |
 |---|---|---|
-| **P0** | Новые endpoints раскрывают чужие Process/Need/Resource IDs или metadata до server authz | filter-before-page, 404/empty, minimal fields, dedicated negative fixtures; не публиковать unscoped catalog API |
-| **P0** | UI передаёт неконсистентный AccessSubject, сервер доверяет GET/selection | сохранить server submit checks; тест подменённого subject; для Interaction-table проверить инвариант отдельно |
-| **P1** | Не определена общая object-read authority, в т.ч. секретность destination/business labels | принять строго ограниченный dev request-composition disclosure; перед реальными защищёнными каталогами отдельное review read rights |
-| **P1** | Миграция ломает v1 history, immutable triggers или positional seed | transactional version upgrade, no invented backfill, named inserts, repeat-init/restart tests |
-| **P1** | Request Detail не подтверждает Need и exact subject после reload | добавить поля в защищённый read DTO |
-| **P1** | Непосредственный GET Rule для requester обходит policy.export | итог только через собственную Request/Decision; Rule Detail и Issue #36 отдельно |
-| **P1** | POST source existence oracle (404 vs 403) | не повторять в discovery; отметить для security hardening при переходе из loopback |
-| **P2** | Множество Need/revision/deployments перегрузит один контекст | server bounded pagination per process, deterministic sort, no global total; дальнейшее дробление по метрикам |
-| **P2** | Текущая SQL-модель не обеспечивает FK на Interaction | validation в query/submit + миграционная проверка; rebuild FK по подтверждённой потребности |
-| **P2** | NULL metadata у migrated legacy rows | явный placeholder «без названия» и недоступность выбора там, где семантика непроверена |
-| **P3** | Неконсистентность русских/английских display labels | привести в UI к принятой терминологии v0.2 без смены domain names |
+| **P0** | Некорректный вариант создаёт Need со ссылкой на несогласованную Interaction/Component; либо GET раскрывает чужие Communication IDs | Обязательные server-side consistency и scope/field checks + отрицательные тесты; security не переносится вместе с M-11 |
+| **P1 — решение владельца** | Достаточна ли Need как факт `(Process,Interaction,source Component)` без собственного текстового бизнес-основания? Можно ли создавать несколько Need с одинаковой тройкой? | Утвердить узкий контракт A или сначала дополнить предметную модель отдельным обоснованием; не вводить уникальность неявно |
+| **P1 — решение владельца** | Можно ли разрешать Interaction через существующую Revision до отдельного persisted Interaction? Какие поля кандидатов видит demo requester? | Утвердить технический selector и правила отклонения неоднозначных revisions; ограничить раскрытие фактов |
+| **P1 — решение владельца** | Новые действия `business.need.read/create` на `demo-business`, а также required `business.process.read` | Подтвердить authority boundary и подготовку demo grants; не расширять существующие `business.process.create`/`access.request` |
+| **P1** | Отсутствие человекочитаемых имён Component/Interaction и Need делает выбор непонятным при множестве вариантов | На первой итерации использовать только реальные ID/направление/traffic; не копировать MOCK labels. При провале приёмки отдельно согласовать minimal display migration |
+| **P2** | Физическая база не содержит отдельного Interaction FK, а разные revisions могут противоречить друг другу | Проверять программно и добавить focused consistency tests; проектировать FK/table только после доказанной потребности |
+| **P2** | Иммутабельную Need нельзя исправить или удалить; повторные идентичные Need могут быть плохо различимы | Ограничение пилота объявить явно; edit/retire и дедупликация требуют самостоятельного жизненного цикла |
+| **P3** | Технические идентификаторы в первом UI | Отложить улучшение подписей до подтверждения значимости |
 
-## 9. План после согласования, без преждевременного OpenSpec
+**Вердикт: NEEDS DECISION.** Выбрано направление A, но принятие его семантики и scope нового действия принадлежит владельцу. После согласования — отдельный узкий OpenSpec/change и один реальный React → FastAPI → SQLite срез; этот Draft PR фиксирует только исследование.
 
-1. **Согласовать** boundary: RequestContextQueryService (2 GET), permitted display fields, policy limited discovery, additive Request Detail; решить нужно ли уже сейчас хранить Interaction отдельной таблицей.
-2. После принятия сформировать **один узкий OpenSpec change**, не включать Issue #36, full CRUD или ERD migration.
-3. Сначала реализовать v2 schema + coherent seed + query service/API с authz negative tests; самостоятельно доказать один complete JSON context без фронтенда.
-4. Затем подключить **только** real Process/Need → Request route в текущем Web UI, сохранив /prototype отдельно.
-5. Выполнить один browser E2E на временной SQLite и весь существующий CI; независимое review, затем отдельно решение о merge.
+## 9. Граница проверки документа
 
-## 10. Итог для координатора
-
-**Решение к обсуждению:** минимальный вертикальный read-path — scoped projection на уровне application use case + два GET; небольшой набор display metadata, при необходимости одна каноническая Interaction-таблица; additive Request Detail; реальная форма использует текущий POST без нового Rule CRUD.
-
-**Необходимый security gate:** существующее source-only access.request даёт authority на подачу, но само по себе не устанавливает общего права читать защищённые каталоги. В этом demo-срезе ограничить видимость возвращаемыми request-composition вариантами/безопасными labels; подключение реальных каталогов требует отдельного явного правила read disclosure.
-
-**Не реализовано в этом PR:** код, миграция, seed, OpenSpec, UI, тесты или экспорт. Документ фиксирует проверяемое проектное предложение на указанном main SHA; CLI/CI не запускались в исследовательском чате.
+Проверяемое состояние — `main` @ `0a32b34954aef610e450076dbffe16d8e08c41f7`; предложенные API, grants и поля в разделах 4–8 **не реализованы**. Документ не требует исправления старого Issue #37 задним числом. Историческая версия #38 была read-path исследованиями 2026-11-09; её полезные invariants/security findings включены выше, а большой Request composition план перенесён в отложенные задачи.

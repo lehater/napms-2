@@ -11,6 +11,10 @@ NAPMS 1.0 используется только как источник знан
 
 ## Установка и запуск
 
+Для совместного запуска FastAPI/React и выбора demo actor без копирования токенов
+используйте [явный профиль local-demo](#запуск-одной-командой-без-копирования-токенов)
+после установки зависимостей. Ниже сохранён ручной диагностический запуск.
+
 Из свежего клона:
 
 ```bash
@@ -39,14 +43,24 @@ napms-dev serve
 адреса, grants и решения. Начальных заявок, ALLOWED и Rules нет. Автоматического reset нет;
 для независимого сценария используйте новую пару путей DB/credentials в отдельной локальной директории.
 Остановка/перезапуск `serve` сохраняет данные в SQLite. Неизвестная версия схемы отклоняется;
-миграции пока не предусмотрены.
+схема v1 атомарно обновляется до v2 при `init-demo`. Исторические процессы
+сохраняют неизвестные описательные поля как NULL; имя отображается как «Название не указано».
 
 ## Web UI (локальный demo)
 
 Исследовательский [UX-0 прототип](docs/research/ux-0-prototype.md) доступен по
 <http://127.0.0.1:5173/prototype> без API и token после запуска Vite.
-Восемь read-only разделов используют только явно помеченный связанный mock fixture;
-настоящие заявки и credentials остаются в `/access-requests`.
+Поддерживаемая точка входа — <http://127.0.0.1:5173/>: `/` перенаправляет в
+`/business-processes`. Один Shell и Sidebar обслуживают REAL и MOCK: три группы,
+семь коллекций. Бизнес-процессы (`/business-processes`) и заявки на доступ
+(`/access-requests`) — REAL, остальные пять коллекций явно помечены MOCK.
+Источник REAL — FastAPI/SQLite и серверные grants; после ошибок API подмена
+фиктивными записями не выполняется. Вкладка процесса «Потребности» сообщает,
+что серверное чтение ещё не подключено; общего REAL-каталога правил пока нет.
+Учебный fixture процесс → потребность → заявка → правило доступен через
+**MOCK Simulation**, `/prototype/processes` и `/prototype/requests`; его данные
+не записываются в SQLite. Прямые ссылки `/prototype/*` сохранены.
+Без local-demo настоящие экраны используют ручной ввод bearer в памяти вкладки.
 
 Нужны Python 3.12+ и Node.js 22.12+ (CI: Node 24). Сначала выполните установку,
 `napms-dev init-demo` и `napms-dev serve`, как описано выше. В другом терминале:
@@ -58,9 +72,20 @@ npm run dev
 ```
 
 Открыть <http://127.0.0.1:5173>. Vite и FastAPI слушают только loopback;
-относительные `/access-requests` запросы проходят через Vite proxy к `127.0.0.1:8000`.
+относительные `/access-requests` и `/business-processes` запросы проходят через Vite proxy к `127.0.0.1:8000`.
 Поддерживаемая конфигурация отклоняет non-loopback `--host`; backend использует порт 8000.
 Production build проверяется, но не является способом deployment или запуска API.
+
+Для приёмки BusinessProcess откройте «Бизнес-процессы» в Sidebar и введите token
+`requester`. Только этому demo actor явно выдаются `business.process.read` и
+`business.process.create` в локальном scope `demo-business`; права заявок/решений/экспорта
+их не заменяют. Ответственная организация — описательный текст, не полномочие.
+Нажмите «Создать бизнес-процесс», заполните название (до 300 символов), описание
+(до 10000) и организацию (до 300), затем «Сохранить». Откроется карточка с серверным
+UUID; вернитесь в список и откройте её снова. Обновите страницу и повторно введите
+credential. Перезапустите `napms-dev serve` с той же SQLite и повторите чтение:
+значения сохраняются. Раздел «Потребности» честно сообщает, что серверное чтение
+ещё не подключено. Изменение/удаление процесса в этом срезе не предусмотрено.
 
 Выберите requester и вручную введите его token из приватного `var/dev-credentials.json`
 в маскированное поле Bearer token. Создайте заявку с публичными demo UUID, откройте список
@@ -194,3 +219,82 @@ JSON/CSV parity, отсутствие токенов в выводе. GitHub Act
 Основные модули следуют D1: `http.py`, `use_cases.py`, `domain.py`, `storage.py`, `dev.py`.
 Актуальные спецификации находятся в `openspec/specs/`. Завершённый change с 17/17 задачами
 сохранён в `openspec/changes/archive/2026-11-07-first-access-policy-slice/`.
+
+### Business-to-policy MOCK journey
+
+Run `npm run dev --prefix web` and open http://127.0.0.1:5173/prototype/processes (no backend needed).
+Open Settlement → Потребности → need-001 → Профиль → Order-to-Ledger HTTPS → Коммуникации → OrderClient → LedgerApi → Ревизии → rev-1 → Участники / Ресурс.
+Open the Need card's «Коммуникация» tab: `/prototype/needs/mock-need?tab=communication`. The inline form shows directed communication, immutable Revision, compatible deployments, exact-subject history and the submission summary. The Revision card links back to this form.
+
+Use «Сценарное состояние» (or `&scenario=A|B|C`) to reproduce the accepted [UX Visual Baseline](docs/ux/access-request/README.md): A defaults to `dep-order-1 → dep-ledger-2 / rev-1` on `ledger-api-02`; B selects the historical `dep-order-1 → dep-ledger-1 / rev-1` with P1; C explicitly has no compatible destination and cannot submit. The first new request is Q3; its first ALLOWED creates P2. Historical Q1/Q2 remain independent requests for the same subject and P1 is not changed.
+
+Confirm submission, then switch the demonstration role to Decider (or enable «MOCK режим принятия решения»). Neither ALLOWED nor DENIED is preselected: choose one, inspect its confirmation panel and separately confirm that outcome. Completed decisions cannot be changed. «Открыть PolicyRule» shows the declared permission and provenance; it does not prove network availability. Switch back to Requester to inspect the saved result. Repeated ALLOWED reuses the canonical Rule, including an INACTIVE Rule without reactivating it; DENIED creates no Rule and revokes none. Role selection is mock context, not real authorization; protected Rule viewing is an explicitly permitted mock `policy.export` context.
+
+SPA navigation preserves React simulation state. «Сбросить mock-state» or a full reload resets it without changing historical fixtures. The mock never calls the real API; the separate real API UI remains available.
+
+## Запуск одной командой без копирования токенов
+
+После установки Python-зависимостей и `npm ci` в `web/`, из корня репозитория:
+
+```bash
+.venv/bin/python -m napms.dev run --profile local-demo
+```
+
+Команда проверяет порты 8000/5173, вызывает существующий безопасный `init-demo`
+(включая миграцию SQLite), запускает FastAPI и Vite, ждёт их готовности и печатает
+ссылку. `Ctrl-C` останавливает оба сервиса. Повторный запуск сохраняет SQLite,
+credentials, grants и пользовательские данные. Можно задать `--db` и `--credentials`
+с путями вне `web/`. При занятых портах сначала остановите ручные процессы.
+Ничего автоматически не скачивается и не устанавливается.
+
+Откройте <http://127.0.0.1:5173/>. В единственном контроле **Demo actor** в topbar
+выберите Requester: можно создать процесс и заявку. Переключитесь на Decider:
+создание/чтение процесса вернёт настоящий 403, а решение заявки разрешено.
+В local-demo отдельного **Demo mode** нет; полномочия определяет FastAPI.
+В ручном bearer-режиме **Demo mode** остаётся подсказкой отображения и не даёт прав.
+Exporter не получает права
+создания/решения. «Без авторизации» проверяет настоящий backend 401.
+Смена actor удаляет формы, защищённые данные и ожидающие подтверждения; выбор
+сохраняется при переходах React и сбрасывается при полной перезагрузке страницы.
+MOCK Simulation имеет собственную независимую роль и фиктивные данные.
+На MOCK-экранах показан только независимый MOCK-контрол роли; возврат в REAL
+сохраняет выбранного Demo actor до полной перезагрузки.
+
+Ручная приёмка UI Integration Baseline:
+
+1. Откройте `/`, выберите Requester и создайте бизнес-процесс. Проверьте «Обзор»
+   и честное сообщение на вкладке «Потребности».
+2. Из того же Sidebar перейдите в «Заявки на доступ» и создайте заявку
+   с существующими demo-ссылками. Это отдельная реальная заявка, не связь с
+   только что созданным процессом: серверный read path Need ещё не подключён.
+3. Выберите Decider, начните ALLOWED, смените actor: подтверждение должно исчезнуть.
+   Снова выберите Decider и подтвердите ALLOWED; проверьте «Решение и основания».
+4. Вернитесь к процессу, обновите страницу, снова выберите Requester. Процесс и
+   результат заявки по сохранённым прямым URL должны сохраниться, включая перезапуск.
+5. Через MOCK Simulation пройдите Need → Request → Decision → Rule. Убедитесь,
+   что роль MOCK независима, а mock-ID отсутствуют в REAL-коллекциях.
+6. Проверьте Anonymous (401), Exporter (403 на карточке заявки), размеры
+   1920×1080, 1440×900, 2560×1440 и 390 px. Завершите команду через Ctrl-C.
+
+В этом профиле браузер передаёт только имя demo actor и специальный header.
+Node-плагин Vite читает существующий приватный credentials-файл (обычно
+`var/dev-credentials.json`, regular file, без symlink, mode 0600) и подставляет
+Bearer только при вызове фиксированного FastAPI `127.0.0.1:8000`.
+Токены не возвращаются React, не попадают в URL, storage или production bundle.
+Cookies/сессии не используются. FastAPI и server-held grants не меняются.
+
+Граница: только доверенная локальная разработка. Требуются loopback peer, точный
+Host `127.0.0.1:5173`, same-origin контекст и `X-NAPMS-Dev: 1`; для POST обязателен
+точный Origin `http://127.0.0.1:5173`. Cross-origin/null Origin, preflight, неизвестные
+actors и конфликтующий Authorization отклоняются. Vite не обслуживает файлы вне
+`web/`, credentials внутри `web/` запрещены. Произвольный локальный процесс и
+зловредный same-origin JS не входят в эту demo-защиту; это не production IAM.
+
+Активация требует одновременно dev server mode `local-demo` и server-only
+`NAPMS_LOCAL_DEMO=1`; supervisor задаёт их сам. Build/preview с этими флагами
+отказывают в запуске. Без профиля прежний ручной bearer workflow остаётся доступен.
+Нельзя выставлять этот профиль наружу, использовать forwarding или remote proxy.
+
+`npm run test:e2e` последовательно запускает proxy unit checks, прежние браузерные
+регрессии и отдельный harness E2E с реальными FastAPI/SQLite, переключением actor,
+перезапуском, 401/403, CSRF и production-отказами. Перед запуском освободите порты.

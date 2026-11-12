@@ -25,6 +25,26 @@ class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ProcessInput(Strict):
+    name: str = Field(strict=True, min_length=1, max_length=300)
+    description: str | None = Field(default=None, strict=True, max_length=10000)
+    responsibleOrganization: str | None = Field(default=None, strict=True, max_length=300)
+
+
+class BusinessProcess(Strict):
+    processId: UUID
+    name: str | None
+    description: str | None
+    responsibleOrganization: str | None
+
+
+class ProcessCollection(Strict):
+    items: list[BusinessProcess]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
 class AccessInput(Strict):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
     sourceDeploymentId: UUID
@@ -152,6 +172,20 @@ def create_app(db, credentials):
     def no_query(request: Request):
         if request.query_params:
             raise Problem(422, "INVALID_INPUT", "Unsupported query parameters")
+
+    @app.post("/business-processes", status_code=201, response_model=BusinessProcess, dependencies=[Depends(no_query)])
+    def create_process(data: ProcessInput, who: Actor):
+        return service.create_process(who, data.model_dump())
+
+    @app.get("/business-processes", response_model=ProcessCollection)
+    def list_processes(who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.list_processes(who, query.limit, query.offset)
+
+    @app.get("/business-processes/{processId}", response_model=BusinessProcess, dependencies=[Depends(no_query)])
+    def get_process(processId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.process(who, str(processId))
 
     @app.post("/access-requests", status_code=201, response_model=AccessRequest, dependencies=[Depends(no_query)])
     def submit(data: AccessInput, who: Actor):

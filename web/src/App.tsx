@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { Link, Route, Routes, useNavigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, api, message, type AccessInput, type AccessRequest, type Client, type Collection, type Outcome } from './api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useDemoProfile } from './DemoProfile'
 import { Badge } from '@/components/ui/badge'
 
 type Mode = 'requester' | 'decider'
@@ -13,52 +14,63 @@ function Status({ value }: { value: AccessRequest['status'] }) {
 }
 
 export default function App() {
+  const { pathname, search } = useLocation()
+  const leaf = pathname.split('/').filter(Boolean).slice(1)
+  const listQuery = new URLSearchParams(search); listQuery.delete('tab')
+  const listPath = '/access-requests' + (listQuery.size ? '?' + listQuery : '')
+  const profile = useDemoProfile()
   const [mode, setMode] = useState<Mode>('requester')
   const [token, setToken] = useState('')
   const [draft, setDraft] = useState('')
   const [epoch, setEpoch] = useState(0)
   const [notice, setNotice] = useState('')
-  function clear() { setToken(''); setDraft(''); setEpoch(e => e + 1) }
-  const client = useMemo(() => api(token, () => { clear(); setNotice('Credential expired or invalid. Enter a valid token again.') }), [token])
-  return <div className="min-h-screen bg-slate-50 text-slate-950">
-    <header className="border-b bg-white"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-      <Link className="text-xl font-semibold tracking-tight" to="/access-requests">NAPMS <span className="text-slate-400">/</span> <span className="text-base font-normal">Access requests</span></Link>
-      <Badge variant="outline">Local demo</Badge>
-    </div></header>
-    <div className="mx-auto grid max-w-6xl gap-8 px-6 py-8 md:grid-cols-[220px_1fr]">
-      <aside className="space-y-6">
-        <nav aria-label="Main navigation" className="flex flex-col gap-2"><Link to="/access-requests">Requests</Link><Link to="/access-requests/new">New request</Link><Link to="/prototype">UX-0 prototype · MOCK</Link></nav>
+  function clear() { credentialSession.current++; setToken(''); setDraft(''); setEpoch(e => e + 1) }
+  const credentialSession = useRef(0)
+  const manualClient = useMemo(() => {
+    const session = credentialSession.current
+    return api(token, () => {
+      if (session !== credentialSession.current) return
+      clear(); setNotice('401 · Credential недействителен или истёк. Введите действующий token.')
+    })
+  }, [token])
+  const client = profile.client ?? manualClient
+  if (leaf.length > 1) return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link></section>
+  return <>
+    <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Заявки на доступ</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">{leaf[0] === 'new' ? 'Создание' : 'Карточка'}</span></>}</nav>
+    {!profile.enabled && <>
         <section className="space-y-3 rounded-lg border bg-white p-4" aria-label="Demo credentials">
           <label className="text-sm font-medium" htmlFor="mode">Demo mode</label>
           <select id="mode" className="w-full rounded-md border p-2" value={mode} onChange={e => { clear(); setNotice(''); setMode(e.target.value as Mode) }}>
             <option value="requester">Requester</option><option value="decider">Decider</option>
           </select>
-          <p className="text-xs text-slate-500">Display hint only. The server checks the token’s grants.</p>
-          {token ? <><p className="text-sm" role="status">Credential active · {mode}</p><Button variant="outline" onClick={() => { clear(); setNotice('') }}>Clear credential</Button></> :
-            <form className="space-y-3" onSubmit={e => { e.preventDefault(); setToken(draft.trim()); setDraft(''); setNotice('') }}>
+          <p className="text-xs text-slate-500">Режим отображения. Полномочия token проверяет сервер.</p>
+          {!profile.enabled && <>{token ? <><p className="text-sm" role="status">Credential активен · {mode}</p><Button variant="outline" onClick={() => { clear(); setNotice('') }}>Очистить credential</Button></> :
+            <form className="space-y-3" onSubmit={e => { e.preventDefault(); credentialSession.current++; setToken(draft.trim()); setDraft(''); setNotice('') }}>
               <label className="text-sm" htmlFor="token">Bearer token</label>
               <Input id="token" type="password" value={draft} autoComplete="off" onChange={e => setDraft(e.target.value)} required />
-              <Button type="submit" disabled={!draft.trim()}>Use token</Button>
-            </form>}
-          <p className="text-xs text-slate-500">Stored in this tab’s memory. Re-enter after refresh or mode change.</p>
+              <Button type="submit" disabled={!draft.trim()}>Применить token</Button>
+            </form>}</>}
+          {!profile.enabled && <p className="text-xs text-slate-500">Credential хранится в памяти вкладки. После обновления или смены режима введите его снова.</p>}
         </section>
-      </aside>
-      <main className="min-w-0 space-y-5">
+      </>}
+      <div className="min-w-0 space-y-5">
         <ErrorNotice text={notice} />
-        {!token ? <section className="panel"><h1>Enter a demo credential</h1><p>Choose a mode and paste its token from your private local credential file.</p></section> :
+        {!token && !profile.enabled ? <section className="panel"><h1>Введите демонстрационный credential</h1><p>Выберите режим и введите token из приватного локального файла.</p></section> :
           <div key={epoch + ':' + mode}><Routes>
-            <Route path="/access-requests" element={<RequestList client={client} />} />
-            <Route path="/access-requests/new" element={<NewRequest client={client} />} />
-            <Route path="/access-requests/:requestId" element={<RequestDetail client={client} mode={mode} />} />
-            <Route path="*" element={<Navigate to="/access-requests" replace />} />
+            <Route index element={<RequestList client={client} />} />
+            <Route path="new" element={<NewRequest client={client} />} />
+            <Route path=":requestId" element={<RequestDetail client={client} mode={profile.enabled ? (profile.actor === 'decider' ? 'decider' : 'requester') : mode} />} />
+            <Route path="*" element={<h1>Страница не найдена</h1>} />
           </Routes></div>}
-      </main>
-    </div>
-  </div>
+      </div>
+  </>
 }
 
 function RequestList({ client }: { client: Client }) {
-  const [offset, setOffset] = useState(0)
+  const [params, setParams] = useSearchParams()
+  const rawOffset = Number(params.get('offset') ?? 0)
+  const offset = Number.isSafeInteger(rawOffset) && rawOffset >= 0 ? rawOffset : 0
+  const setOffset = (value: number) => setParams(value ? {offset: String(value)} : {})
   const [page, setPage] = useState<Collection | null>(null)
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
@@ -69,15 +81,15 @@ function RequestList({ client }: { client: Client }) {
     return () => { active = false }
   }, [client, offset, reload])
   return <section className="panel space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1>Requests</h1><p>Your server-authorized requests and their current status.</p></div><Link className="text-sm font-medium" to="/access-requests/new">+ New request</Link></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1>Заявки на доступ</h1><p>Заявки, доступные по серверным полномочиям.</p></div><Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button></div>
     <ErrorNotice text={error} />
-    {error && <Button variant="outline" onClick={() => setReload(x => x + 1)}>Retry</Button>}
-    {!page && !error && <p role="status">Loading requests…</p>}
-    {page && (page.items.length === 0 ? <p>No visible requests yet.</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm">
-      <thead><tr>{['Request', 'Submitted', 'Requester', 'Status'].map(t => <th className="border-b px-2 py-3" key={t}>{t}</th>)}</tr></thead>
-      <tbody>{page.items.map(r => <tr key={r.requestId}><td className="border-b px-2 py-4"><Link className="font-mono text-xs" to={'/access-requests/' + r.requestId}>{r.requestId}</Link></td><td className="border-b px-2 py-4">{new Date(r.submittedAt).toLocaleString()}</td><td className="border-b px-2 py-4 font-mono text-xs">{r.requesterActorId}</td><td className="border-b px-2 py-4"><Status value={r.status} /></td></tr>)}</tbody>
+    {error && <Button variant="outline" onClick={() => setReload(x => x + 1)}>Повторить</Button>}
+    {!page && !error && <p role="status">Загрузка заявок…</p>}
+    {page && (page.items.length === 0 ? <p>Нет доступных заявок.</p> : <div className="overflow-x-auto"><table className="ux-table">
+      <thead><tr>{['Заявка', 'Подана', 'Заявитель', 'Статус'].map(t => <th className="border-b px-2 py-3" key={t}>{t}</th>)}</tr></thead>
+      <tbody>{page.items.map(r => <tr key={r.requestId}><td className="border-b px-2 py-4"><Link className="font-mono text-xs" to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.requestId}</Link></td><td className="border-b px-2 py-4">{new Date(r.submittedAt).toLocaleString()}</td><td className="border-b px-2 py-4 font-mono text-xs">{r.requesterActorId}</td><td className="border-b px-2 py-4"><Status value={r.status} /></td></tr>)}</tbody>
     </table></div>)}
-    {page && <div className="flex items-center gap-3"><Button variant="outline" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Previous</Button><span className="text-sm">Page {Math.floor(offset / page.limit) + 1}</span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Next</Button></div>}
+    {page && <div className="flex items-center gap-3"><Button variant="outline" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span className="text-sm">Страница {Math.floor(offset / page.limit) + 1}</span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div>}
   </section>
 }
 
@@ -103,20 +115,23 @@ function NewRequest({ client }: { client: Client }) {
     catch (e) { if (alive.current) setError(message(e)) }
     finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section className="panel space-y-5"><div><h1>New request</h1><p>Public demo references are prefilled. Admission creates a PENDING request.</p></div>
+  return <section className="panel space-y-5"><div><h1>Новая заявка</h1><p>Ссылки на публичный demo fixture заполнены. Допуск создаёт заявку PENDING.</p></div>
     <ErrorNotice text={error} />
-    <form className="space-y-5" onSubmit={submit}>
-      {(Object.keys(demo) as (keyof AccessInput)[]).map(key => <div className="space-y-2" key={key}><label htmlFor={key}>{key}</label><Input id={key} value={data[key]} onChange={e => setData({ ...data, [key]: e.target.value })} required pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" title="Enter a UUID" disabled={busy} /></div>)}
-      <Button type="submit" disabled={busy}>{busy ? 'Creating…' : 'Create request'}</Button>
+    <form className="process-form" onSubmit={submit}>
+      {(Object.keys(demo) as (keyof AccessInput)[]).map(key => <div className="space-y-2" key={key}><label htmlFor={key}>{key}</label><Input id={key} value={data[key]} onChange={e => setData({ ...data, [key]: e.target.value })} required pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" title="Введите UUID" disabled={busy} /></div>)}
+      <Button type="submit" disabled={busy}>{busy ? 'Создание…' : 'Создать заявку'}</Button>
     </form>
   </section>
 }
 
 function Evidence({ entries }: { entries: Record<string, string | null> }) {
-  return <dl className="grid gap-4 text-sm sm:grid-cols-2">{Object.entries(entries).map(([k, v]) => <div key={k}><dt className="text-slate-500">{k}</dt><dd className="mt-1 break-all font-mono text-xs">{v ?? 'null'}</dd></div>)}</dl>
+  return <dl className="ux-properties">{Object.entries(entries).map(([k, v]) => <div key={k}><dt className="text-slate-500">{k}</dt><dd className="mt-1 break-all font-mono text-xs">{v ?? 'null'}</dd></div>)}</dl>
 }
 function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
   const { requestId = '' } = useParams()
+  const [params] = useSearchParams()
+  const tabPath = (tab: string) => { const next = new URLSearchParams(params); next.set('tab', tab); return '?' + next }
+  const decisionTab = params.get('tab') === 'decision'
   const [request, setRequest] = useState<AccessRequest | null>(null)
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
@@ -128,13 +143,13 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     client.request(requestId).then(r => { if (active) setRequest(r) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, requestId, reload])
-  return <section className="panel space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><h1>Request details</h1><Button variant="outline" onClick={() => setReload(x => x + 1)}>Reload status</Button></div>
+  return <section className="panel space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><h1>Заявка на доступ</h1><Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить статус</Button></div>
     <ErrorNotice text={error} />
-    {!request && !error && <p role="status">Loading request…</p>}
+    {!request && !error && <p role="status">Загрузка заявки…</p>}
     {feedback && <p role="status">{feedback}</p>}
-    {request && request.requestId === requestId && <><Status value={request.status} /><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt }} />
-      <h2>Admission evidence</h2><Evidence entries={request.admission} />
-      <h2>Decision evidence</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>No decision recorded.</p>}
+    {request && request.requestId === requestId && <><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt }} />
+      <h2>Основания допуска</h2><Evidence entries={request.admission} />
+      </>}{decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}</>}
       {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
     </>}
   </section>
@@ -152,7 +167,7 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
     submitting.current = true; setBusy(true); setError('')
     try {
       await client.decide(requestId, outcome)
-      if (alive.current) refresh('Decision saved. Reloading stored status from the API.')
+      if (alive.current) refresh('Решение сохранено. Загружается серверный статус.')
     } catch (e) {
       if (!alive.current) return
       if (e instanceof ApiError && e.status === 409) refresh(message(e))
@@ -160,12 +175,12 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
     } finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
   return <section className="space-y-4 border-t pt-6" aria-label="Decision">
-    <h2>Record a decision</h2><p className="text-sm text-slate-500">The server verifies decision authority. A confirmed decision is final.</p>
+    <h2>Принять решение</h2><p className="text-sm text-slate-500">Сервер проверяет полномочия. Подтверждённое решение окончательно.</p>
     <ErrorNotice text={error} />
-    {!outcome ? <div className="flex gap-3"><Button onClick={() => setOutcome('ALLOWED')}>ALLOWED</Button><Button variant="destructive" onClick={() => setOutcome('DENIED')}>DENIED</Button></div> :
-      <div role="group" aria-label="Confirm decision" className="space-y-3 rounded-lg border bg-slate-50 p-4">
-        <p>Confirm {outcome} for this request? This cannot be changed.</p>
-        <div className="flex gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Saving…' : `Confirm ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { setOutcome(null); setError('') }}>Cancel</Button></div>
+    {!outcome ? <div className="flex flex-wrap gap-3"><Button onClick={() => setOutcome('ALLOWED')}>ALLOWED</Button><Button variant="destructive" onClick={() => setOutcome('DENIED')}>DENIED</Button></div> :
+      <div role="group" aria-label="Подтверждение решения" className="space-y-3 rounded-lg border bg-slate-50 p-4">
+        <p>Подтвердить {outcome} для этой заявки? Изменить решение нельзя.</p>
+        <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Сохранение…' : `Подтвердить ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { setOutcome(null); setError('') }}>Отмена</Button></div>
       </div>}
   </section>
 }
