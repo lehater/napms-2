@@ -17,7 +17,7 @@ The system SHALL create a BusinessProcess with a server-generated stable UUID `p
 - **THEN** the API rejects the command and persists no Process
 
 ### Requirement: Protected BusinessProcess API
-The server SHALL expose `POST /business-processes` (201), `GET /business-processes` (200) and `GET /business-processes/{processId}` (200). It SHALL resolve the actor from the existing bearer credential and require an effective server-held `business.process.create` grant on `demo-business` for POST and `business.process.read` on `demo-business` for both GET routes, prior to data disclosure or mutation. Existing `access.request`, `access.decide` and `policy.export` permissions SHALL NOT substitute for these grants. This is a local development scope only.
+The server SHALL provide protected POST, list and detail routes for BusinessProcess. It SHALL resolve identity from an existing bearer credential and require dedicated effective server-held `business.process.create` or `business.process.read` grants scoped to `demo-business` before writing or disclosing data. The scope applies only to local development; other existing grants do not authorize these routes.
 
 #### Scenario: Read and create under separate grants
 - **WHEN** a valid demo requester possesses both dedicated grants
@@ -43,7 +43,7 @@ The collection SHALL return `{items,limit,offset,hasMore}` of Process DTOs order
 - **THEN** the response contains an empty `items` array with `hasMore=false`; unsupported filters, actor selectors or invalid paging yield 422
 
 ### Requirement: Non-destructive SQLite schema upgrade
-The service SHALL support creating new schema-v2 SQLite databases and upgrading existing initialized v1 databases to v2 atomically. It SHALL preserve existing Process IDs, linked Needs, Requests, Decisions, Rules, authority records, foreign keys and immutable-record protections. Existing v1 Process descriptions/names SHALL remain unknown unless actually stored; the migration SHALL NOT copy names or IDs from fictional React fixtures. Repeated demo initialization SHALL not modify user-created Processes.
+The service SHALL initialize SQLite schema v2 and atomically upgrade initialized v1 databases while preserving all domain records, foreign keys and immutability protections. It SHALL retain unknown historical Process display metadata as unknown rather than copying fictional React data. Repeated demo initialization SHALL leave user-created Processes unchanged.
 
 #### Scenario: Legacy v1 DB
 - **WHEN** the dev initializer opens an existing initialized v1 DB
