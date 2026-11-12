@@ -1,6 +1,6 @@
 # NAPMS 2.0 — UX Scenario Contract: NID-first Access Request
 
-**Статус:** исторически согласованный UX Scenario Contract для NID-first Mock UX; реальная интеграция выполняется поэтапно (актуализация 2026-11-12)  
+**Статус:** исторически согласованный UX Scenario Contract для NID-first Mock UX; реальная интеграция выполняется поэтапно (актуализация 2026-11-12)
 **Дата:** 2026-11-09  
 **Целевой файл:** `docs/ux/access-request/scenario.md`  
 **Основание:** `lehater/napms-2`, `main @ 642a6f8`  
