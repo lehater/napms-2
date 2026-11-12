@@ -23,16 +23,16 @@ export class ApiError extends Error {
   constructor(public status: number, public code: string, public localDemo = false) { super(code) }
 }
 export function message(error: unknown): string {
-  if (!(error instanceof ApiError)) return 'Network unavailable. Retry when the local API is running.'
-  if (error.localDemo && error.status === 401) return 'Authentication required. Select a Demo actor.'
-  if (error.localDemo && error.status === 403) return 'Permission denied by the server. The selected Demo actor has insufficient grants.'
+  if (!(error instanceof ApiError)) return 'Сеть недоступна. Повторите после запуска локального API.'
+  if (error.localDemo && error.status === 401) return '401 · Требуется авторизация. Выберите Demo actor.'
+  if (error.localDemo && error.status === 403) return '403 · Недостаточно полномочий у выбранного Demo actor.'
   switch (error.status) {
-    case 401: return 'Credential expired or invalid. Enter a valid token again.'
-    case 403: return 'Permission denied by the server. Check the token and grants.'
-    case 400: case 422: return 'Invalid request. Check the four UUID references and their relationship.'
-    case 404: return 'Request or referenced object not found.'
-    case 409: return 'This request already has a decision. The stored status has been reloaded.'
-    default: return 'The API could not complete the operation. Please retry.'
+    case 401: return '401 · Credential недействителен или истёк. Введите действующий token.'
+    case 403: return '403 · Недостаточно полномочий. Проверьте token и серверные права.'
+    case 400: case 422: return 'Некорректная заявка. Проверьте четыре UUID и их связи.'
+    case 404: return 'Заявка или связанный объект не найдены.'
+    case 409: return 'Для заявки уже принято решение. Серверный статус обновлён.'
+    default: return 'API не смог выполнить операцию. Повторите попытку.'
   }
 }
 export function api(token: string, unauthenticated: () => void, demoActor?: string) {

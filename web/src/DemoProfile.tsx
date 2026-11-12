@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { api, type Client } from './api'
 
 type Actor = 'anonymous' | 'requester' | 'decider' | 'exporter'
-const Context = createContext<{ enabled: boolean; actor: Actor; client: Client | null }>({ enabled: false, actor: 'anonymous', client: null })
+const Context = createContext<{ enabled: boolean; actor: Actor; client: Client | null; setActor: (actor: Actor) => void; ready: boolean; error: string }>({ enabled: false, actor: 'anonymous', client: null, setActor: () => {}, ready: false, error: '' })
 export const useDemoProfile = () => useContext(Context)
 
 export function DemoProfile({ children }: { children: ReactNode }) {
@@ -13,20 +13,20 @@ export function DemoProfile({ children }: { children: ReactNode }) {
     fetch('/__napms_dev/profile', { headers: { 'X-NAPMS-Dev': '1' }, cache: 'no-store' }).then(async response => {
       if (!response.ok || !(await response.json()).enabled) throw new Error('unavailable')
       if (active) setReady(true)
-    }).catch(() => { if (active) setError('Local demo proxy unavailable. Restart the explicit local-demo command.') })
+    }).catch(() => { if (active) setError('Прокси local-demo недоступен. Перезапустите команду local-demo.') })
     return () => { active = false }
   }, [])
   const client = useMemo(() => __NAPMS_LOCAL_DEMO__ ? api('', () => {}, actor) : null, [actor])
   if (!__NAPMS_LOCAL_DEMO__) return <>{children}</>
-  return <Context.Provider value={{ enabled: true, actor, client }}>
-    <section aria-label="Local demo profile" className="border-b bg-amber-50 p-3 text-sm">
-      <strong>LOCAL DEMO · REAL API actor</strong>{' '}
-      {error ? <p role="alert">{error}</p> : !ready ? <p role="status">Checking local demo proxy…</p> : <>
-        <label htmlFor="demo-actor">Demo actor </label><select id="demo-actor" value={actor} onChange={e => setActor(e.target.value as Actor)}>
-          <option value="anonymous">Без авторизации · настоящий 401</option><option value="requester">Requester</option><option value="decider">Decider</option><option value="exporter">Exporter</option>
-        </select><p>Полномочия проверяет FastAPI. MOCK Simulation имеет отдельную роль. Выбор сбрасывается при обновлении страницы.</p>
-      </>}
-    </section>
-    {ready && <div key={actor}>{children}</div>}
-  </Context.Provider>
+  return <Context.Provider value={{ enabled: true, actor, client, setActor, ready, error }}>{children}</Context.Provider>
+}
+export function DemoActor() {
+  const { enabled, actor, setActor, ready, error } = useDemoProfile()
+  if (!enabled) return null
+  return <section aria-label="Local demo profile" className="nid-role">
+    {error ? <p role="alert">{error}</p> : !ready ? <p role="status">Проверка local-demo…</p> : <label>Demo actor <select aria-label="Demo actor" value={actor} onChange={e => setActor(e.target.value as Actor)}>
+      <option value="anonymous">Без авторизации · 401</option><option value="requester">Requester</option><option value="decider">Decider</option><option value="exporter">Exporter</option>
+    </select></label>}
+    <small>REAL · Полномочия проверяет FastAPI</small>
+  </section>
 }

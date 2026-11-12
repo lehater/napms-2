@@ -47,7 +47,7 @@ test('complete business to policy journey, immutable provenance, reuse and denia
   await expect(page.getByLabel('Основные свойства')).toContainText('mock-deployment-ledger-2')
   await expect(page.getByLabel('Основные свойства')).toContainText('mock-revision')
   await expect(page.getByLabel('Основные свойства')).toContainText('mock-need')
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
+  await page.getByRole('link', { name: 'Заявки MOCK →', exact: true }).click()
   await page.getByRole('link', { name: 'Q3 · запись проводки', exact: true }).click()
   await decision(page, 'ALLOWED')
   await page.getByRole('link', { name: 'Открыть PolicyRule' }).click()

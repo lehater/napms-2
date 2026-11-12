@@ -39,3 +39,14 @@
 .process-form { display: grid; gap: 12px; max-width: 640px; }
 .process-form input, .process-form textarea { width: 100%; border: 1px solid var(--border, #d7dde5); border-radius: 6px; padding: 10px; }
 .process-form textarea { min-height: 120px; }
+
+/* Shared route content preserves the Shell's fluid workspace. */
+.ux-main>div{min-width:0;display:flex;flex-direction:column;gap:16px;flex:1}
+.ux-main>div>.ux-breadcrumbs{font-size:12px}
+.ux-real .panel{border-radius:9px;box-shadow:none}
+.ux-real input,.ux-real textarea{max-width:100%}
+.ux-real .ux-panel-body>dl{overflow-wrap:anywhere}
+.ux-real .process-form{display:grid;gap:12px;max-width:760px}
+.ux-real .process-form input,.ux-real .process-form textarea{border:1px solid #cbd5e1;border-radius:5px;padding:8px}
+.ux-topbar select{max-width:100%}
+.ux-real table{overflow-wrap:anywhere}

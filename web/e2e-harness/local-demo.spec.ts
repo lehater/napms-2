@@ -45,41 +45,47 @@ const test = base.extend<{}, { harness: Harness }>({
 test('one-command actor switching preserves independent grants and actual persistence', async ({ page, harness }) => {
   let browserBearer = false
   page.on('request', request => { browserBearer ||= Boolean(request.headers().authorization) })
-  await page.goto('/business-processes')
-  await expect(page.getByRole('alert')).toContainText('Authentication required')
+  await page.goto('/')
+  await expect(page.getByRole('alert')).toContainText('401 · Требуется авторизация')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await page.getByRole('link', { name: 'Создать бизнес-процесс', exact: true }).click()
   await page.getByLabel('Название', { exact: true }).fill('Harness acceptance')
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Harness acceptance', exact: true })).toBeVisible()
   const processUrl = page.url()
+  await page.getByRole('link', { name: 'Потребности', exact: true }).click()
+  await expect(page.getByText('Серверное чтение потребностей ещё не подключено.')).toBeVisible()
   await page.getByLabel('Demo actor', { exact: true }).selectOption('decider')
   await expect(page.getByRole('heading', { name: 'Harness acceptance', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await page.getByRole('link', { name: 'Создать бизнес-процесс', exact: true }).click()
   await page.getByLabel('Название', { exact: true }).fill('No create grant')
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await expect(page.getByLabel('Название', { exact: true })).toHaveValue('')
-  await page.getByRole('navigation', { name: 'Real API navigation' }).getByRole('link', { name: 'Новая заявка →' }).click()
-  await page.getByRole('button', { name: 'Create request', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
+  await expect(page.locator('.ux-shell')).toHaveCount(1)
+  await expect(page.getByLabel('Demo actor', { exact: true })).toHaveCount(1)
+  await expect(page.getByLabel('Demo mode')).toHaveCount(0)
+  await page.getByRole('link', { name: 'Новая заявка', exact: true }).click()
+  await page.getByRole('button', { name: 'Создать заявку', exact: true }).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
   const requestUrl = page.url()
-  await page.getByLabel('Demo mode').selectOption('decider')
-  await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
-  await page.getByRole('button', { name: 'Confirm ALLOWED', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('decider')
-  await expect(page.getByRole('button', { name: 'Confirm ALLOWED', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
-  await page.getByRole('button', { name: 'Confirm ALLOWED', exact: true }).click()
+  await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
+  await expect(page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true })).toHaveCount(0)
+  await page.getByLabel('Demo actor', { exact: true }).selectOption('decider')
+  await page.getByRole('button', { name: 'ALLOWED', exact: true }).click()
+  await page.getByRole('button', { name: 'Подтвердить ALLOWED', exact: true }).click()
   await expect(page.getByText('ALLOWED', { exact: true }).first()).toBeVisible()
   await page.getByLabel('Demo actor', { exact: true }).selectOption('exporter')
-  await expect(page.getByRole('alert')).toContainText('Permission denied')
+  await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('anonymous')
-  await expect(page.getByRole('alert')).toContainText('Authentication required')
+  await expect(page.getByRole('alert')).toContainText('401 · Требуется авторизация')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await expect(page.getByText('ALLOWED', { exact: true }).first()).toBeVisible()
   await page.goto(processUrl)
@@ -90,6 +96,27 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.reload()
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await expect(page.getByRole('heading', { name: 'Harness acceptance', exact: true })).toBeVisible()
+
+  for (const size of [{width:1920,height:1080},{width:1440,height:900},{width:2560,height:1440},{width:390,height:844}]) {
+    await page.setViewportSize(size)
+    for (const url of ['/', processUrl, '/business-processes/new', '/access-requests', requestUrl, '/access-requests/new']) {
+      await page.goto(url)
+      await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+      if (url === '/') await expect(page.getByRole('table')).toBeVisible()
+      else if (url === processUrl) await expect(page.getByRole('heading', {name:'Harness acceptance',exact:true})).toBeVisible()
+      else if (url === requestUrl) await expect(page.getByText('ALLOWED', {exact:true}).first()).toBeVisible()
+      else if (url === '/access-requests') await expect(page.getByRole('table')).toBeVisible()
+      else await expect(page.getByRole('button', {name: url.startsWith('/business') ? 'Сохранить' : 'Создать заявку',exact:true})).toBeVisible()
+      await expect(page.locator('.ux-shell')).toHaveCount(1)
+      await expect(page.getByRole('navigation', {name:'Prototype navigation'}).getByRole('link')).toHaveCount(7)
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(size.width)
+    }
+  }
+  await page.goto('/unknown/application/path')
+  await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
+  await page.goto('/prototype/needs/mock-need?tab=communication')
+  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
+  await expect(page.getByLabel('Демонстрационная роль', {exact:true})).toBeVisible()
   const tokens = await harness.privateTokens()
   const browserData = await page.evaluate(() => JSON.stringify([document.documentElement.outerHTML, localStorage, sessionStorage, document.cookie, location.href]))
   expect(tokens.some(token => browserData.includes(token)), 'No private tokens in browser').toBe(false)
@@ -136,4 +163,86 @@ test('production and preview reject activation', async ({ harness }) => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain('build and preview cannot activate it')
   }
+})
+
+
+test('late real reads cannot restore protected Process or Request data after actor changes', async ({ page, request, harness }) => {
+  // Delay real upstream responses; no fictional API DTO or mocked authorization.
+  const headers = { Origin: 'http://127.0.0.1:5173', 'X-NAPMS-Dev': '1', 'X-NAPMS-Demo-Actor': 'requester' }
+  const createdProcess = await request.post('/business-processes', {headers, data:{name:'Late protected process'}})
+  expect(createdProcess.status()).toBe(201)
+  const process = await createdProcess.json()
+  const createdRequest = await request.post('/access-requests', {headers, data:{
+    sourceDeploymentId:'00000000-0000-0000-0000-00000000000a', destinationDeploymentId:'00000000-0000-0000-0000-00000000000b',
+    interactionRevisionId:'00000000-0000-0000-0000-000000000009', connectivityNeedId:'00000000-0000-0000-0000-00000000000d',
+  }})
+  expect(createdRequest.status()).toBe(201)
+  const accessRequest = await createdRequest.json()
+  for (const [path, secret] of [[`/business-processes/${process.processId}`, process.name], [`/access-requests/${accessRequest.requestId}`, accessRequest.requestId]]) {
+    await page.goto(path)
+    await expect(page.getByLabel('Demo actor', {exact:true})).toHaveValue('anonymous')
+    let release!: () => void, received!: () => void
+    const gate = new Promise<void>(resolve => {release = resolve})
+    const held = new Promise<void>(resolve => {received = resolve})
+    await page.route('**' + path, async route => {
+      if (route.request().headers()['x-napms-demo-actor'] !== 'requester') {await route.continue(); return}
+      const response = await route.fetch({headers: {...await route.request().allHeaders(), origin:'http://127.0.0.1:5173', 'sec-fetch-site':'same-origin'}})
+      expect(response.status()).toBe(200)
+      received()
+      await gate
+      await route.fulfill({response})
+    })
+    try {
+      await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+      await held
+      await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
+      await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
+    } finally {release(); await page.unrouteAll({behavior:'wait'})}
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    await expect(page.getByText(secret, {exact:true})).toHaveCount(0)
+    await expect(page.getByRole('alert')).toContainText('403 · Недостаточно полномочий')
+  }
+
+})
+
+test('real collection pagination survives detail tabs, breadcrumbs and reload', async ({ page, request, harness }) => {
+  const headers = { Origin: 'http://127.0.0.1:5173', 'X-NAPMS-Dev': '1', 'X-NAPMS-Demo-Actor': 'requester' }
+  const cases = [
+    { path: '/business-processes', title: 'Бизнес-процессы', tab: 'Потребности', data: {name: 'Pagination acceptance'} },
+    { path: '/access-requests', title: 'Заявки на доступ', tab: 'Решение и основания', data: {
+      sourceDeploymentId:'00000000-0000-0000-0000-00000000000a', destinationDeploymentId:'00000000-0000-0000-0000-00000000000b',
+      interactionRevisionId:'00000000-0000-0000-0000-000000000009', connectivityNeedId:'00000000-0000-0000-0000-00000000000d',
+    } },
+  ]
+  for (const collection of cases) {
+    for (let i = 0; i < 21; i++) expect((await request.post(collection.path, {headers, data:collection.data})).status()).toBe(201)
+    await page.goto(collection.path)
+    await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+    await page.getByRole('button', {name:'Далее',exact:true}).click()
+    await expect(page).toHaveURL(collection.path + '?offset=20')
+    const listing = await request.get(collection.path + '?limit=20&offset=20', {headers})
+    const body = await listing.json()
+    await expect(page.locator('tbody tr')).toHaveCount(body.items.length)
+    await page.locator('tbody tr').first().getByRole('link').click()
+    await page.getByRole('link', {name:collection.tab,exact:true}).click()
+    await page.getByRole('navigation', {name:'Breadcrumbs'}).getByRole('link', {name:collection.title,exact:true}).click()
+    await expect(page).toHaveURL(collection.path + '?offset=20')
+    await page.reload()
+    await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
+    await expect(page.locator('tbody tr')).toHaveCount(body.items.length)
+    await expect(page.getByText('Страница 2', {exact:true})).toBeVisible()
+  }
+  // The mock role never changes the remembered real actor.
+  await page.getByRole('link', {name:'MOCK Simulation →',exact:true}).click()
+  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
+  await page.getByLabel('Демонстрационная роль', {exact:true}).selectOption('Decider')
+  await page.getByRole('navigation', {name:'Prototype navigation'}).getByRole('link', {name:'Заявки на доступ',exact:true}).click()
+  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveValue('requester')
+  await expect(page.getByLabel('Demo mode')).toHaveCount(0)
+  for (const path of ['/unknown/application/path', '/prototype/unknown/path/extra', '/business-processes/unknown/extra', '/access-requests/unknown/extra']) {
+    await page.goto(path)
+    await expect(page.getByRole('heading', {name:'Страница не найдена',exact:true})).toBeVisible()
+    await expect(page.getByRole('link', {name:'На главную',exact:true})).toBeVisible()
+  }
+  expect(harness.file).toBeTruthy()
 })
