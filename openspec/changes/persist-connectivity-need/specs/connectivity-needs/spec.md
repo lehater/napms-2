@@ -6,7 +6,7 @@ Allow an explicitly authorized local demo user to record and retrieve one persis
 ## ADDED Requirements
 
 ### Requirement: Stable source-side Need identity and ownership
-The system SHALL create each ConnectivityNeed with a server-generated stable `connectivityNeedId`, an existing `processId`, a reusable `interactionId` and the Interaction's **source** `componentId`. Each Need SHALL belong to exactly one BusinessProcess. One BusinessProcess MAY own multiple distinct Needs; different BusinessProcesses MAY reference the same Interaction. Need SHALL NOT store an InteractionRevision ID, Deployment ID or address. The first slice SHALL NOT implement `businessBasis`, `ACTIVE/RETIRED`, editing, retirement or destination-initiated Needs.
+The system SHALL create a ConnectivityNeed with server-assigned ID and required references to one BusinessProcess, one reusable Interaction, and its source Component. One Process MAY own many distinct Needs; an Interaction MAY be reused by other Processes. A Need SHALL NOT identify a specific Revision or Deployment. Business justification, status and destination-initiated Needs are outside this slice.
 
 #### Scenario: Multiple different needs for one process
 - **WHEN** an authorized requester creates Needs for two different compatible Interactions under one Process
@@ -17,7 +17,7 @@ The system SHALL create each ConnectivityNeed with a server-generated stable `co
 - **THEN** each Process may own its own independent Need and neither creation alters the other
 
 ### Requirement: Database-enforced uniqueness and safe migration
-SQLite SHALL enforce a unique tuple `(process_id,interaction_id,component_id)` for ConnectivityNeed. A duplicate SHALL fail without creating a second Need, even when the selected InteractionRevision differs or requests race. The system SHALL atomically migrate initialized SQLite schema v2 to v3, preserving all existing records, immutable triggers, FKs and the previously accepted v1 migration. Existing duplicate tuples SHALL cause safe migration failure without silently deleting or modifying historical rows. Fresh databases SHALL initialize at v3. Existing valid requests, decisions and rules SHALL remain usable.
+SQLite SHALL enforce uniqueness of each Need's `(process_id,interaction_id,component_id)` tuple. Duplicate creation SHALL return HTTP 409. A transactional schema v2-to-v3 migration SHALL preserve all historic rows and reject pre-existing duplicates without data loss. Fresh databases SHALL initialize at v3 and v1 upgrades SHALL remain supported.
 
 #### Scenario: Repeated tuple
 - **WHEN** two valid POST requests target the same Process, Interaction and source Component
@@ -32,7 +32,7 @@ SQLite SHALL enforce a unique tuple `(process_id,interaction_id,component_id)` f
 - **THEN** the system upgrades safely to v3, retains all historical identities and relationships and allows new authorized Need creation
 
 ### Requirement: Authorized compatible source-Interaction options
-The server SHALL provide a narrowly scoped `GET /business-processes/{processId}/need-options` that returns only authorized and internally consistent existing InteractionRevision options suitable for a **source-side** Need. The response SHALL use actual stored Revision identities, Interaction IDs, Application and Component IDs and protocol/port ranges; it SHALL NOT invent display facts, include unrelated deployments/resources or leak hidden global totals. The service SHALL verify that each candidate Revision's source and destination Components belong to its Application and that all known Revisions of the same Interaction agree on Application and directed component pair. Filtering SHALL occur before bounded pagination.
+The authorized `GET /business-processes/{processId}/need-options` SHALL expose only compatible stored Revision selectors for source-side Need creation. All Revisions of an Interaction MUST agree on the Application and directed component pair. The server SHALL filter candidates before pagination and SHALL NOT expose unrelated or protected catalog metadata.
 
 #### Scenario: Compatible revision
 - **WHEN** an authorized actor reads options for an existing Process with consistent source/destination roles
@@ -47,7 +47,7 @@ The server SHALL provide a narrowly scoped `GET /business-processes/{processId}/
 - **THEN** the API returns 401 or 403 without disclosing candidate IDs, fields, counts or Process existence
 
 ### Requirement: Protected Process-scoped Need list and creation
-The server SHALL provide `GET /business-processes/{processId}/needs` and `POST /business-processes/{processId}/needs`. GET SHALL return `{items,limit,offset,hasMore}` with actual Need DTO `{connectivityNeedId,processId,interactionId,componentId}`, ordered by stable Need ID. GETs SHALL use `limit` 1..100, nonnegative `offset`, a bounded default and no global total; protected responses SHALL set `Cache-Control: no-store`. POST SHALL accept only `{interactionRevisionId: UUID}` and return 201 with the persisted DTO. The server SHALL derive Interaction and source Component from the selected Revision, re-checking all consistency in the same write transaction before insertion. Unauthorized and invalid requests SHALL NOT create any records.
+The server SHALL provide Process-scoped GET Needs, GET compatible options and POST Need endpoints. POST SHALL accept only `interactionRevisionId` and derive stable Interaction/source Component identifiers server-side in a write transaction. GET Need list SHALL return actual persisted DTOs with deterministic ordering and bounded pagination. Unauthorized or invalid operations SHALL NOT write data.
 
 #### Scenario: Create and read persisted Need
 - **WHEN** an authorized actor selects a compatible Revision and creates a Need under a Process
@@ -62,7 +62,7 @@ The server SHALL provide `GET /business-processes/{processId}/needs` and `POST /
 - **THEN** the server returns a safe error, inserts no Need and does not disclose unrelated protected catalog facts
 
 ### Requirement: Independent server-held authorization
-The server SHALL resolve actor identity from the trusted existing bearer/local-demo proxy. The local demo SHALL require dedicated effective `business.need.read` for Need list and `business.need.create` for candidate discovery and creation, both scoped to `demo-business`, together with `business.process.read` for associated Process access. Grants SHALL be evaluated server-side at operation time, including validity windows and changes between option read and POST. Existing BusinessProcess create/read, `access.request`, `access.decide`, `policy.export`, UI actor labels or Process responsibility SHALL NOT implicitly authorize a Need operation. This local-demo policy SHALL NOT define production catalog visibility.
+Server-resolved actors SHALL hold effective scoped `business.need.read` to list Needs, or `business.need.create` to discover options/create a Need, together with `business.process.read`. No existing access-request, process-create, or UI actor label grants implicit Need authority. Authorization SHALL be rechecked at POST time; the scope is local-demo only.
 
 #### Scenario: Revoked grant between selection and POST
 - **WHEN** an actor reads a valid candidate but its required create grant expires before POST
@@ -73,7 +73,7 @@ The server SHALL resolve actor identity from the trusted existing bearer/local-d
 - **THEN** Need discovery or creation returns 403 and does not disclose compatible options or mutate the database
 
 ### Requirement: REAL Need experience in the existing UI
-The React BusinessProcess detail SHALL display the actual Process-scoped Needs and provide a minimal create workflow on its existing `Потребности` tab. It SHALL offer only server-authorized compatible communication choices, show truthful source/destination and traffic hints, re-fetch persisted data after mutation, and distinguish loading, empty, unauthorized, conflict and failure states. Client-side filtering SHALL NOT substitute server-side verification. MOCK fixtures SHALL NOT be submitted as REAL IDs. Actor switch SHALL discard protected state.
+The existing BusinessProcess detail `Потребности` tab SHALL use the REAL API to list persisted Needs and create one through server-provided compatible options. The UI SHALL show truthful data and errors without using MOCK IDs, re-fetch after mutation/reload, and clear protected state when the actor changes. Server validation remains authoritative.
 
 #### Scenario: End-to-end persistence
 - **WHEN** a local-demo requester creates a BusinessProcess, opens its Needs tab, chooses a compatible option and creates a Need
@@ -84,7 +84,7 @@ The React BusinessProcess detail SHALL display the actual Process-scoped Needs a
 - **THEN** the UI communicates a non-destructive conflict and does not display a second Need
 
 ### Requirement: Full regressions and security acceptance
-Automated tests SHALL cover successful creation, separate Process/Need authorization, invalid or expired grants, incompatible or ambiguous revisions, missing records, strict request validation, concurrent duplicates, migration and data preservation, restart, actor switch and existing Request/Decision/Rule functionality. The full real browser path SHALL use FastAPI and SQLite, not mocked responses. This change SHALL NOT weaken any existing server security gates or require manual replay of the retired MOCK Simulation for owner acceptance.
+The change SHALL include real FastAPI/SQLite integration and browser tests for persistence, source-side consistency, dedicated grants, invalid inputs, duplicates, schema upgrades, restart and unchanged Request/Decision/Rule behavior. It SHALL not weaken existing security gates or require owner replay of MOCK Simulation.
 
 #### Scenario: Existing policy regression
 - **WHEN** the new Need slice is enabled alongside current real Request, Decision and PolicyRule flows
