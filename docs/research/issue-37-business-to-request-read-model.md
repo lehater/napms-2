@@ -44,6 +44,13 @@
 
 **Принято владельцем:** для первого среза тройка `(process_id, interaction_id, component_id)` уникальна; повторное создание — конфликт. Разные BusinessProcess могут использовать общую Interaction через разные Need. `businessBasis` и `ACTIVE/RETIRED` откладываются. Кардинальность `Process 1 → 0..N Need` из ERD разрешает несколько **разных** потребностей и сама по себе не определяет уникальность.
 
+### Распределение ответственности проверок
+
+- **UI (React):** показывает только разрешённые и предметно подходящие варианты, полученные от сервера; не рассчитывает на выбор несовместимых Interaction. Фильтрация интерфейса улучшает UX, но **не является** механизмом целостности или security.
+- **Backend (доменный use case):** в одной write-транзакции проверяет effective grants, Process, Revision, source Component, Application и согласованность всех Revision конкретной Interaction. Ошибочный или подменённый POST отвергается до INSERT.
+- **SQLite (BC):** NOT NULL/FK и новый UNIQUE индекс гарантируют сохраняемые структурные инварианты; конкурентные INSERT той же тройки не создают дубль.
+- **Граница контекстов:** `needs.component_id` уже имеет существующий FK на `components` другой предметной области. Дополнительных FK на Interaction и межконтекстных триггеров проверки направления сейчас не вводим; приложение проверяет устойчивые ID через явный use case. Это прагматичная граница для монолитной SQLite, а не запрет межконтекстных FK в принципе.
+
 ## 3. Ранее предложено в PR #38, но не принято
 
 В первоначальной редакции #38 (база `642a6f8` от 2026-11-09) для полного Process → Request были предложены `RequestContextQueryService`, два `GET /access-request-context/...`, display fields почти всех каталогов, отдельная таблица Interaction, расширение Request DTO и v1→v2 миграция.
@@ -83,7 +90,7 @@
 | Метод | Путь | Вход → ответ | Ответственность |
 |---|---|---|---|
 | GET | `/business-processes/{processId}/needs?limit=20&offset=0` | → `{items:[{connectivityNeedId,processId,interactionId,componentId}],limit,offset,hasMore}` | Прочитать сохранённые Need данного Process; сортировка по ID, без ложных display facts и скрытых глобальных counts |
-| GET | `/business-processes/{processId}/need-options` | → `{items:[{interactionRevisionId,interactionId,applicationId,sourceComponentId,destinationComponentId,ipProtocol,destinationPortStart,destinationPortEnd}]}` | Предоставить **только** разрешённые непротиворечивые селекторы коммуникации для создания Need, не все каталоги/Deployments/Resources |
+| GET | `/business-processes/{processId}/need-options` | → `{items:[{interactionRevisionId,interactionId,applicationId,sourceComponentId,destinationComponentId,ipProtocol,destinationPortStart,destinationPortEnd}]}` | После авторизации выдать **только** согласованные пригодные для source-initiated Need варианты. Клиент не может создать скрытый/некорректный вариант прямым POST |
 | POST | `/business-processes/{processId}/needs` | `{interactionRevisionId:UUID}` → 201; при точном дубликате → 409 | В **одной write transaction** разрешить ссылки через Revision, проверить Process, направленность source и согласованность остальных Revision Interaction; сохранить `needs` под защитой UNIQUE индекса |
 
 Привязка к Revision — **лишь способ выбрать Interaction при отсутствии отдельного Interaction GET**. Поле `interactionRevisionId` не хранится в Need. При нескольких ревизиях одной Interaction UI объединяет варианты по устойчивой Interaction/source роли; транспорт показывается как пример доступных revisions, но **не как свойство Need**. Если актуальная группировка семантически неоднозначна, сервер отклоняет выбор и не создаёт Need. Не обозначать TCP/443 как HTTPS и не объявлять несуществующий статус CURRENT/ACTIVE.
@@ -129,9 +136,9 @@
 |---|---|---|
 | **P0** | Некорректный вариант создаёт Need со ссылкой на несогласованную Interaction/Component; либо GET раскрывает чужие Communication IDs | Обязательные server-side consistency и scope/field checks + отрицательные тесты; security не переносится вместе с M-11 |
 | **РЕШЕНО** | Need = `(Process,Interaction,source Component)`; одинаковая тройка запрещена, `businessBasis` отложен | В OpenSpec описать SQLite UNIQUE и 409 для дубликата; разные Process свободно переиспользуют Interaction |
-| **P1 — решение владельца** | Можно ли разрешать Interaction через существующую Revision до отдельного persisted Interaction? Какие поля кандидатов видит demo requester? | Утвердить технический selector и правила отклонения неоднозначных revisions; ограничить раскрытие фактов |
+| **РЕШЕНО** | Interaction разрешается через существующую Revision, participant = source Component | UI получает только допустимые варианты из авторизованного GET; backend заново проверяет Interaction, Revision, Component/Application перед INSERT |
 | **P1 — решение владельца** | Новые действия `business.need.read/create` на `demo-business`, а также required `business.process.read` | Подтвердить authority boundary и подготовку demo grants; не расширять существующие `business.process.create`/`access.request` |
-| **P1** | Отсутствие человекочитаемых имён Component/Interaction и Need делает выбор непонятным при множестве вариантов | На первой итерации использовать только реальные ID/направление/traffic; не копировать MOCK labels. При провале приёмки отдельно согласовать minimal display migration |
+| **P2** | Отсутствие человекочитаемых имён Component/Interaction и Need ограничивает удобство выбора | Начать с фактических ID, направления и traffic; не копировать MOCK labels. По результатам ручной приёмки решить, нужна ли отдельная display-миграция |
 | **P2** | Физическая база не содержит отдельного Interaction FK, а revisions могут противоречить друг другу | Проверять прикладным кодом в транзакции. Новые межконтекстные FK/триггеры направленности не нужны для этого среза; уникальность BC-Need гарантирует SQL-индекс |
 | **P2** | Иммутабельную Need нельзя исправить или удалить; lifecycle не реализован | Повторные тройки блокирует UNIQUE индекс. Retire/edit и управление историей требуют отдельного среза |
 | **P3** | Технические идентификаторы в первом UI | Отложить улучшение подписей до подтверждения значимости |
