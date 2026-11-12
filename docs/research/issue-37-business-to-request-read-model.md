@@ -9,7 +9,7 @@
 
 | Область | Факт и источник | Последствие |
 |---|---|---|
-| Product | [`docs/product.md`](../../product.md) закрепляет последовательные срезы React → FastAPI → SQLite с ручной/автоматической приёмкой и обязательной серверной авторизацией; расширенный Visibility UX M-11 отложен | Следующий срез должен дать самостоятельное пользовательское действие, а не общий read framework |
+| Product | [`docs/product.md`](../product.md) закрепляет последовательные срезы React → FastAPI → SQLite с ручной/автоматической приёмкой и обязательной серверной авторизацией; расширенный Visibility UX M-11 отложен | Следующий срез должен дать самостоятельное пользовательское действие, а не общий read framework |
 | BusinessProcess | [`storage.py`](../../src/napms/storage.py), [`use_cases.py`](../../src/napms/use_cases.py), [`http.py`](../../src/napms/http.py): SQLite `user_version=2`; `processes(id,name,description,responsible_organization)`; POST/list/detail `/business-processes` уже работают | Предлагавшаяся в старом #38 миграция Process v1→v2 **выполнена**; дублировать API/метаданные нельзя |
 | Авторизация Process | `business.process.read` и `business.process.create` на `demo-business` проверяются сервером отдельно. Bearer сопоставляется с actor в локальном профиле | Эти права нельзя автоматически считать правами на создание Need или просмотр всех Communication |
 | ConnectivityNeed | `needs(id,process_id NOT NULL FK,interaction_id NOT NULL,component_id NOT NULL FK)`. Для `interaction_id` нет FK; у Need отсутствуют `title`, `description`, `state` и отдельный API | Нельзя создать «пустую Need» или правдиво показать текстовое бизнес-обоснование без отдельного решения и изменения модели |
