@@ -3,7 +3,7 @@
 **Тип:** независимое архитектурное исследование, не OpenSpec и не реализация.
 **Фактическая база:** [`main` @ `0a32b34954aef610e450076dbffe16d8e08c41f7`](https://github.com/lehater/napms-2/commit/0a32b34954aef610e450076dbffe16d8e08c41f7), проверено 2026-11-12.
 **Доставка:** [Draft PR #38](https://github.com/lehater/napms-2/pull/38); [Issue #37](https://github.com/lehater/napms-2/issues/37).
-**Вердикт исследования:** **NEEDS DECISION** по минимальной семантике Need и правам нового API. До согласования владельца продуктовый код, OpenSpec и ERD не менять.
+**Вердикт исследования:** решения первого REAL-среза подтверждены владельцем; **READY FOR ARCHITECTURE REVIEW**. Продуктовый код, OpenSpec и ERD в этом PR не меняются.
 
 ## 1. Подтверждённые факты текущего main
 
@@ -42,7 +42,7 @@
 5. **Согласованность:** оба Component принадлежат Application Revision; источник совпадает с источником направленной Interaction; одна `interaction_id` не должна обозначать несовместимые пары участников/профили среди доступных Revision. Несогласованный набор — ошибка данных, а не вариант выбора. Need должна ссылаться на существующий Process; некорректный/неразрешённый вариант не сохраняется.
 6. **История и полномочия:** Need не выдаёт `access.request`; добавочная Need не меняет existing exact subject/Rule/Decision; immutable связи и source-only request authority сохраняются ([`docs/domain.md`](../domain.md), D-03/D-04/D-06…D-09).
 
-**Открытая семантика:** SQLite v2 не различает две Need с одинаковой тройкой `(process,interaction,source component)`, кроме ID, и не хранит собственного текста «зачем». В [логической модели](persistent-state-erd.md) Need — самостоятельное обоснование; нельзя объявлять любую повторную тройку дубликатом или, напротив, утверждать, что текстовое обоснование не нужно, без решения владельца. Не создавать UNIQUE/статус/описание автоматически.
+**Принято владельцем:** для первого среза тройка `(process_id, interaction_id, component_id)` уникальна; повторное создание — конфликт. Разные BusinessProcess могут использовать общую Interaction через разные Need. `businessBasis` и `ACTIVE/RETIRED` откладываются. Кардинальность `Process 1 → 0..N Need` из ERD разрешает несколько **разных** потребностей и сама по себе не определяет уникальность.
 
 ## 3. Ранее предложено в PR #38, но не принято
 
@@ -67,14 +67,14 @@
 | Пользовательский результат | Пользователь привязывает выбранную коммуникацию к **новому или существующему** Process и видит сохранённую связь | Виден ранее созданный/seeded Need, но новые Process невозможно связать с Need | Можно выразить намерение до выбора участников, если сначала утвердить иной доменный контракт |
 | Вход | `processId` + выбранная existing Revision как селектор Interaction/source Component | `processId` | Process + новая бизнес-формулировка, без обязательных нынешних ссылок |
 | Выход | Новая полноценная SQLite `needs` запись и авторизованный list/detail-in-tab | Список уже имеющихся `needs` | Новая форма неполной записи, не представимая текущей `needs` без изменения схемы |
-| SQLite | **Без миграции**; нужен INSERT и минимальная новая demo-grant fixture | Без миграции | Nullable FK/новая сущность/статус + миграция и новый контракт |
+| SQLite | **Малая миграция v2→v3**: UNIQUE индекс `(process_id,interaction_id,component_id)`, проверка существующих дубликатов, INSERT и demo-grants | Без миграции | Nullable FK/новая сущность/статус + миграция и новый контракт |
 | FastAPI | Узкие Need list, candidate selection, create; не общий каталог | Один scoped Need GET | Новое сохранение и последующее завершение намерения |
 | React | Вкладка «Потребности»: список и форма выбора существующей коммуникации | Вкладка: список и открытие связи | Отдельный жизненный цикл и UX незавершённости |
 | Зависимость от отсутствующих каталогов | Только проверяемые Revision/Component из существующей SQLite, с техническими labels; не нужен полный Interaction CRUD | Существующая seeded Need; для честного описания всё равно нужны linked references | Требует предметного решения и будущего связывания |
 | Миграционный риск | Низкий; риск неоднозначности Interaction/Need остаётся семантическим | Низкий | Высокий |
 | E2E / самостоятельная приёмка | Один write→read→restart плюс 401/403/404/422 и consistency; **проверяемое действие** | Один read→restart; недостаточен для новой связи | Более длинный flow с новой моделью |
 
-**Выбор: A — минимальная полная Need, без AccessRequest.** B не удовлетворяет задаче связывания только что созданного реального Process; C преждевременно меняет модель. A следует KISS/YAGNI **при условии**, что владелец принимает «потребность = Process + направленная Interaction + исходный participant Component» как достаточный первый сохраняемый факт. Если требуется отдельный ввод бизнес-основания или несколько различимых Need на одну тройку, согласовать модель прежде реализации.
+**Выбор: A — минимальная Need, без AccessRequest.** Владелец подтвердил: `participant = source Component`, Interaction переиспользуется, тройка уникальна на уровне БД, `businessBasis` и lifecycle отложены. B не создаёт новой Need; C преждевременно меняет модель. Это функционально минимальная Need, а не полная сущность логической ERD.
 
 ## 5. Минимальный технический контракт A — предложение для review
 
@@ -117,7 +117,7 @@
 
 - Создание AccessRequest из Need, выбор exact Revision и source/destination Deployments для Request, весь workflow ALLOWED/DENIED/PolicyRule и общий Rule catalog.
 - Отдельная persisted Interaction, каталоги Interaction/Revision/Resource/Application, full CRUD, расширение Request DTO и RequestContextQueryService из #38.
-- Новые Need.description/title/businessBasis, отображаемые имена других каталогов, уникальность Need triple, состояние черновика, nullable FK и целевая миграция ERD.
+- Новые Need.description/title/businessBasis, отображаемые имена других каталогов, `ACTIVE/RETIRED`, destination-initiated Needs, состояние черновика, nullable FK и целевая миграция ERD. **Уникальность тройки в текущем срезе обязательна.**
 - Общий Visibility UX M-11 (DEFERRED, не PASS), production IAM, сетевые проверки и автоматическое применение политики.
 - Issue #36: отдельный Rule Detail/export scope. Existing grants `access.request`, `access.decide`, `policy.export` остаются в силе.
 
