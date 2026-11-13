@@ -52,6 +52,8 @@ def git(root: Path, *args: str) -> bytes:
 
 
 def parse_diff(raw: bytes) -> list[Change]:
+    if not raw:
+        return []
     if not raw.endswith(b"\0"):
         raise ValueError("git diff result was not NUL terminated")
     fields = raw.split(b"\0")[:-1]
@@ -100,7 +102,7 @@ def choose(entries: list[Change]) -> tuple[str, str]:
     return ("docs-spec" if spec else "docs"), "documentation"
 
 
-def checks_for(profile: str, entries: list[Change], base: str | None) -> tuple[Check, ...]:
+def checks_for(root: Path, profile: str, entries: list[Change], base: str | None) -> tuple[Check, ...]:
     if profile == "full":
         return FULL
     checks: list[Check] = []
@@ -108,7 +110,7 @@ def checks_for(profile: str, entries: list[Change], base: str | None) -> tuple[C
         checks.extend(PY_FAST)
         targeted_tests = sorted({
             p for change in entries for p in change.paths
-            if p.startswith("tests/") and p.endswith(".py") and Path(p).is_file()
+            if p.startswith("tests/") and p.endswith(".py") and (root / p).is_file()
         })
         if targeted_tests:
             checks.append(Check("Changed Python tests", ("python", "-m", "pytest", "-q", *targeted_tests)))
@@ -167,7 +169,7 @@ def main() -> int:
         profile, reason = "full", f"failed to classify diff: {exc}"
     if args.full:
         profile, reason = "full", "explicit --full"
-    checks = checks_for(profile, entries, base)
+    checks = checks_for(root, profile, entries, base)
     print(f"BASE={base or 'unavailable'} HEAD={head} PROFILE={profile.upper()} REASON={reason}")
     for change in entries:
         print("CHANGE", change.status, *change.paths)
