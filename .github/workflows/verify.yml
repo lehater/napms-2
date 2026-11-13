@@ -2,6 +2,7 @@ name: Verify
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   push:
     branches: [main]
   workflow_dispatch:
@@ -20,12 +21,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       docs-only: ${{ steps.scope.outputs.docs-only }}
+      web: ${{ steps.scope.outputs.web }}
+      fallback: ${{ steps.scope.outputs.fallback }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 2
           persist-credentials: false
-      - name: Classify the changes in the tested merge commit
+      - name: Classify the cumulative PR merge diff
         id: scope
         run: |
           git rev-parse --verify HEAD^2 >/dev/null
@@ -34,18 +37,40 @@ jobs:
           import re
           import subprocess
 
-          # Disabling rename detection includes both paths when a file moves.
-          changed = subprocess.check_output(
-              ["git", "diff", "--name-only", "--no-renames", "-z", "HEAD^1", "HEAD", "--"]
-          ).split(b"\0")[:-1]
+          raw = subprocess.check_output(
+              ["git", "diff", "--name-status", "--no-renames", "-z", "HEAD^1", "HEAD", "--"]
+          )
+          fields = raw.split(b"\0")
+          if fields[-1] != b"":
+              raise ValueError("non-terminated PR diff")
+          fields.pop()
+          if len(fields) % 2:
+              raise ValueError("incomplete status/path record")
+          records = list(zip(fields[0::2], fields[1::2]))
           documentation = re.compile(
               rb"(?:README\.md|(?:docs|openspec/(?:changes|specs))/.+\.md"
               rb"|openspec/changes/(?:[^/]+/)+\.openspec\.yaml)"
           )
-          docs_only = bool(changed) and all(documentation.fullmatch(path) for path in changed)
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              print(f"docs-only={str(docs_only).lower()}", file=output)
+          docs_only = bool(records) and all(documentation.fullmatch(path) for _, path in records)
+          fallback = not records
+          web = False
+          for status, path in records:
+              if documentation.fullmatch(path):
+                  continue
+              if status != b"M":
+                  fallback = True
+              if path.startswith(b"web/"):
+                  web = True
+              elif path.startswith((b"src/", b"tests/")) or path == b"pyproject.toml":
+                  pass
+              else:
+                  fallback = True
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              print(f"docs-only={str(docs_only).lower()}", file=out)
+              print(f"web={str(web).lower()}", file=out)
+              print(f"fallback={str(fallback).lower()}", file=out)
           PY
+
   application:
     name: application
     needs: changes
@@ -58,36 +83,68 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install application, test and quality dependencies
+      - name: Select profile
+        id: profile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          CLASSIFIED: ${{ needs.changes.result }}
+          FALLBACK: ${{ needs.changes.outputs.fallback }}
+        run: |
+          profile=full
+          if [[ "$EVENT_NAME" == pull_request && "$IS_DRAFT" == true && "$CLASSIFIED" == success && "$FALLBACK" != true ]]; then
+            profile=fast
+          fi
+          echo "profile=$profile" >> "$GITHUB_OUTPUT"
+          echo "Application profile: $profile" >> "$GITHUB_STEP_SUMMARY"
+      - name: Install Python quality tools for FAST
+        if: steps.profile.outputs.profile == 'fast'
+        run: python -m pip install ruff==0.17.4
+      - name: Install application and quality dependencies for FULL
+        if: steps.profile.outputs.profile == 'full'
         run: python -m pip install -e '.[test,quality]'
-      - name: Test application, HTTP contracts and local startup with coverage
-        run: python -m pytest -q --cov=napms --cov-report=term-missing
+      - name: Python compilation (FAST and FULL)
+        run: python -m compileall -q src tests
       - name: Ruff core diagnostics (blocking)
-        id: ruff_core
         run: python -m ruff check --select E4,E7,E9,F src tests
-      - name: Ruff extended lint (advisory baseline)
+      - name: Test application, HTTP contracts and startup with coverage
+        if: steps.profile.outputs.profile == 'full'
+        id: pytest
+        run: python -m pytest -q --cov=napms --cov-report=term-missing
+      - name: Ruff extended lint (advisory)
+        if: steps.profile.outputs.profile == 'full'
         id: ruff_extended
         continue-on-error: true
         run: python -m ruff check src tests
-      - name: Ruff formatting (advisory baseline)
+      - name: Ruff formatting (advisory)
+        if: steps.profile.outputs.profile == 'full'
         id: ruff_format
         continue-on-error: true
         run: python -m ruff format --check src tests
-      - name: Pyright typing (advisory baseline)
+      - name: Pyright (advisory)
+        if: steps.profile.outputs.profile == 'full'
         id: pyright
         continue-on-error: true
         run: python -m pyright
-      - name: Summarize check outcomes
+      - name: Summarize application verification
         if: always()
+        env:
+          PROFILE: ${{ steps.profile.outputs.profile }}
+          PYTEST: ${{ steps.pytest.outcome }}
+          RUFF: ${{ steps.ruff_extended.outcome }}
+          FORMAT: ${{ steps.ruff_format.outcome }}
+          PYRIGHT: ${{ steps.pyright.outcome }}
         run: |
-          echo '### SDLC-01 quality checks' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Check | Gate | Outcome |' >> "$GITHUB_STEP_SUMMARY"
-          echo '| --- | --- | --- |' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Ruff core (E4,E7,E9,F) | blocking | ${{ steps.ruff_core.outcome }} |' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Ruff extended | advisory | ${{ steps.ruff_extended.outcome }} |' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Ruff format | advisory | ${{ steps.ruff_format.outcome }} |' >> "$GITHUB_STEP_SUMMARY"
-          echo '| Pyright | advisory | ${{ steps.pyright.outcome }} |' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Advisory failures do not fail the job; inspect their logs for counts.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Profile: $PROFILE; pytest: $PYTEST; extended Ruff: $RUFF; format: $FORMAT; Pyright: $PYRIGHT" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$PROFILE" == fast ]]; then
+            echo "Draft FAST: compilation and Ruff core executed; FULL deferred until Ready." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Block required FULL status while Draft
+        if: github.event_name == 'pull_request' && github.event.pull_request.draft
+        run: |
+          echo 'EXPECTED in Draft: FAST results are informational; application required FULL is not yet satisfied.' >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
   validate:
     name: validate
     runs-on: ubuntu-latest
@@ -111,6 +168,7 @@ jobs:
         run: |
           openspec list --json
           openspec validate --all --strict
+
   semantic-contract:
     name: semantic-contract
     runs-on: ubuntu-latest
@@ -125,6 +183,7 @@ jobs:
       - name: Enforce the accepted UX-0 semantic boundary contract
         working-directory: web
         run: npm run test:semantic
+
   web:
     name: web
     needs: changes
@@ -134,27 +193,66 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      - name: Select profile
+        id: profile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          CLASSIFIED: ${{ needs.changes.result }}
+          FALLBACK: ${{ needs.changes.outputs.fallback }}
+        run: |
+          profile=full
+          if [[ "$EVENT_NAME" == pull_request && "$IS_DRAFT" == true && "$CLASSIFIED" == success && "$FALLBACK" != true ]]; then
+            profile=fast
+          fi
+          echo "profile=$profile" >> "$GITHUB_OUTPUT"
+          echo "Web profile: $profile" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-python@v6
+        if: steps.profile.outputs.profile == 'full'
         with:
           python-version: '3.12'
       - uses: actions/setup-node@v7
+        if: steps.profile.outputs.profile == 'full' || needs.changes.outputs.web == 'true'
         with:
           node-version: '24'
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Install real backend
+        if: steps.profile.outputs.profile == 'full'
         run: |
           python -m venv .venv
           .venv/bin/python -m pip install -e .
       - name: Install web dependencies
+        if: steps.profile.outputs.profile == 'full' || needs.changes.outputs.web == 'true'
         working-directory: web
         run: npm ci
       - name: Typecheck and production build
+        if: steps.profile.outputs.profile == 'full' || needs.changes.outputs.web == 'true'
+        id: build
         working-directory: web
         run: npm run build
-      - name: Install Chromium and system dependencies
+      - name: Install Chromium
+        if: steps.profile.outputs.profile == 'full'
         working-directory: web
         run: npx playwright install --with-deps chromium
       - name: Real FastAPI and SQLite browser tests
+        if: steps.profile.outputs.profile == 'full'
+        id: playwright
         working-directory: web
         run: npm run test:e2e
+      - name: Summarize web verification
+        if: always()
+        env:
+          PROFILE: ${{ steps.profile.outputs.profile }}
+          BUILD: ${{ steps.build.outcome }}
+          PLAYWRIGHT: ${{ steps.playwright.outcome }}
+        run: |
+          echo "Profile: $PROFILE; build: $BUILD; browser tests: $PLAYWRIGHT" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$PROFILE" == fast ]]; then
+            echo 'Draft FAST: build runs only for changed web/ paths; all browser suites are deferred until Ready.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Block required FULL status while Draft
+        if: github.event_name == 'pull_request' && github.event.pull_request.draft
+        run: |
+          echo 'EXPECTED in Draft: FAST results are informational; web required FULL is not yet satisfied.' >> "$GITHUB_STEP_SUMMARY"
+          exit 1
