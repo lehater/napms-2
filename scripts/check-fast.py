@@ -86,7 +86,7 @@ def choose(entries: list[Change]) -> tuple[str, str]:
     if any(c.status not in {"M", "A", "??"} or len(c.paths) != 1 for c in entries):
         return "full", "rename/delete/unknown change status"
     paths = {p for c in entries for p in c.paths}
-    if any(p.startswith(".github/") or p in {"pyproject.toml", "web/package.json", "web/package-lock.json"} for p in paths):
+    if any(p.startswith((".github/", "web/e2e/", "web/e2e-harness/", "web/dev/")) or p.startswith("web/playwright") or p in {"pyproject.toml", "web/package.json", "web/package-lock.json"} for p in paths):
         return "full", "CI or dependency configuration"
     if any(not (p.startswith(("web/", "src/", "tests/", "docs/", "openspec/")) or p in {"README.md", "AGENTS.md"}) for p in paths):
         return "full", "unknown change scope"
