@@ -1,26 +1,28 @@
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import App from './App'
+import PolicyRule from './PolicyRule'
+import PolicyRules from './PolicyRules'
 import { DemoProfile, useDemoProfile } from './DemoProfile'
-import BusinessProcesses from './BusinessProcesses'
-import Prototype from './prototype/Prototype'
-import { SimulationProvider } from './prototype/simulation'
-import './index.css'
-import { Shell } from './prototype/Shell'
 import { FormDrafts } from './FormDrafts'
+import BusinessProcesses from './BusinessProcesses'
+import NotFound from './NotFound'
+import './index.css'
+import { Shell } from './Shell'
+const ResearchApp = lazy(() => import('./prototype/ResearchApp'))
 function Layout() {
  const profile = useDemoProfile()
- return <Shell><FormDrafts key={profile.actor}><div><Routes>
+ return <FormDrafts key={profile.actor}><Shell><div><Routes>
   <Route path="/" element={<Navigate to="/business-processes" replace />} />
   <Route path="/business-processes/*" element={<BusinessProcesses />} />
+  <Route path="/policy-rules" element={<PolicyRules />} />
+  <Route path="/policy-rules/:ruleId" element={<PolicyRule />} />
   <Route path="/access-requests/*" element={<App />} />
-  <Route path="/prototype/:section?/:objectId?" element={<Prototype />} />
   <Route path="*" element={<NotFound />} />
- </Routes></div></FormDrafts></Shell>
+ </Routes></div></Shell></FormDrafts>
 }
-function NotFound() {
- const { pathname } = useLocation()
- return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link><p>{pathname}</p></section>
-}
-createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><SimulationProvider><DemoProfile><Layout /></DemoProfile></SimulationProvider></BrowserRouter></StrictMode>)
+createRoot(document.getElementById('root')!).render(<StrictMode><BrowserRouter><DemoProfile><Routes>
+  <Route path="/prototype/*" element={<Suspense fallback={<p role="status">Загрузка учебного прототипа…</p>}><ResearchApp /></Suspense>} />
+  <Route path="*" element={<Layout />} />
+</Routes></DemoProfile></BrowserRouter></StrictMode>)

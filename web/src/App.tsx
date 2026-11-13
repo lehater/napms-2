@@ -1,12 +1,13 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { Link, Route, Routes, useNavigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { ApiError, api, message, type AccessInput, type AccessRequest, type Client, type Collection, type Outcome } from './api'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Link, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { ApiError, api, message, type AccessRequest, type Client, type Collection, type Outcome } from './api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDemoProfile } from './DemoProfile'
 import { Badge } from '@/components/ui/badge'
+import { CollectionView } from './components/real/CollectionView'
+import { DetailView } from './components/real/DetailView'
 import ErrorNotice from './components/ErrorNotice'
-import { useFormDraft } from './FormDrafts'
 import { formatDate } from './lib/format'
 
 type Mode = 'requester' | 'decider'
@@ -38,7 +39,7 @@ export default function App() {
   const client = profile.client ?? manualClient
   if (leaf.length > 1) return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link></section>
   return <>
-    <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Заявки на доступ</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">{leaf[0] === 'new' ? 'Создание' : 'Карточка'}</span></>}</nav>
+    {(leaf.length === 0 || leaf[0] === 'new') && <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Заявки на доступ</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">Создание</span></>}</nav>}
     {!profile.enabled && <>
         <section className="space-y-3 rounded-lg border bg-white p-4" aria-label="Demo credentials">
           <label className="text-sm font-medium" htmlFor="mode">Demo mode</label>
@@ -60,7 +61,7 @@ export default function App() {
         {!token && !profile.enabled ? <section className="panel"><h1>Введите демонстрационный credential</h1><p>Выберите режим и введите token из приватного локального файла.</p></section> :
           <div key={epoch + ':' + mode}><Routes>
             <Route index element={<RequestList client={client} />} />
-            <Route path="new" element={<NewRequest client={client} />} />
+            <Route path="new" element={<NewRequest />} />
             <Route path=":requestId" element={<RequestDetail client={client} mode={profile.enabled ? (profile.actor === 'decider' ? 'decider' : 'requester') : mode} />} />
             <Route path="*" element={<h1>Страница не найдена</h1>} />
           </Routes></div>}
@@ -84,64 +85,23 @@ function RequestList({ client }: { client: Client }) {
     client.list(offset).then(p => { if (active) setPage(p) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, offset, reload])
-  return <section className="panel space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1>Заявки на доступ</h1><p>Заявки, доступные по серверным полномочиям.</p></div>{restrictedDemo ? <p>В стандартном демопрофиле заявки создаёт Requester. Переключите Demo actor.</p> : <Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}</div>
-    <ErrorNotice text={error} />
-    {error && <Button variant="outline" onClick={() => setReload(x => x + 1)}>Повторить</Button>}
-    {!page && !error && <p role="status">Загрузка заявок…</p>}
-    {page && (page.items.length === 0 ? <p>Нет доступных заявок.</p> : <div className="overflow-x-auto"><table className="ux-table">
-      <thead><tr>{['Заявка', 'Подана', 'Заявитель', 'Статус'].map(t => <th className="border-b px-2 py-3" key={t}>{t}</th>)}</tr></thead>
-      <tbody>{page.items.map(r => <tr key={r.requestId}><td className="border-b px-2 py-4"><Link className="font-mono text-xs" to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.requestId}</Link></td><td className="border-b px-2 py-4">{formatDate(r.submittedAt)}</td><td className="border-b px-2 py-4 font-mono text-xs">{r.requesterActorId}</td><td className="border-b px-2 py-4"><Status value={r.status} /></td></tr>)}</tbody>
-    </table></div>)}
-    {page && <div className="flex items-center gap-3"><Button variant="outline" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span className="text-sm">Страница {Math.floor(offset / page.limit) + 1}</span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div>}
-  </section>
+  return <CollectionView<AccessRequest> title="Заявки на доступ" description="Заявки, доступные по серверным полномочиям." actions={restrictedDemo ? <p>В стандартном демопрофиле заявки создаёт Requester. Переключите Demo actor.</p> : <Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}
+    rows={page?.items ?? []} columns={[
+      {key:'request',title:'Заявка',render:r=><Link to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.listLabel}<small>{r.listContext}</small><small>{r.requestId}</small></Link>},
+      {key:'submitted',title:'Подана',render:r=>formatDate(r.submittedAt)},
+      {key:'requester',title:'Заявитель',render:r=><><span>{r.requesterDisplayName}</span>{r.requesterDisplayName === 'Имя не задано' && <small className="font-mono">{r.requesterActorId}</small>}</>},
+      {key:'status',title:'Статус',render:r=><Status value={r.status} />},
+    ]} getKey={r=>r.requestId} emptyText="Нет доступных заявок." loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }
 
-const demo: AccessInput = {
-  sourceDeploymentId: '00000000-0000-0000-0000-00000000000a',
-  destinationDeploymentId: '00000000-0000-0000-0000-00000000000b',
-  interactionRevisionId: '00000000-0000-0000-0000-000000000009',
-  connectivityNeedId: '00000000-0000-0000-0000-00000000000d',
-}
-const emptyRequest: AccessInput = { sourceDeploymentId: '', destinationDeploymentId: '', interactionRevisionId: '', connectivityNeedId: '' }
-const inputLabels: Record<keyof AccessInput, string> = { sourceDeploymentId: 'Исходное размещение', destinationDeploymentId: 'Целевое размещение', interactionRevisionId: 'Ревизия коммуникации', connectivityNeedId: 'Потребность' }
-function NewRequest({ client }: { client: Client }) {
-  const [data, setData, clearDraft] = useFormDraft('request', emptyRequest)
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof AccessInput, string>>>({})
+function NewRequest() {
   const profile = useDemoProfile()
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const submitting = useRef(false)
-  const alive = useRef(true)
-  useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  const navigate = useNavigate()
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    if (submitting.current) return
-    const invalid = (Object.keys(data) as (keyof AccessInput)[]).filter(key => !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data[key]))
-    setFieldErrors(Object.fromEntries(invalid.map(key => [key, 'Введите полный UUID выбранного объекта.'])))
-    if (invalid.length) { document.getElementById(invalid[0])?.focus(); return }
-    submitting.current = true; setBusy(true); setError('')
-    try { const r = await client.create(data); if (alive.current) { clearDraft(); navigate('/access-requests/' + r.requestId) } }
-    catch (e) { if (alive.current) setError(message(e)) }
-    finally { submitting.current = false; if (alive.current) setBusy(false) }
-  }
   if (profile.enabled && ['decider', 'exporter'].includes(profile.actor)) return <section className="panel"><h1>Новая заявка</h1><p>В стандартном демопрофиле заявки создаёт Requester. Переключите Demo actor.</p><Link to="/access-requests">К заявкам</Link></section>
-  return <section className="panel space-y-5"><div><h1>Новая заявка</h1><p>Пока доступна техническая форма по идентификаторам. Выбор из сохранённой потребности ещё не реализован. Допуск создаёт PENDING, а не разрешение.</p></div>
-    <ErrorNotice text={error} />
-    <Button variant="outline" disabled={busy} onClick={() => { setData(demo); setFieldErrors({}); setError('') }}>Заполнить demo-пример</Button>
-    <p className="ux-note">Demo-пример относится к предустановленной потребности, а не к недавно созданному процессу.</p>
-    <form className="process-form" noValidate onSubmit={submit}>
-      {(Object.keys(demo) as (keyof AccessInput)[]).map(key => <div className="space-y-2" key={key}><label htmlFor={key}>{inputLabels[key]} <small>({key})</small></label><Input id={key} value={data[key]} onChange={e => { setData({ ...data, [key]: e.target.value }); setFieldErrors(errors => ({ ...errors, [key]: undefined })) }} required aria-invalid={Boolean(fieldErrors[key])} aria-describedby={fieldErrors[key] ? key + '-error' : undefined} disabled={busy} />{fieldErrors[key] && <p role="alert" className="ux-field-error" id={key + '-error'}>{fieldErrors[key]}</p>}</div>)}
-      <Button type="submit" disabled={busy}>{busy ? 'Создание…' : 'Создать заявку'}</Button>
-      {!busy && <Link to="/access-requests" onClick={clearDraft}>Отмена</Link>}
-    </form>
-  </section>
+  return <section className="panel"><h1>Новая заявка</h1><p>Выберите сохранённую потребность процесса, затем Revision и два Deployment. Допуск создаёт PENDING, а не разрешение.</p><Link to="/business-processes">Выбрать процесс и потребность</Link></section>
 }
 
 function Evidence({ entries }: { entries: Record<string, string | null> }) {
-  const labels: Record<string, string> = { requestId: 'Заявка', subjectId: 'Предмет доступа', requesterActorId: 'Заявитель', submittedAt: 'Подана', sourceResourceId: 'Исходный ресурс', grantId: 'Основание полномочий', checkedAt: 'Полномочия проверены', decisionId: 'Решение', outcome: 'Результат', deciderActorId: 'Решение принял', decidedAt: 'Решение принято', policyRuleId: 'Правило политики' }
-  return <dl className="ux-properties">{Object.entries(entries).map(([k, v]) => <div key={k} data-field={k}><dt>{labels[k] ?? k}<small className="block">{k}</small></dt><dd className="mt-1 break-all font-mono text-xs">{v && ['submittedAt', 'checkedAt', 'decidedAt'].includes(k) ? <time dateTime={v} title={v}>{formatDate(v)}</time> : v ?? 'Не создано'}</dd></div>)}</dl>
+  return <dl className="ux-properties">{Object.entries(entries).map(([k, v]) => <div key={k}><dt className="text-slate-500">{k}</dt><dd className="mt-1 break-all font-mono text-xs">{v ?? 'null'}</dd></div>)}</dl>
 }
 function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
   const { requestId = '' } = useParams()
@@ -152,26 +112,31 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
   const [feedback, setFeedback] = useState('')
-  const resultHeading = useRef<HTMLHeadingElement>(null), focusResult = useRef(false)
+  const focusResult = useRef(false)
   useEffect(() => { setFeedback('') }, [requestId])
-  useEffect(() => { if (request && focusResult.current) { resultHeading.current?.focus(); focusResult.current = false } }, [request])
   useEffect(() => {
     let active = true
     setRequest(null); setError('')
     client.request(requestId).then(r => { if (active) setRequest(r) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, requestId, reload])
-  return <section className="panel space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><h1 ref={resultHeading} tabIndex={-1} data-document-title={request ? `Заявка ${request.requestId.slice(0, 8)}` : undefined}>Заявка на доступ</h1><Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить статус</Button></div>
-    <ErrorNotice text={error} />
-    {!request && !error && <p role="status">Загрузка заявки…</p>}
-    {feedback && <p role="status">{feedback}</p>}
-    {request && request.requestId === requestId && <><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt }} />
-      <h2>Основания допуска</h2><Evidence entries={request.admission} />
-      </>}{decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}</>}
-      {request.decision?.policyRuleId && <p className="ux-callout">Правило политики сохранено. REAL-карточка правила и экспорт пока доступны только через API с отдельными полномочиями. Раздел «Правила политики» содержит MOCK-данные. ALLOWED не подтверждает сетевую доступность.</p>}
-      {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { focusResult.current = true; setFeedback(text); setReload(x => x + 1) }} />}
-    </>}
-  </section>
+  useLayoutEffect(() => {
+    if (!focusResult.current || !request || request.requestId !== requestId) return
+    const heading = document.querySelector('.ux-heading h1')
+    if (heading instanceof HTMLElement) { heading.tabIndex = -1; heading.focus() }
+    focusResult.current = false
+  }, [request, requestId])
+  if (!request || request.requestId !== requestId) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} />{!error && <p role="status">Загрузка заявки…</p>}{feedback && <p role="status">{feedback}</p>}</section>
+  const listHref = '/access-requests' + (params.has('offset') ? '?offset=' + params.get('offset') : '')
+  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={listHref}>Заявки на доступ</Link><span>/</span><span aria-current="page">{request.displayLabel}</span></>}
+    title={request.displayLabel} state={request.status}
+    actions={<Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить статус</Button>}
+    tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'decision',label:'Решение и основания',href:tabPath('decision')}]} activeTab={decisionTab ? 'decision' : 'overview'}>
+    <ErrorNotice text={error} />{feedback && <p role="status">{feedback}</p>}
+    {!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} /><h2>Основания допуска</h2><Evidence entries={request.admission} />{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
+    {decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
+    {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { focusResult.current = true; setFeedback(text); setReload(x => x + 1) }} />}
+  </DetailView>
 }
 
 function DecisionPanel({ client, requestId, refresh }: { client: Client; requestId: string; refresh: (text: string) => void }) {
@@ -180,11 +145,14 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
   const [error, setError] = useState('')
   const submitting = useRef(false)
   const alive = useRef(true)
-  const confirmation = useRef<HTMLParagraphElement>(null), actions = useRef<HTMLElement>(null)
-  const restoreAction = useRef<Outcome | null>(null)
+  const confirmMessage = useRef<HTMLParagraphElement>(null)
+  const restoreOutcome = useRef<Outcome | null>(null)
   useLayoutEffect(() => {
-    if (outcome) confirmation.current?.focus()
-    else if (restoreAction.current) { actions.current?.querySelector<HTMLButtonElement>(`[data-outcome="${restoreAction.current}"]`)?.focus(); restoreAction.current = null }
+    if (outcome) confirmMessage.current?.focus()
+    else if (restoreOutcome.current) {
+      document.querySelector<HTMLButtonElement>(`button[data-outcome="${restoreOutcome.current}"]`)?.focus()
+      restoreOutcome.current = null
+    }
   }, [outcome])
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   async function confirm() {
@@ -199,13 +167,13 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
       else setError(message(e))
     } finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section ref={actions} className="space-y-4 border-t pt-6" aria-label="Decision">
+  return <section className="space-y-4 border-t pt-6" aria-label="Decision">
     <h2>Принять решение</h2><p className="text-sm text-slate-500">Сервер проверяет полномочия. Подтверждённое решение окончательно.</p>
     <ErrorNotice text={error} />
     {!outcome ? <div className="flex flex-wrap gap-3"><Button data-outcome="ALLOWED" onClick={() => setOutcome('ALLOWED')}>ALLOWED</Button><Button data-outcome="DENIED" variant="destructive" onClick={() => setOutcome('DENIED')}>DENIED</Button></div> :
       <div role="group" aria-label="Подтверждение решения" className="space-y-3 rounded-lg border bg-slate-50 p-4">
-        <p ref={confirmation} tabIndex={-1}>Подтвердить {outcome} для заявки {requestId}? Изменить решение нельзя.</p>
-        <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Сохранение…' : `Подтвердить ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { restoreAction.current = outcome; setOutcome(null); setError('') }}>Отмена</Button></div>
+        <p ref={confirmMessage} tabIndex={-1}>Подтвердить {outcome} для этой заявки? Изменить решение нельзя.</p>
+        <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Сохранение…' : `Подтвердить ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { restoreOutcome.current = outcome; setOutcome(null); setError('') }}>Отмена</Button></div>
       </div>}
   </section>
 }

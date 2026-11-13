@@ -8,12 +8,15 @@ export const actors = ['anonymous', 'requester', 'decider', 'exporter'] as const
 const origin = 'http://127.0.0.1:5173'
 const uuid = '[0-9a-fA-F-]{36}'
 const paths = [
+  { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}/access-request-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/need-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes(?:/${uuid})?$`), methods: ['GET', 'POST'] },
   { pattern: /^\/access-requests$/, methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/access-requests/${uuid}$`), methods: ['GET'] },
   { pattern: new RegExp(`^/access-requests/${uuid}/decision$`), methods: ['POST'] },
+  { pattern: /^\/policy-rules$/, methods: ['GET'] },
+  { pattern: /^\/policy\/export\/current$/, methods: ['GET'] },
   { pattern: new RegExp(`^/policy-rules/${uuid}$`), methods: ['GET'] },
   { pattern: /^\/policy\/export$/, methods: ['GET'] },
 ]
@@ -74,7 +77,7 @@ export function localDemoPlugin(): Plugin {
         if (req.headers['content-type']) headers['Content-Type'] = req.headers['content-type']
         const upstream = httpRequest({ hostname: '127.0.0.1', port: 8000, path: req.url, method: req.method, headers, timeout: 5000 }, incoming => {
           const responseHeaders: Record<string, string> = { 'Cache-Control': 'no-store' }
-          for (const key of ['content-type', 'www-authenticate']) {
+          for (const key of ['content-type', 'www-authenticate', 'x-evaluation-at', 'x-selected-rule-id', 'x-policy-scope']) {
             const value = incoming.headers[key]; if (typeof value === 'string') responseHeaders[key] = value
           }
           res.writeHead(incoming.statusCode ?? 502, responseHeaders)

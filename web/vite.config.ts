@@ -32,6 +32,8 @@ export default defineConfig(({ command, mode, isPreview }) => {
           target: 'http://127.0.0.1:8000',
           bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },
         },
+        '/policy-rules': { target: 'http://127.0.0.1:8000', bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' } },
+        '/policy/export': { target: 'http://127.0.0.1:8000' },
         '/access-requests': {
           target: 'http://127.0.0.1:8000',
           // Browser navigation must reach the SPA; fetch requests reach FastAPI.

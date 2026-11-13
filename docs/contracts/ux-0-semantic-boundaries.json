@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "scope": "UX-0 fictional fixture and its browser presentation only; not a universal NAPMS UI or API validator",
+  "scope": "Historical UX-0 fictional fixture semantics and research presentation, plus the explicitly scoped REAL main navigation contract; not a universal API validator",
   "enforced": {
     "statusDomains": {
       "Resource": {
@@ -150,5 +150,30 @@
       "real /access-requests backend UI has separate E2E",
       "future UI collections require a new normative mapping and browser tests"
     ]
+  },
+  "realNavigation": {
+    "entries": [
+      {
+        "group": "Бизнес-контекст",
+        "title": "Бизнес-процессы",
+        "path": "/business-processes"
+      },
+      {
+        "group": "Управление доступом",
+        "title": "Заявки на доступ",
+        "path": "/access-requests"
+      },
+      {
+        "group": "Управление доступом",
+        "title": "Правила политики",
+        "path": "/policy-rules"
+      }
+    ],
+    "contextualRoutes": {
+      "ConnectivityNeed": "/business-processes/{processId}?tab=needs",
+      "PolicyRule": "/policy-rules/{ruleId}"
+    },
+    "researchPrefix": "/prototype",
+    "mainConsumesSimulation": false
   }
 }

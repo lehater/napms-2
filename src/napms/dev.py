@@ -19,7 +19,7 @@ IDS = {name: demo_id(i) for i, name in enumerate((
     "application", "sender", "receiver", "interaction", "revision", "sourceDeployment",
     "destinationDeployment", "process", "need", "requester", "decider", "exporter",
     "requestGrant", "decideGrant", "sourceExportGrant", "destinationExportGrant",
-    "processReadGrant", "processCreateGrant", "needReadGrant", "needCreateGrant"), 1)}
+    "processReadGrant", "processCreateGrant", "needReadGrant", "needCreateGrant", "sourceOptionsGrant", "destinationOptionsGrant"), 1)}
 DEMO_REQUEST = {"sourceDeploymentId": IDS["sourceDeployment"],
                 "destinationDeploymentId": IDS["destinationDeployment"],
                 "interactionRevisionId": IDS["revision"], "connectivityNeedId": IDS["need"]}
@@ -56,6 +56,28 @@ def init_demo(db, credentials):
         seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]), "id,process_id,interaction_id,component_id")
         for role in ("requester", "decider", "exporter"):
             seed("actors", (IDS[role],), "id")
+        for role, display_name in (
+            ("requester", "Демонстрационный заявитель"),
+            ("decider", "Демонстрационный согласующий"),
+            ("exporter", "Демонстрационный оператор политики"),
+        ):
+            seed("actor_names", (IDS[role], display_name), "actor_id,name")
+        # Explicit synthetic operator input, never inferred from IDs or addresses.
+        for table, column, names in (
+            ("resource_names", "resource_id", {"sourceResource": "sender.demo.example", "destinationResource": "receiver.demo.example"}),
+            ("application_names", "application_id", {"application": "Демонстрационный HTTPS"}),
+            ("component_names", "component_id", {"sender": "Отправитель", "receiver": "Получатель"}),
+        ):
+            for key, name in names.items():
+                if c.execute(f"SELECT 1 FROM {table} WHERE {column}=?", (IDS[key],)).fetchone():
+                    continue
+                if table == "component_names" and c.execute(
+                    "SELECT 1 FROM component_names n JOIN components a ON a.id=n.component_id JOIN components b ON b.id=? WHERE a.application_id=b.application_id AND n.name=?",
+                    (IDS[key], name),
+                ).fetchone():
+                    # An operator already owns this name in the Application; leave missing metadata absent.
+                    continue
+                seed(table, (IDS[key], name), column + ",name")
         for key, actor, action, scope in (
             ("requestGrant", "requester", "access.request", IDS["sourceResource"]),
             ("decideGrant", "decider", "access.decide", "demo-policy"),
@@ -64,7 +86,9 @@ def init_demo(db, credentials):
             ("processReadGrant", "requester", "business.process.read", "demo-business"),
             ("processCreateGrant", "requester", "business.process.create", "demo-business"),
             ("needReadGrant", "requester", "business.need.read", "demo-business"),
-            ("needCreateGrant", "requester", "business.need.create", "demo-business")):
+            ("needCreateGrant", "requester", "business.need.create", "demo-business"),
+            ("sourceOptionsGrant", "requester", "access.options.read", IDS["sourceResource"]),
+            ("destinationOptionsGrant", "requester", "access.options.read", IDS["destinationResource"])):
             seed("grants", (IDS[key], IDS[actor], action, scope, None, None), "id,actor_id,action,scope,valid_from,valid_until")
 
 

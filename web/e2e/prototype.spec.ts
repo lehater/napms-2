@@ -142,11 +142,13 @@ for (const [width, height] of [[1440, 900], [1920, 1080], [2560, 1440]]) {
     expect(await page.evaluate(() => Object.entries(localStorage))).toEqual([['napms.prototype.sidebarWidth', '330']])
     for (const tab of ['overview', 'endpoints', 'deployments', 'history']) {
       await page.goto('/prototype/resources/mock-resource-order?tab=' + tab)
+      await expect(page.getByRole('heading', {name:byId.get('mock-resource-order')!.name,exact:true})).toBeVisible()
       expect((await measure()).main).toBe(width - 336)
       expect((await measure()).page).toBe(width)
       await expect(page.getByRole('navigation', { name: 'Resource tabs' })).toBeVisible()
     }
     await page.goto('/prototype/applications/mock-application')
+    await expect(page.getByRole('heading', {name:byId.get('mock-application')!.name,exact:true})).toBeVisible()
     expect((await measure()).main).toBe(width - 336)
     expect((await measure()).page).toBe(width)
   })
@@ -263,15 +265,7 @@ for (const [sectionId, id, tab, targetId] of journeys) {
     await expect(nav.getByRole('link')).toHaveText(sections.map(item => item.title))
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
     await nav.getByRole('link', { name: sections.find(item => item.id === sectionId)!.title, exact: true }).click()
-    if (sectionId === 'requests') {
-      await expect(page).toHaveURL(/\/access-requests$/)
-      await page.getByRole('link', { name: 'Заявки MOCK →', exact: true }).click()
-    }
-    if (sectionId === 'processes') {
-      await expect(page).toHaveURL(/\/business-processes$/)
-      await page.getByRole('link', { name: /MOCK Simulation:/ }).click()
-    }
-    await expect(page.getByLabel('Строк на странице')).toHaveValue('20')
+    await expect(page).toHaveURL(new RegExp('/prototype/' + sectionId + '$'))
     await page.getByLabel('Строк на странице').selectOption('2')
     const rows = page.locator('tbody tr')
     const expected = visibleCollection(sectionId)
@@ -311,8 +305,12 @@ test('all fixture relations remain reachable through typed tabs and technical de
     await expect(page.getByRole('heading', { name: object.name, exact: true })).toBeVisible()
     const visited = new Set<string>()
     const hrefs = await page.getByRole('navigation', { name: /^(Object|Resource) tabs$/ }).getByRole('link').evaluateAll(nodes => nodes.map(node => node.getAttribute('href')!))
-    for (const href of hrefs) {
-      await page.goto(href)
+    for (let index = 0; index < hrefs.length; index++) {
+      // Exercise tabs in the loaded research app; direct object URLs are checked above.
+      await page.getByRole('navigation', {name:/^(Object|Resource) tabs$/}).getByRole('link').nth(index).click()
+      await expect(page).toHaveURL(new URL(hrefs[index],page.url()).href)
+      await expect(page.getByRole('navigation', {name:/^(Object|Resource) tabs$/}).getByRole('link').nth(index)).toHaveAttribute('aria-current','page')
+      await expect(page.getByRole('heading', {name:object.name,exact:true})).toBeVisible()
       for (const link of await page.getByRole('table').getByRole('link').all()) visited.add((await link.getAttribute('href'))!)
       for (const link of await page.getByLabel('Составление заявки на вкладке Коммуникация').getByRole('link').all()) visited.add((await link.getAttribute('href'))!)
     }
@@ -366,9 +364,11 @@ test('collection state survives breadcrumb and reload; real API stays separate',
   await page.getByLabel('Поиск объектов').fill('absent')
   await expect(page.getByText('Нет совпадений. Измените поисковый запрос.')).toBeVisible()
   await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
-  await expect(page).toHaveURL(/\/access-requests$/)
+  await expect(page).toHaveURL(/\/prototype\/requests$/)
+  await page.goto('/access-requests')
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
-  await page.getByRole('link', { name: 'MOCK Simulation →' }).click()
+  await expect(page.locator('aside a[href^="/prototype"]')).toHaveCount(0)
+  await page.goto('/prototype')
   await expect(page.getByText('RESEARCH / MOCK', { exact: true })).toBeVisible()
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveCount(0)
   await page.goto('/prototype/resources/missing')

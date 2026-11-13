@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dev import DEMO_REQUEST
 from .domain import Problem
@@ -50,6 +50,7 @@ class NeedInput(Strict):
 
 
 class Need(Strict):
+    displayLabel: str
     connectivityNeedId: UUID
     processId: UUID
     interactionId: UUID
@@ -57,6 +58,8 @@ class Need(Strict):
 
 
 class NeedOption(Strict):
+    trafficLabel: str
+    displayLabel: str
     interactionRevisionId: UUID
     interactionId: UUID
     applicationId: UUID
@@ -81,6 +84,44 @@ class NeedOptions(Strict):
     hasMore: bool
 
 
+class OptionsQuery(Strict):
+    kind: Literal["revisions", "source-deployments", "destination-deployments"] = "revisions"
+    interactionRevisionId: UUID | None = None
+    limit: int = Field(default=20, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def valid_kind(self):
+        if (self.kind == "revisions") != (self.interactionRevisionId is None):
+            raise ValueError("Invalid kind/revision combination")
+        return self
+
+
+class DeploymentOption(Strict):
+    displayLabel: str
+    deploymentId: UUID
+    componentId: UUID
+    resourceId: UUID
+
+
+class RevisionOptions(NeedOptions):
+    kind: Literal["revisions"]
+
+
+class DeploymentOptions(Strict):
+    kind: Literal["source-deployments", "destination-deployments"]
+    items: list[DeploymentOption]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class Subject(Strict):
+    sourceDeploymentId: UUID
+    destinationDeploymentId: UUID
+    interactionRevisionId: UUID
+
+
 class AccessInput(Strict):
     model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
     sourceDeploymentId: UUID
@@ -98,6 +139,10 @@ class ListQuery(Strict):
     offset: int = Field(default=0, ge=0)
 
 
+class CurrentExportQuery(Strict):
+    format: Literal["json", "csv"] = "json"
+
+
 class ExportQuery(Strict):
     ruleId: UUID
     format: Literal["json", "csv"] = "json"
@@ -110,6 +155,7 @@ class Admission(Strict):
 
 
 class Decision(Strict):
+    displayLabel: str
     decisionId: UUID
     requestId: UUID
     outcome: Literal["ALLOWED", "DENIED"]
@@ -119,6 +165,12 @@ class Decision(Strict):
 
 
 class AccessRequest(Strict):
+    displayLabel: str
+    listLabel: str
+    listContext: str
+    requesterDisplayName: str
+    connectivityNeedId: UUID
+    subject: Subject
     requestId: UUID
     subjectId: UUID
     status: Literal["PENDING", "ALLOWED", "DENIED"]
@@ -136,6 +188,15 @@ class RequestCollection(Strict):
 
 
 class Rule(Strict):
+    participantsLabel: str
+    applicationLabel: str
+    sourceResourceLabel: str
+    destinationResourceLabel: str
+    trafficLabel: str
+    ipProtocol: Literal["TCP", "UDP"]
+    destinationPortStart: int
+    destinationPortEnd: int
+    displayLabel: str
     ruleId: UUID
     subjectId: UUID
     state: Literal["ACTIVE", "INACTIVE"]
@@ -144,6 +205,33 @@ class Rule(Strict):
     originatingRequest: AccessRequest
     connectivityNeedId: UUID
     allowances: list[Decision]
+
+
+class RuleSummary(Strict):
+    participantsLabel: str
+    applicationLabel: str
+    sourceResourceLabel: str
+    destinationResourceLabel: str
+    ruleId: UUID
+    subjectId: UUID
+    state: Literal["ACTIVE", "INACTIVE"]
+    displayLabel: str
+    subject: Subject
+    sourceResourceId: UUID
+    destinationResourceId: UUID
+    ipProtocol: Literal["TCP", "UDP"]
+    destinationPortStart: int
+    destinationPortEnd: int
+    trafficLabel: str
+    originatingDecisionId: UUID
+    allowanceDecisionIds: list[UUID]
+
+
+class RuleCollection(Strict):
+    items: list[RuleSummary]
+    limit: int
+    offset: int
+    hasMore: bool
 
 
 class PolicyRow(Strict):
@@ -178,12 +266,33 @@ class Export(Strict):
     rows: list[PolicyRow]
 
 
+class CurrentExport(Strict):
+    scope: Literal["authorized"]
+    evaluationAt: str
+    rows: list[PolicyRow]
+
+
+def csv_export(result, headers):
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=COLUMNS)
+    writer.writeheader()
+    writer.writerows(result["rows"])
+    return Response(output.getvalue(), media_type="text/csv", headers={"X-Evaluation-At": result["evaluationAt"], **headers})
+
+
 def create_app(db, credentials):
     """Explicit local profile: no global app, auto-seed, or default credentials."""
     app = FastAPI(title="NAPMS local development API", version="0.1.0")
     service = Service(db)
     app.state.service = service
     bearer = HTTPBearer(auto_error=False)
+
+    @app.middleware("http")
+    async def protected_cache(request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith(("/access-requests", "/policy-rules", "/policy/export")) or request.url.path.endswith("/access-request-options"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
 
     def actor(credential: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)]):
         if credential and credential.scheme.lower() == "bearer":
@@ -237,6 +346,17 @@ def create_app(db, credentials):
     def create_need(processId: UUID, data: NeedInput, who: Actor):
         return service.create_need(who, str(processId), str(data.interactionRevisionId))
 
+    def unique_options_query(request: Request):
+        keys = [key for key, _ in request.query_params.multi_items()]
+        if len(keys) != len(set(keys)):
+            raise Problem(422, "INVALID_INPUT", "Malformed or unsupported input")
+
+    @app.get("/business-processes/{processId}/needs/{connectivityNeedId}/access-request-options",
+             response_model=RevisionOptions | DeploymentOptions, dependencies=[Depends(unique_options_query)])
+    def request_options(processId: UUID, connectivityNeedId: UUID, who: Actor, query: Annotated[OptionsQuery, Query()]):
+        return service.request_options(who, str(processId), str(connectivityNeedId), query.kind,
+                                       str(query.interactionRevisionId) if query.interactionRevisionId else None, query.limit, query.offset)
+
     @app.post("/access-requests", status_code=201, response_model=AccessRequest, dependencies=[Depends(no_query)])
     def submit(data: AccessInput, who: Actor):
         return service.submit(who, data.model_dump(mode="json"))
@@ -254,6 +374,20 @@ def create_app(db, credentials):
     def decide(requestId: UUID, data: DecisionInput, who: Actor):
         return service.decide(who, str(requestId), data.outcome)
 
+    @app.get("/policy-rules", response_model=RuleCollection, dependencies=[Depends(unique_options_query)])
+    def list_rules(who: Actor, query: Annotated[ListQuery, Query()]):
+        return service.list_rules(who, query.limit, query.offset)
+
+    @app.get("/policy/export/current", response_model=CurrentExport, dependencies=[Depends(unique_options_query)],
+             responses={200: {"content": {"text/csv": {"schema": {"type": "string"}}}}})
+    def export_current(who: Actor, query: Annotated[CurrentExportQuery, Query()], response: Response):
+        result = service.export_current(who)
+        response.headers["X-Policy-Scope"] = "authorized"
+        response.headers["X-Evaluation-At"] = result["evaluationAt"]
+        if query.format == "json":
+            return result
+        return csv_export(result, {"X-Policy-Scope": "authorized"})
+
     @app.get("/policy-rules/{ruleId}", response_model=Rule, dependencies=[Depends(no_query)])
     def get_rule(ruleId: UUID, who: Actor):
         return service.rule(who, str(ruleId))
@@ -264,11 +398,6 @@ def create_app(db, credentials):
         result = service.export(who, str(query.ruleId))
         if query.format == "json":
             return result
-        output = io.StringIO(newline="")
-        writer = csv.DictWriter(output, fieldnames=COLUMNS)
-        writer.writeheader()
-        writer.writerows(result["rows"])
-        return Response(output.getvalue(), media_type="text/csv", headers={
-            "X-Evaluation-At": result["evaluationAt"], "X-Selected-Rule-Id": result["selectedRuleId"]})
+        return csv_export(result, {"X-Selected-Rule-Id": result["selectedRuleId"]})
 
     return app

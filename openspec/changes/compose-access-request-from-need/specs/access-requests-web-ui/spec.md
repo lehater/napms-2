@@ -96,3 +96,19 @@ The UI SHALL clear protected composition data and confirmations on actor/credent
 #### Scenario: Double click and lost response
 - **WHEN** confirmation is double-clicked or its network response is lost
 - **THEN** only one in-flight POST is initiated, no automatic retry occurs, and an uncertain outcome offers checking the existing Request list before intentional resubmission
+
+
+### Requirement: REAL acceptance navigation
+The main Sidebar SHALL contain only BusinessProcess and AccessRequest collections, grouped by business context and access management. Needs SHALL be reached through their Process, and selected Rules through ALLOWED Requests. Main navigation SHALL omit research links, unavailable catalogues, empty groups and REAL/MOCK markers while preserving resize, active state, contrast and responsive layout.
+
+#### Scenario: Main entry and linked detail
+- **WHEN** the user opens `/` and follows Process, Need, Request and selected Rule links
+- **THEN** only two working collection entries are shown; Rule Detail includes breadcrumbs and a return to real Requests, including on authorization failure
+
+#### Scenario: Historical prototype isolation
+- **WHEN** a direct `/prototype/*` research URL is opened
+- **THEN** historical mock navigation and simulation remain available in an explicitly separate research context; main pages do not consume its state or substitute synthetic data
+
+#### Scenario: Need list context changes
+- **WHEN** a selected Need's list page or refresh changes
+- **THEN** its selected-row state and composition are cleared, preventing an off-page stale confirmation

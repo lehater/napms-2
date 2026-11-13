@@ -11,6 +11,8 @@
 - Implementation handoff must identify the exact PR head SHA, matching CI run and blocking/advisory outcomes, OpenSpec task status, and outstanding limitations. Include a reproducible user smoke scenario when applicable; record owner acceptance in the PR before squash merge. Recheck CI on the final head after substantive fixes.
 - Never commit secrets or confidential infrastructure details to this public repository.
 
+- REAL UI changes must follow [`docs/ux/real-ui-conformance.md`](docs/ux/real-ui-conformance.md). Before handoff, identify the shared components reused by each REAL screen and inspect one actual desktop render; screenshots alone and green CI do not establish conformance.
+
 ## Codex subagents
 
 - Use one executor by default for short tasks.

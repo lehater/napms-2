@@ -171,3 +171,12 @@ No SQLite migration: keep v3, tables, existing identities and immutability. Depl
 ## Readiness
 
 No unresolved P0/P1 architecture question is deferred to implementation. The original Need-to-Request contract was accepted and merged through PR #52; the selected Rule export UI extension is now proposed for review. Once this addendum is accepted, implementation tasks are bounded and require no further catalog/IAM/export-engine redesign. Specification approval is distinct from implementation acceptance; no product changes or merge are authorized by this addendum PR.
+
+
+## Owner-approved REAL navigation cleanup before acceptance
+
+The owner's subsequent instruction supersedes Baseline v0.2's seven-item shared Sidebar for the **main** UI. Main navigation now has only Бизнес-контекст → Бизнес-процессы and Управление доступом → Заявки на доступ. Needs remain Process-scoped, selected Rule Detail remains linked from ALLOWED; no catalogue group or Rule list is invented. Resizing, contrast, active states and responsive geometry are retained.
+
+Historical seven-collection navigation and Simulation remain reachable only via direct `/prototype/*` research URLs, with their own state provider and explicit research header. REAL pages do not import mock data or consume Simulation state; both surfaces share presentation/resize code and styles only. The existing real Demo actor remains independent. Main links do not lead to research; research collection links stay within its namespace. Obsolete baseline labels/REAL-MOCK row markers and Simulation shortcuts are removed from the main UI. Rule Detail gets breadcrumbs/return to real Requests; changing a Need list page/refresh clears its selection and composition. Backend/domain/API contracts remain unchanged.
+
+The scoped JSON navigation contract and semantic/browser tests distinguish the main two-collection navigation from historical prototype coverage. Historical documents retain their seven-collection design as research context, with an explicit current-state note. Audit and verification evidence: `docs/evidence/real-ui-cleanup.md`. Original 17 implementation task status is retained; task 4.3 requires owner acceptance.
