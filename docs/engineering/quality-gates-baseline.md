@@ -65,7 +65,9 @@ GitHub `Verify` выполняет те же команды в job `application`
 python3 scripts/check-fast.py --dry-run
 ```
 
-После просмотра выполнить выбранный профиль:
+Для подходящих PolicyRule-only изменений выполнить FAST. Для остальных правок выбрать локальные проверки по области влияния; FULL использовать при неизвестном влиянии или для диагностики. Полный GitHub `Verify` остаётся обязательным перед интеграцией.
+
+Когда выбран FAST, запуск:
 
 ```bash
 python3 scripts/check-fast.py
@@ -97,6 +99,7 @@ openspec validate --all --strict
 | Накопленный diff | Профиль | Причина |
 |---|---|---|
 | Только два существующих PolicyRule UI-файла | FAST | Разрешённая узкая область |
+| Backend-файл остался staged, его worktree восстановлен к базе, а PolicyRule изменён в worktree | FULL | Объединяются base→index и index→worktree; один слой не скрывает другой |
 | PolicyRule UI вместе с `src/napms/*` или `web/src/api.ts` | FULL | Backend и API — общие границы |
 | Любой неизвестный путь | FULL | Классификатор не предполагает независимость |
 | Untracked файл вне двух UI-файлов | FULL | Новый путь расширяет область изменений |

@@ -25,6 +25,13 @@ class Check:
     advisory: bool = False
 
 
+@dataclass(frozen=True)
+class Change:
+    status: str
+    paths: tuple[str, ...]
+    source: str
+
+
 FAST_CHECKS = (
     Check("web production build and TypeScript", ("npm", "--prefix", "web", "run", "build")),
     Check(
@@ -50,13 +57,12 @@ def git(root: Path, *args: str) -> bytes:
     return subprocess.check_output(["git", *args], cwd=root, stderr=subprocess.PIPE)
 
 
-def changed_entries(root: Path, base: str) -> list[tuple[str, tuple[str, ...]]]:
-    raw = git(root, "diff", "--name-status", "-z", "--find-renames", base, "--")
+def parse_diff(raw: bytes, source: str) -> list[Change]:
     fields = raw.split(b"\0")
     if fields[-1] != b"":
         raise ValueError("tracked diff was not NUL terminated")
     fields.pop()
-    entries: list[tuple[str, tuple[str, ...]]] = []
+    entries: list[Change] = []
     index = 0
     while index < len(fields):
         status = os.fsdecode(fields[index])
@@ -65,29 +71,44 @@ def changed_entries(root: Path, base: str) -> list[tuple[str, tuple[str, ...]]]:
         if index + path_count > len(fields):
             raise ValueError("incomplete path record in tracked diff")
         paths = tuple(os.fsdecode(item) for item in fields[index : index + path_count])
-        entries.append((status, paths))
+        entries.append(Change(status, paths, source))
         index += path_count
+    return entries
+
+
+def changed_entries(root: Path, base: str) -> list[Change]:
+    entries = parse_diff(
+        git(root, "diff", "--cached", "--name-status", "-z", "--find-renames", base, "--"),
+        "base→index",
+    )
+    entries.extend(
+        parse_diff(
+            git(root, "diff", "--name-status", "-z", "--find-renames", "--"),
+            "index→worktree",
+        )
+    )
 
     untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
     if untracked and not untracked.endswith(b"\0"):
         raise ValueError("untracked path list was not NUL terminated")
     for path in untracked.split(b"\0")[:-1]:
-        entries.append(("??", (os.fsdecode(path),)))
+        entries.append(Change("??", (os.fsdecode(path),), "untracked"))
     return entries
 
 
-def select_profile(entries: list[tuple[str, tuple[str, ...]]], missing: list[str]) -> tuple[str, list[str]]:
+def select_profile(entries: list[Change], missing: list[str]) -> tuple[str, list[str]]:
     reasons: list[str] = []
-    paths = {path for _, entry_paths in entries for path in entry_paths}
+    paths = {path for entry in entries for path in entry.paths}
     if not entries:
         return "full", ["empty control diff; refusing a no-op PASS"]
-    for status, entry_paths in entries:
+    for entry in entries:
+        status = entry.status
         if status.startswith(("R", "C")):
-            reasons.append(f"rename/copy status {status} requires the full profile")
+            reasons.append(f"rename/copy status {status} in {entry.source} requires the full profile")
         elif status == "D":
-            reasons.append(f"deletion requires the full profile: {entry_paths[0]}")
+            reasons.append(f"deletion in {entry.source} requires the full profile: {entry.paths[0]}")
         elif status not in {"M", "A", "??"}:
-            reasons.append(f"unrecognized change status {status} requires the full profile")
+            reasons.append(f"unrecognized change status {status} in {entry.source} requires the full profile")
     unknown = sorted(paths - FAST_FILES)
     if unknown:
         reasons.append("changes include paths outside the two PolicyRule UI files")
@@ -235,8 +256,8 @@ def main() -> int:
     print(f"HEAD: {head}")
     print("RELEVANT FILES:")
     if entries:
-        for status, paths in entries:
-            print(f"  {status}: " + " -> ".join(repr(path) for path in paths))
+        for entry in entries:
+            print(f"  {entry.source} {entry.status}: " + " -> ".join(repr(path) for path in entry.paths))
     else:
         print("  (none)")
     print(f"PROFILE: {profile.upper()}")
