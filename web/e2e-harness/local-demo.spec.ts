@@ -103,8 +103,11 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.reload()
   await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
   await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
+  // Disconnect the old Vite HMR client before restarting; its reconnect reload
+  // must not race our explicit navigation. Actual service restart and DB stay unchanged.
+  await page.goto('about:blank')
   await harness.stop(); await harness.start()
-  await page.reload()
+  await page.goto(requestUrl)
   await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
   await expect(page.getByText('PENDING', {exact:true})).toBeVisible()
   await expect(page.locator('dt').filter({hasText:/^connectivityNeedId$/})).toBeVisible()
@@ -230,8 +233,9 @@ test('one-command actor switching preserves independent grants and actual persis
   await expect(page.getByLabel('Demo actor', { exact: true })).toHaveValue('anonymous')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await expect(page.getByRole('heading', { name: 'Harness acceptance', exact: true })).toBeVisible()
+  await page.goto('about:blank')
   await harness.stop(); await harness.start()
-  await page.reload()
+  await page.goto(processUrl)
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await expect(page.getByRole('heading', { name: 'Harness acceptance', exact: true })).toBeVisible()
 
