@@ -55,56 +55,33 @@ GitHub `Verify` выполняет те же команды в job `application`
 
 Это baseline **качества продукта**, а не доказательство эффективности Codex/Harness. CI не записывает внутренние решения агента, его токены и стоимость. Метрики процесса `PR → CI → merge` — отдельная задача [#8](https://github.com/lehater/napms-2/issues/8). Результат не служит разрешением эксплуатации NAPMS вне локального dev/test.
 
-## 6. Локальные профили проверок для PolicyRule
+## 6. Локальные проверки
 
-[Issue #57](https://github.com/lehater/napms-2/issues/57) вводит ограниченный локальный профиль для коротких итераций над REAL PolicyRule. Это выбор набора локальных проверок, а не изменение GitHub `Verify`: workflow, required checks, docs-only классификация и security-регрессии остаются прежними. Размер экономии времени не измерялся; парные прогоны и бенчмарки не выполняются.
+Ограниченный пилот PolicyRule из [Issue #57](https://github.com/lehater/napms-2/issues/57) заменён общими локальными профилями из §7. Скрипт `scripts/check-fast.py` теперь выбирает Python, Web, смешанный, документационный или полный набор. Ранее зафиксированные замеры SDLC-01 в §1–5 остаются историческим baseline.
 
-Перед правками можно посмотреть решение и команды без запуска:
+## 7. Staged verification (Issue #57)
 
-```bash
-python3 scripts/check-fast.py --dry-run
-```
+**Workflow:** `.github/workflows/verify.yml` keeps the existing required contexts `validate`, `semantic-contract`, `application`, and `web`.
 
-Для подходящих PolicyRule-only изменений выполнить FAST. Для остальных правок выбрать локальные проверки по области влияния; FULL использовать при неизвестном влиянии или для диагностики. Полный GitHub `Verify` остаётся обязательным перед интеграцией.
+| Stage | Checks | Integration status |
+| --- | --- | --- |
+| Local iterations | `python3 scripts/check-fast.py`: Python Ruff core and changed test files, Web build/semantic check, OpenSpec on spec changes, or FULL for unknown/dependency/CI scope | Development feedback only |
+| Draft PR (known cumulative diff) | Python compile + Ruff core; Web build/typecheck only when `web/` changed; OpenSpec and semantic-contract | Required application/web deliberately fail with clear **EXPECTED Draft FAST** summary, so FAST cannot be mistaken for FULL |
+| Ready PR and subsequent synchronize | FULL backend/coverage, Ruff and advisory, Web build, proxy + both Playwright suites, OpenSpec + semantic-contract on pull-request merge candidate | Required checks PASS only after FULL |
+| Unknown/unsafe PR scope | FULL even in Draft | Draft required contexts remain blocked |
+| docs-only PR | Existing strict documentation allowlist; app/web skipped | validate + semantic-contract still run |
+| `push main` and manual dispatch | FULL | Post-integration regression preserved for now |
 
-Когда выбран FAST, запуск:
+The classifier uses the **cumulative PR diff** (merge candidate against current base), not just the last commit. Draft `synchronize` stays FAST for known changes; `ready_for_review` triggers FULL on the same HEAD. GitHub may count a skipped required job as successful. Therefore Draft application/web jobs intentionally finish non-green; this is an interim fail-closed compromise until the repository Ruleset is migrated to a single dedicated integration gate. A Draft PR cannot be merged anyway, but checks must still not imply FULL happened.
 
-```bash
-python3 scripts/check-fast.py
-```
+Current Ruleset `main` (#26658822) has `strict_required_status_checks_policy=false`. Before merge, recheck freshness against current `main`; update the PR branch and rerun FULL if the base changed. The `push main` FULL remains because loose checks do not establish that the actual integrated tree was tested. **Do not remove the post-merge FULL or change required contexts until a separately accepted strict/integration-gate migration.** No tests are removed, no quality gates weakened, and a failed classification takes the FULL path.
 
-Селектор сравнивает весь рабочий набор с `git merge-base origin/main HEAD`: staged и unstaged изменения tracked-файлов плюс untracked-файлы. Список путей и rename/delete статусы читаются в NUL-разделённом формате. Кандидат FAST допустим только когда все изменения относятся к существующим `web/src/PolicyRule.tsx` и `web/src/PolicyRules.tsx`; удаление, rename/copy, неизвестный путь/статус, пустой diff, отсутствующая база или ошибка классификации выбирают FULL. При неготовой среде скрипт останавливается с ненулевым кодом, печатает отсутствующие зависимости и сохраняет требование выполнить полный выбранный профиль после подготовки. Ошибка или пустой набор local-demo тестов не считается PASS.
-
-| Профиль | Команды | Назначение |
-|---|---|---|
-| FAST | `npm --prefix web run build`; `(cd web && npx --no-install playwright test --config playwright.harness.config.ts)` | TypeScript, production dist и весь `local-demo` suite; suite должен содержать тесты |
-| FULL | pytest с coverage; Ruff core; advisory Ruff extended/format и Pyright; web build; semantic contract; proxy и полный Playwright E2E; OpenSpec strict | Полный локальный набор действующего Verify; advisory-исходы печатаются отдельно и сами по себе не меняют blocking итог |
-
-Команды FULL выполняются в следующем порядке:
+### Local usage
 
 ```bash
-python -m pytest -q --cov=napms --cov-report=term-missing
-python -m ruff check --select E4,E7,E9,F src tests
-python -m ruff check src tests
-python -m ruff format --check src tests
-python -m pyright
-npm --prefix web run build
-npm --prefix web run test:semantic
-npm --prefix web run test:e2e
-openspec validate --all --strict
+python3 scripts/check-fast.py --dry-run  # show affected areas and selected commands
+python3 scripts/check-fast.py            # run the selected local checks
+python3 scripts/check-fast.py --full     # optional full local regression for diagnosis
 ```
 
-Классификация пограничных примеров:
-
-| Накопленный diff | Профиль | Причина |
-|---|---|---|
-| Только два существующих PolicyRule UI-файла | FAST | Разрешённая узкая область |
-| Backend-файл остался staged, его worktree восстановлен к базе, а PolicyRule изменён в worktree | FULL | Объединяются base→index и index→worktree; один слой не скрывает другой |
-| PolicyRule UI вместе с `src/napms/*` или `web/src/api.ts` | FULL | Backend и API — общие границы |
-| Любой неизвестный путь | FULL | Классификатор не предполагает независимость |
-| Untracked файл вне двух UI-файлов | FULL | Новый путь расширяет область изменений |
-| Rename или delete | FULL | Требуется проверить обе стороны изменения и зависимости |
-| Пустой diff или нет merge-base с `origin/main` | FULL | Контрольная база недостаточна для локального PASS |
-| Не установлены зависимости или Playwright не находит тесты | Остановка | Ненулевой статус и явная инструкция; профиль остаётся обязательным |
-
-FAST автоматически доступен только после появления обоих целевых файлов в базисе. Пока этого нет, даже UI-пути выбирают FULL. Локальный результат не заменяет полный GitHub `Verify` на PR HEAD и merge-кандидате.
+Local FAST intentionally avoids the full pytest and Playwright suites; the final Ready PR performs both in GitHub. If a test file under `tests/` changed, its specific pytest file is run locally. Renames, deletions, unknown paths, dependency and CI configuration changes, and unavailable diff classification fall back to FULL. Full regression remains available explicitly.
