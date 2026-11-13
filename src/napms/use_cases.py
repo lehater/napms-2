@@ -2,7 +2,7 @@
 import sqlite3
 from uuid import uuid4
 
-from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, subject_list_projection, traffic
+from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, subject_list_projection
 from .domain import Problem, effective, now, validate_subject, validate_process_name
 
 
@@ -61,7 +61,11 @@ def request_view(c, r, actor, at):
     d = c.execute("SELECT * FROM decisions WHERE request_id=?", (r["id"],)).fetchone()
     subject = find(c, "access_subjects", r["subject_id"])
     visible = catalog_visible(c, actor, subject, at)
-    list_projection = subject_list_projection(c, subject) if visible else dict(listLabel=REDACTED, listContext=REDACTED)
+    projection = subject_list_projection(c, subject) if visible else None
+    list_projection = (
+        {"listLabel": projection["listLabel"], "listContext": projection["listContext"]}
+        if projection else dict(listLabel=REDACTED, listContext=REDACTED)
+    )
     actor_names_exist = c.execute(
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='actor_names'"
     ).fetchone()
@@ -294,7 +298,9 @@ class Service:
             req = find(c, "access_requests", origin["request_id"])
             allowances = [decision_view(c, d, actor, at) for d in c.execute("SELECT d.* FROM decisions d JOIN rule_allowances a ON a.decision_id=d.id WHERE a.rule_id=? ORDER BY d.decided_at,d.id", (rid,)).fetchall()]
             rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
-            return dict(displayLabel=subject_label(c, subject), trafficLabel=traffic(rev["protocol"], rev["port_start"], rev["port_end"]), ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
+            projection = subject_list_projection(c, subject)
+            rule_display = {key: projection[key] for key in ("participantsLabel", "applicationLabel", "sourceResourceLabel", "destinationResourceLabel", "trafficLabel")}
+            return dict(**rule_display, displayLabel=subject_label(c, subject), ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
                         subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]),
                         originatingDecision=decision_view(c, origin, actor, at), originatingRequest=request_view(c, req, actor, at),
                         connectivityNeedId=req["need_id"], allowances=allowances)
@@ -342,11 +348,13 @@ class Service:
             items = []
             for rule, subject, src, dst in page[:limit]:
                 rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
-                items.append(dict(ruleId=rule["id"], subjectId=subject["id"], state=rule["state"], displayLabel=subject_label(c, subject),
+                projection = subject_list_projection(c, subject)
+                rule_display = {key: projection[key] for key in ("participantsLabel", "applicationLabel", "sourceResourceLabel", "destinationResourceLabel", "trafficLabel")}
+                items.append(dict(**rule_display, ruleId=rule["id"], subjectId=subject["id"], state=rule["state"], displayLabel=subject_label(c, subject),
                     subject=dict(sourceDeploymentId=src["id"], destinationDeploymentId=dst["id"], interactionRevisionId=rev["id"]),
                     sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
                     ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
-                    trafficLabel=traffic(rev["protocol"], rev["port_start"], rev["port_end"]), originatingDecisionId=rule["originating_decision_id"],
+                    originatingDecisionId=rule["originating_decision_id"],
                     allowanceDecisionIds=[r[0] for r in c.execute("SELECT decision_id FROM rule_allowances WHERE rule_id=? ORDER BY decision_id", (rule["id"],))]))
             return dict(items=items, limit=limit, offset=offset, hasMore=len(page) > limit)
 

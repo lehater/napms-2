@@ -44,13 +44,44 @@ function RuleDetail({ ruleId, client }: { ruleId: string; client: Client }) {
     finally { downloading.current = false; if (alive.current) setBusy(false) }
   }
   if (!rule) return <><nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to="/policy-rules">Правила политики</Link><span>/</span><span aria-current="page">Правило политики</span></nav><section className="ux-panel ux-panel-body">{error ? <p role="alert">{error}</p> : <p role="status">Загрузка PolicyRule…</p>}<Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить PolicyRule</Button></section></>
-  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/policy-rules">Правила политики</Link><span>/</span><span aria-current="page">{rule.displayLabel}</span></>}
-    title={rule.displayLabel} subtitle={<><span className="font-mono">{rule.ruleId}</span> · {rule.trafficLabel}</>} state={rule.state}
+  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/policy-rules">Правила политики</Link><span>/</span><span aria-current="page">{rule.participantsLabel}</span></>}
+    title={rule.participantsLabel} subtitle={<>{rule.applicationLabel} · {rule.sourceResourceLabel} → {rule.destinationResourceLabel}</>} state={rule.state}
     actions={<><Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить PolicyRule</Button><Button disabled={busy} onClick={() => download('json')}>Скачать JSON</Button><Button variant="outline" disabled={busy} onClick={() => download('csv')}>Скачать CSV</Button></>}
-    tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'subject',label:'Точный Subject',href:tabPath('subject')},{id:'authorization',label:'Решение и основания',href:tabPath('authorization')}]} activeTab={activeTab}>
+    tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'subject',label:'Предмет доступа',href:tabPath('subject')},{id:'authorization',label:'Основания разрешения',href:tabPath('authorization')}]} activeTab={activeTab}>
       {error && <p role="alert">{error}</p>}
-      {activeTab === 'overview' && <><p>{rule.state === 'INACTIVE' ? 'INACTIVE: экспорт не содержит строк.' : 'READY / INCOMPLETE определяется сервером при экспорте.'} Политика не доказывает сетевую доступность.</p><dl className="ux-properties">{Object.entries({'Идентификатор':rule.ruleId,'Состояние':rule.state,'Трафик':rule.trafficLabel}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl></>}
-      {activeTab === 'subject' && <dl className="ux-properties">{Object.entries(rule.subject).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl>}
-      {activeTab === 'authorization' && <><h2>Решение и заявка</h2><dl className="ux-properties">{Object.entries({'Идентификатор заявки':rule.originatingRequest.requestId,'Заявка':rule.originatingRequest.displayLabel,'Идентификатор решения':rule.originatingDecision.decisionId,'Результат решения':rule.originatingDecision.outcome,'Связанная потребность':rule.connectivityNeedId}).map(([key,value])=><div key={key}><dt>{key}</dt><dd>{key === 'Идентификатор заявки' ? <Link to={'/access-requests/' + value}>{value}</Link> : value}</dd></div>)}</dl><h2>Разрешения</h2><EntityTable rows={rule.allowances} columns={[{key:'decision',title:'Решение',render:a=>a.decisionId},{key:'request',title:'Заявка',render:a=><Link to={'/access-requests/' + a.requestId}>{a.requestId}</Link>},{key:'outcome',title:'Результат',render:a=>a.outcome}]} getKey={a=>a.decisionId} emptyText="Нет разрешений." /></>}
+      {activeTab === 'overview' && <>
+        <dl className="ux-properties">
+          <div><dt>Коммуникация</dt><dd>{rule.participantsLabel}</dd></div>
+          <div><dt>Источник (Resource)</dt><dd>{rule.sourceResourceLabel}</dd></div>
+          <div><dt>Назначение (Resource)</dt><dd>{rule.destinationResourceLabel}</dd></div>
+          <div><dt>Трафик</dt><dd>{rule.trafficLabel}</dd></div>
+          <div><dt>Оснований разрешения</dt><dd>{rule.allowances.length}</dd></div>
+        </dl>
+        <p className="ux-note">ACTIVE не подтверждает сетевую связность; READY или INCOMPLETE вычисляется при экспорте.</p>
+        <details><summary>Идентификатор правила</summary><code>{rule.ruleId}</code></details>
+      </>}
+      {activeTab === 'subject' && <>
+        <dl className="ux-properties">
+          <div><dt>Компоненты</dt><dd>{rule.participantsLabel}</dd></div>
+          <div><dt>Профиль приложения</dt><dd>{rule.applicationLabel}</dd></div>
+          <div><dt>Источник (Resource)</dt><dd>{rule.sourceResourceLabel}</dd></div>
+          <div><dt>Назначение (Resource)</dt><dd>{rule.destinationResourceLabel}</dd></div>
+          <div><dt>Исходный Deployment ID</dt><dd>{rule.subject.sourceDeploymentId}</dd></div>
+          <div><dt>Целевой Deployment ID</dt><dd>{rule.subject.destinationDeploymentId}</dd></div>
+          <div><dt>Revision ID</dt><dd>{rule.subject.interactionRevisionId}</dd></div>
+          <div><dt>AccessSubject ID</dt><dd>{rule.subjectId}</dd></div>
+        </dl>
+      </>}
+      {activeTab === 'authorization' && <>
+        <h2>Исходное решение</h2>
+        <dl className="ux-properties">
+          <div><dt>Заявка</dt><dd><Link to={'/access-requests/' + rule.originatingRequest.requestId}>{rule.originatingRequest.listLabel}</Link><small>{rule.originatingRequest.listContext} · {rule.originatingRequest.requestId}</small></dd></div>
+          <div><dt>Решение</dt><dd>{rule.originatingDecision.outcome}<small>{rule.originatingDecision.decisionId}</small></dd></div>
+          <div><dt>Связанная потребность</dt><dd>{rule.connectivityNeedId}</dd></div>
+        </dl>
+        <p className="ux-note">Для открытия связанной заявки нужны отдельные полномочия на её чтение.</p>
+        <h2>Основания разрешения</h2>
+        <EntityTable rows={rule.allowances} columns={[{key:'decision',title:'Решение',render:a=>a.outcome},{key:'заявка',title:'Заявка',render:a=><Link to={'/access-requests/' + a.requestId}>{a.requestId}</Link>}]} getKey={a=>a.decisionId} emptyText="Нет разрешений." />
+      </>}
     </DetailView>
 }

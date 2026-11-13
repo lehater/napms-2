@@ -9,6 +9,11 @@ REDACTED = "Название недоступно"
 class SubjectListProjection(TypedDict):
     listLabel: str
     listContext: str
+    participantsLabel: str
+    applicationLabel: str
+    sourceResourceLabel: str
+    destinationResourceLabel: str
+    trafficLabel: str
 
 
 def traffic(protocol: Literal["TCP", "UDP"], start: int, end: int) -> str:
@@ -86,12 +91,19 @@ def subject_list_projection(c, subject) -> SubjectListProjection:
     src = c.execute("SELECT * FROM deployments WHERE id=?", (subject["source_deployment_id"],)).fetchone()
     dst = c.execute("SELECT * FROM deployments WHERE id=?", (subject["destination_deployment_id"],)).fetchone()
     rev = c.execute("SELECT * FROM interaction_revisions WHERE id=?", (subject["interaction_revision_id"],)).fetchone()
-    app = name(c, "application", rev["application_id"])
+    application = name(c, "application", rev["application_id"])
     source_component = name(c, "component", src["component_id"])
     destination_component = name(c, "component", dst["component_id"])
     source_resource = name(c, "resource", src["resource_id"])
     destination_resource = name(c, "resource", dst["resource_id"])
+    participants = f"{source_component} → {destination_component}"
+    expression = traffic(rev["protocol"], rev["port_start"], rev["port_end"])
     return {
-        "listLabel": f"{source_component} → {destination_component} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'])}",
-        "listContext": f"{app} · {source_resource} → {destination_resource}",
+        "listLabel": f"{participants} · {expression}",
+        "listContext": f"{application} · {source_resource} → {destination_resource}",
+        "participantsLabel": participants,
+        "applicationLabel": application,
+        "sourceResourceLabel": source_resource,
+        "destinationResourceLabel": destination_resource,
+        "trafficLabel": expression,
     }

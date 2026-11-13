@@ -172,7 +172,25 @@ test('one-command actor switching preserves independent grants and actual persis
   await expect(page.getByRole('alert')).toContainText('403')
   await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
   await expect(page.locator('.ux-heading').getByText('ACTIVE', {exact:true})).toBeVisible()
-  await expect(page.getByRole('navigation',{name:'Разделы объекта'}).getByRole('link')).toHaveText(['Обзор','Точный Subject','Решение и основания'])
+  await expect(page.getByRole('heading', {level:1})).toHaveText('Отправитель → Получатель')
+  await expect(page.locator('.ux-heading p')).toHaveText('Демонстрационный HTTPS · sender.demo.example → receiver.demo.example')
+  const ruleTabs = page.getByRole('navigation',{name:'Разделы объекта'})
+  await expect(ruleTabs.getByRole('link')).toHaveText(['Обзор','Предмет доступа','Основания разрешения'])
+  const overview = page.locator('.ux-panel')
+  await expect(overview).toContainText('Коммуникация')
+  await expect(overview).toContainText('Отправитель → Получатель')
+  await expect(overview).toContainText('Источник (Resource)')
+  await expect(overview).toContainText('Назначение (Resource)')
+  await expect(overview).toContainText('tcp(443)')
+  await expect(overview).toContainText('Оснований разрешения')
+  await ruleTabs.getByRole('link',{name:'Предмет доступа'}).click()
+  await expect(page).toHaveURL(/tab=subject/)
+  await expect(page.locator('.ux-panel')).toContainText(pendingFacts.subject.sourceDeploymentId)
+  await ruleTabs.getByRole('link',{name:'Основания разрешения'}).click()
+  await expect(page).toHaveURL(/tab=authorization/)
+  await expect(page.locator('.ux-panel')).toContainText('Демонстрационный HTTPS · sender.demo.example → receiver.demo.example')
+  await expect(page.locator('.ux-panel')).toContainText('Для открытия связанной заявки нужны отдельные полномочия на её чтение.')
+  await ruleTabs.getByRole('link',{name:'Обзор'}).click()
   for (const [width,height] of [[1920,1080],[1440,900],[2560,1440]]) {
     await page.setViewportSize({width,height})
     await expect(page.getByRole('button',{name:'Скачать JSON',exact:true})).toBeInViewport()
@@ -220,7 +238,10 @@ test('one-command actor switching preserves independent grants and actual persis
   }
   await page.getByRole('navigation',{name:'Основная навигация'}).getByRole('link',{name:'Правила политики',exact:true}).click()
   await expect(page.locator('tbody tr')).toHaveCount(1)
-  await expect(page.locator('tbody tr').first()).toContainText('Отправитель @ sender.demo.example')
+  const policyRow = page.locator('tbody tr').first()
+  await expect(policyRow.locator('td').nth(0).getByRole('link').first()).toHaveText('Отправитель → Получатель')
+  await expect(policyRow.locator('td').nth(0).locator('small')).toHaveText('Демонстрационный HTTPS · sender.demo.example → receiver.demo.example')
+  await expect(policyRow.locator('td').nth(0)).not.toContainText(rulePath!.split('/').pop()!)
   await expect(page.locator('tbody tr').first()).toContainText('ACTIVE')
   await expect(page.locator('tbody tr').first()).toContainText('tcp(443)')
   await expect(page.locator('tbody tr').first()).toContainText('2 · Происхождение')
@@ -693,6 +714,7 @@ test('REAL navigation is bounded, resizable and independent of the research modu
 
 test('current authorized policy empty, INACTIVE and INCOMPLETE states use actual backend files', async ({page,request,harness})=>{
   const id = await selectedRule(request)
+  const ruleRow = page.locator(`tbody tr:has(a[href="/policy-rules/${id}"])`)
   await page.goto('/policy-rules')
   await expect(page.getByRole('alert')).toContainText('401')
   await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
@@ -709,11 +731,11 @@ test('current authorized policy empty, INACTIVE and INCOMPLETE states use actual
   expect(JSON.parse(await currentBytes('json')).rows).toEqual([])
   expect((await currentBytes('csv')).trim().split('\n')).toHaveLength(1)
   await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
-  await expect(page.locator('tbody tr').filter({hasText:id})).toContainText('ACTIVE')
+  await expect(ruleRow).toContainText('ACTIVE')
   harness.sql("UPDATE policy_rules SET state='INACTIVE' WHERE id=?",[id])
   try {
     await page.getByRole('button',{name:'Обновить',exact:true}).click()
-    await expect(page.locator('tbody tr').filter({hasText:id})).toContainText('INACTIVE')
+    await expect(ruleRow).toContainText('INACTIVE')
     expect(JSON.parse(await currentBytes('json')).rows.some((r:{ruleId:string})=>r.ruleId===id)).toBe(false)
     expect(await currentBytes('csv')).not.toContain(id)
   } finally {harness.sql("UPDATE policy_rules SET state='ACTIVE' WHERE id=?",[id])}
@@ -736,12 +758,13 @@ test('current authorized policy empty, INACTIVE and INCOMPLETE states use actual
 
 test('late Rule collection and current-policy downloads cannot cross actor boundary',async ({page,request,harness})=>{
   const id=await selectedRule(request)
+  const ruleRow=page.locator(`tbody tr:has(a[href="/policy-rules/${id}"])`)
   for(const path of ['/policy-rules?limit=20&offset=0','/policy/export/current?format=json','/policy/export/current?format=csv']) {
     await page.goto('/policy-rules')
     const isExport=path.startsWith('/policy/export')
     if(isExport) {
       await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
-      await expect(page.locator('tbody tr').filter({hasText:id})).toBeVisible()
+      await expect(ruleRow).toBeVisible()
     }
     let release!:()=>void,received!:()=>void
     const gate=new Promise<void>(r=>{release=r}),held=new Promise<void>(r=>{received=r})
@@ -799,7 +822,7 @@ test('Rule collection paging and actor reset preserve readable current-policy sc
   await page.getByRole('button',{name:'Далее',exact:true}).click()
   const secondPage=await (await request.get('/policy-rules?limit=20&offset=20',{headers:actorHeaders('exporter')})).json()
   await expect(page.locator('tbody tr')).toHaveCount(secondPage.items.length)
-  await expect(page.locator('tbody td:first-child small')).toHaveText(secondPage.items.map((r:{ruleId:string})=>r.ruleId))
+  await expect(page.locator('tbody td:first-child small')).toHaveText(secondPage.items.map((r:{applicationLabel:string;sourceResourceLabel:string;destinationResourceLabel:string})=>`${r.applicationLabel} · ${r.sourceResourceLabel} → ${r.destinationResourceLabel}`))
   await expect(page.getByRole('button',{name:'Назад',exact:true})).toBeEnabled()
   await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
   await expect(page.locator('tbody tr')).toHaveCount(1)

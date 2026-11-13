@@ -188,6 +188,10 @@ class RequestCollection(Strict):
 
 
 class Rule(Strict):
+    participantsLabel: str
+    applicationLabel: str
+    sourceResourceLabel: str
+    destinationResourceLabel: str
     trafficLabel: str
     ipProtocol: Literal["TCP", "UDP"]
     destinationPortStart: int
@@ -204,6 +208,10 @@ class Rule(Strict):
 
 
 class RuleSummary(Strict):
+    participantsLabel: str
+    applicationLabel: str
+    sourceResourceLabel: str
+    destinationResourceLabel: str
     ruleId: UUID
     subjectId: UUID
     state: Literal["ACTIVE", "INACTIVE"]

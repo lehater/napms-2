@@ -329,6 +329,39 @@ def test_requester_name_uses_metadata_and_missing_name_fallback(env):
     assert result["requesterDisplayName"] == "Имя не задано"
 
 
+def test_policy_rule_display_projection_is_authorized_and_exact(env):
+    from conftest import auth
+    from test_acceptance import approved, change
+
+    rid = approved(env)
+    summary = env[3].get("/policy-rules", headers=auth(env, "exporter")).json()["items"][0]
+    detail = env[3].get("/policy-rules/" + rid, headers=auth(env, "exporter")).json()
+    expected_subject = {
+        "sourceDeploymentId": IDS["sourceDeployment"],
+        "destinationDeploymentId": IDS["destinationDeployment"],
+        "interactionRevisionId": IDS["revision"],
+    }
+    expected_labels = {
+        "participantsLabel": "Отправитель → Получатель",
+        "applicationLabel": "Демонстрационный HTTPS",
+        "sourceResourceLabel": "sender.demo.example",
+        "destinationResourceLabel": "receiver.demo.example",
+    }
+    for body in (summary, detail):
+        assert {key: body[key] for key in expected_labels} == expected_labels
+        assert body["trafficLabel"] == "tcp(443)"
+        assert body["subject"] == expected_subject
+    assert detail["displayLabel"].startswith("Демонстрационный HTTPS · Отправитель @ sender.demo.example")
+    assert summary["ruleId"] == rid
+    assert summary["displayLabel"] == detail["displayLabel"]
+
+    for grant_key in ("sourceExportGrant", "destinationExportGrant"):
+        change(env, "UPDATE grants SET valid_until=? WHERE id=?", ("2000-01-01T00:00:00Z", IDS[grant_key]))
+        assert env[3].get("/policy-rules", headers=auth(env, "exporter")).json()["items"] == []
+        assert env[3].get("/policy-rules/" + rid, headers=auth(env, "exporter")).status_code == 403
+        change(env, "UPDATE grants SET valid_until=NULL WHERE id=?", (IDS[grant_key],))
+
+
 @pytest.mark.parametrize(
     "table", ["resource_names", "application_names", "component_names"]
 )

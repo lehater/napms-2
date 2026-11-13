@@ -44,7 +44,7 @@ function RuleList({ client }: { client: Client }) {
   const rows = page?.items ?? []
   return <CollectionView<RuleSummary> title="Правила политики" description="Выгрузка содержит только доступные вам ACTIVE правила. Это доступная выборка, а не вся глобальная политика системы." actions={<><div className="ux-note">Сохранённые канонические правила, доступные по вашим полномочиям на оба ресурса.</div><Button disabled={busy} onClick={() => download('json')}>Текущая политика · JSON</Button><Button variant="outline" disabled={busy} onClick={() => download('csv')}>Текущая политика · CSV</Button></>}
     rows={rows} columns={[
-      { key: 'rule', title: 'Правило', render: r => <><Link to={'/policy-rules/' + r.ruleId}>{r.displayLabel}</Link><small>{r.ruleId}</small></> },
+      { key: 'rule', title: 'Правило', render: r => <><Link to={'/policy-rules/' + r.ruleId}>{r.participantsLabel}</Link><small>{r.applicationLabel} · {r.sourceResourceLabel} → {r.destinationResourceLabel}</small></> },
       { key: 'state', title: 'Состояние', render: r => r.state },
       { key: 'traffic', title: 'Трафик', render: r => r.trafficLabel },
       { key: 'allowances', title: 'Основания', render: r => <Link to={'/policy-rules/' + r.ruleId}>{r.allowanceDecisionIds.length} · Происхождение и Detail</Link> },
