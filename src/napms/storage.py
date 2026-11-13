@@ -28,6 +28,20 @@ END;
 """
 
 
+# Display metadata is deliberately outside immutable catalog rows.
+NAMES_SCHEMA = """
+CREATE TABLE resource_names(resource_id TEXT PRIMARY KEY NOT NULL REFERENCES resources(id), name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 300));
+CREATE TABLE application_names(application_id TEXT PRIMARY KEY NOT NULL REFERENCES applications(id), name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 300));
+CREATE TABLE component_names(component_id TEXT PRIMARY KEY NOT NULL REFERENCES components(id), name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 300));
+CREATE TRIGGER unique_component_name_insert BEFORE INSERT ON component_names BEGIN
+ SELECT CASE WHEN EXISTS(SELECT 1 FROM component_names n JOIN components a ON a.id=n.component_id JOIN components b ON b.id=NEW.component_id WHERE a.application_id=b.application_id AND n.name=NEW.name AND n.component_id<>NEW.component_id) THEN RAISE(ABORT,'duplicate component name in application') END;
+END;
+CREATE TRIGGER unique_component_name_update BEFORE UPDATE ON component_names BEGIN
+ SELECT CASE WHEN EXISTS(SELECT 1 FROM component_names n JOIN components a ON a.id=n.component_id JOIN components b ON b.id=NEW.component_id WHERE a.application_id=b.application_id AND n.name=NEW.name AND n.component_id<>NEW.component_id) THEN RAISE(ABORT,'duplicate component name in application') END;
+END;
+"""
+
+
 class Database:
     def __init__(self, path):
         self.path = Path(path)
@@ -43,7 +57,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3):
+            if version not in (0, 1, 2, 3, 4):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -53,18 +67,27 @@ class Database:
                     for operation in ("UPDATE", "DELETE"):
                         triggers += f"CREATE TRIGGER immutable_{table}_{operation} BEFORE {operation} ON {table} BEGIN SELECT RAISE(ABORT,'immutable record'); END;\n"
                 triggers += "CREATE TRIGGER immutable_rule_identity BEFORE UPDATE OF id,subject_id,originating_decision_id ON policy_rules BEGIN SELECT RAISE(ABORT,'immutable rule identity'); END;"
-                c.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + triggers + "\nCREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id); PRAGMA user_version=3; COMMIT;")
+                c.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + triggers + "\nCREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id);\n" + NAMES_SCHEMA + "\nPRAGMA user_version=4; COMMIT;")
 
-            elif version in (1, 2):
+            elif version in (1, 2, 3):
                 try:
                     c.execute("BEGIN IMMEDIATE")
                     if version == 1:
                         for column in ("name", "description", "responsible_organization"):
                             c.execute(f"ALTER TABLE processes ADD COLUMN {column} TEXT")
-                    if c.execute("SELECT 1 FROM needs GROUP BY process_id,interaction_id,component_id HAVING count(*)>1 LIMIT 1").fetchone():
+                    if version < 3 and c.execute("SELECT 1 FROM needs GROUP BY process_id,interaction_id,component_id HAVING count(*)>1 LIMIT 1").fetchone():
                         raise RuntimeError("Historical duplicate ConnectivityNeed tuples; migration rolled back")
-                    c.execute("CREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id)")
-                    c.execute("PRAGMA user_version=3")
+                    if version < 3:
+                        c.execute("CREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id)")
+                    # sqlite3.executescript would implicitly commit the existing migration.
+                    # complete_statement keeps trigger bodies together within this transaction.
+                    statement = ""
+                    for line in NAMES_SCHEMA.splitlines():
+                        statement += line + "\n"
+                        if sqlite3.complete_statement(statement):
+                            c.execute(statement)
+                            statement = ""
+                    c.execute("PRAGMA user_version=4")
                     c.commit()
                 except BaseException:
                     c.rollback()
@@ -74,7 +97,7 @@ class Database:
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 3:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 4:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c

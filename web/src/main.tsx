@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import App from './App'
 import PolicyRule from './PolicyRule'
+import PolicyRules from './PolicyRules'
 import { DemoProfile, useDemoProfile } from './DemoProfile'
 import BusinessProcesses from './BusinessProcesses'
 import NotFound from './NotFound'
@@ -14,6 +15,7 @@ function Layout() {
  return <Shell><div key={profile.actor}><Routes>
   <Route path="/" element={<Navigate to="/business-processes" replace />} />
   <Route path="/business-processes/*" element={<BusinessProcesses />} />
+  <Route path="/policy-rules" element={<PolicyRules />} />
   <Route path="/policy-rules/:ruleId" element={<PolicyRule />} />
   <Route path="/access-requests/*" element={<App />} />
   <Route path="*" element={<NotFound />} />

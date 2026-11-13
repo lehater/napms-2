@@ -2,6 +2,7 @@
 import sqlite3
 from uuid import uuid4
 
+from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, traffic
 from .domain import Problem, effective, now, validate_subject, validate_process_name
 
 
@@ -23,20 +24,46 @@ def grant(c, actor, action, scope, at):
     raise Problem(403, "FORBIDDEN", "Insufficient authority")
 
 
-def decision_view(c, d):
+def catalog_visible(c, actor, subject, at):
+    # Request/Decision read authority stays independent of separately protected labels.
+    try:
+        grant(c, actor, "access.decide", "demo-policy", at)
+        return True
+    except Problem:
+        pass
+    resources = [find(c, "deployments", subject[key])["resource_id"] for key in ("source_deployment_id", "destination_deployment_id")]
+    for action in ("policy.export", "access.options.read"):
+        try:
+            if action == "access.options.read":
+                for business_action in ("business.process.read", "business.need.read"):
+                    grant(c, actor, business_action, "demo-business", at)
+            for resource in resources:
+                grant(c, actor, action, resource, at)
+            return True
+        except Problem:
+            pass
+    return False
+
+
+def request_label(c, r, actor, at):
+    subject = find(c, "access_subjects", r["subject_id"])
+    return subject_label(c, subject) if catalog_visible(c, actor, subject, at) else REDACTED
+
+
+def decision_view(c, d, actor, at):
     allowance = c.execute("SELECT rule_id FROM rule_allowances WHERE decision_id=?", (d["id"],)).fetchone()
-    return dict(decisionId=d["id"], requestId=d["request_id"], outcome=d["outcome"],
+    return dict(displayLabel=d["outcome"] + " · " + request_label(c, find(c, "access_requests", d["request_id"]), actor, at), decisionId=d["id"], requestId=d["request_id"], outcome=d["outcome"],
                 deciderActorId=d["actor_id"], decidedAt=d["decided_at"],
                 policyRuleId=allowance[0] if allowance else None)
 
 
-def request_view(c, r):
+def request_view(c, r, actor, at):
     d = c.execute("SELECT * FROM decisions WHERE request_id=?", (r["id"],)).fetchone()
     subject = find(c, "access_subjects", r["subject_id"])
-    return dict(connectivityNeedId=r["need_id"], subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]), requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
+    return dict(displayLabel=request_label(c, r, actor, at), connectivityNeedId=r["need_id"], subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]), requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
                 submittedAt=r["submitted_at"], requesterActorId=r["actor_id"],
                 admission=dict(sourceResourceId=r["source_resource_id"], grantId=r["grant_id"], checkedAt=r["checked_at"]),
-                decision=decision_view(c, d) if d else None)
+                decision=decision_view(c, d, actor, at) if d else None)
 
 
 def process_view(row):
@@ -44,8 +71,11 @@ def process_view(row):
                 responsibleOrganization=row["responsible_organization"])
 
 
-def need_view(r):
-    return dict(connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
+def need_view(c, r):
+    process = find(c, "processes", r["process_id"])
+    revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY id LIMIT 1", (r["interaction_id"],)).fetchone()
+    label = (process["name"] or MISSING) + " · " + (interaction_label(c, revision) if revision else MISSING)
+    return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
 
 
 class Service:
@@ -105,9 +135,9 @@ class Service:
                         continue
                     if c.execute("SELECT 1 FROM needs WHERE process_id=? AND interaction_id=? AND component_id=?", (pid, r["interaction_id"], r["source_component_id"])).fetchone():
                         continue
-                    items.append(dict(interactionRevisionId=r["id"], interactionId=r["interaction_id"], applicationId=r["application_id"], sourceComponentId=r["source_component_id"], destinationComponentId=r["destination_component_id"], ipProtocol=r["protocol"], destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"]))
+                    items.append(revision_view(c, r))
             else:
-                items = [need_view(r) for r in c.execute("SELECT * FROM needs WHERE process_id=? ORDER BY id", (pid,))]
+                items = [need_view(c, r) for r in c.execute("SELECT * FROM needs WHERE process_id=? ORDER BY id", (pid,))]
             return dict(items=items[offset:offset+limit], limit=limit, offset=offset, hasMore=len(items)>offset+limit)
 
     def create_need(self, actor, pid, revision):
@@ -122,7 +152,7 @@ class Service:
                 if str(error) == "UNIQUE constraint failed: needs.process_id, needs.interaction_id, needs.component_id":
                     raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists") from error
                 raise
-            return need_view(find(c, "needs", nid))
+            return need_view(c, find(c, "needs", nid))
 
     def request_options(self, actor, pid, nid, kind, revision, limit, offset):
         # Synthetic local demo only: business scope is not a tenant boundary.
@@ -144,7 +174,7 @@ class Service:
                             grant(c, actor, "access.request", d["resource_id"], at)
                     except Problem:
                         continue
-                    items.append(dict(deploymentId=d["id"], componentId=d["component_id"], resourceId=d["resource_id"]))
+                    items.append(deployment_view(c, d))
                 return items
             items = []
             selected = None
@@ -158,7 +188,7 @@ class Service:
                 if not sources or not destinations:
                     continue
                 if kind == "revisions":
-                    items.append(dict(interactionRevisionId=r["id"], interactionId=r["interaction_id"], applicationId=r["application_id"], sourceComponentId=r["source_component_id"], destinationComponentId=r["destination_component_id"], ipProtocol=r["protocol"], destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"]))
+                    items.append(revision_view(c, r))
                 elif r["id"] == revision:
                     selected = sources if kind == "source-deployments" else destinations
             if kind != "revisions":
@@ -195,16 +225,17 @@ class Service:
             sid = c.execute("SELECT id FROM access_subjects WHERE source_deployment_id=? AND destination_deployment_id=? AND interaction_revision_id=?", (subject.source, subject.destination, subject.revision)).fetchone()[0]
             rid = uid()
             c.execute("INSERT INTO access_requests VALUES (?,?,?,?,?,?,?,?)", (rid, sid, need["id"], actor, at, source["resource_id"], g["id"], at))
-            return request_view(c, find(c, "access_requests", rid))
+            return request_view(c, find(c, "access_requests", rid), actor, at)
 
     def request(self, actor, rid):
         with self.db.transaction() as c:
             r = c.execute("SELECT * FROM access_requests WHERE id=?", (rid,)).fetchone()
             if r is None:
                 raise Problem(403, "FORBIDDEN", "Insufficient authority")
+            at = self.clock()
             if r["actor_id"] != actor:
-                grant(c, actor, "access.decide", "demo-policy", self.clock())
-            return request_view(c, r)
+                grant(c, actor, "access.decide", "demo-policy", at)
+            return request_view(c, r, actor, at)
 
     def list_requests(self, actor, limit, offset):
         with self.db.transaction() as c:
@@ -219,7 +250,7 @@ class Service:
                 "ORDER BY submitted_at DESC,id DESC LIMIT ? OFFSET ?",
                 # SQLite binds signed 64-bit integers; any larger offset is beyond its row capacity.
                 (can_decide, actor, limit + 1, min(offset, 2**63 - 1))).fetchall()
-            return dict(items=[request_view(c, r) for r in rows[:limit]],
+            return dict(items=[request_view(c, r, actor, at) for r in rows[:limit]],
                         limit=limit, offset=offset, hasMore=len(rows) > limit)
 
     def decide(self, actor, rid, outcome):
@@ -235,7 +266,7 @@ class Service:
                 c.execute("INSERT OR IGNORE INTO policy_rules VALUES (?,?,?,'ACTIVE')", (uid(), r["subject_id"], did))
                 rule = c.execute("SELECT id FROM policy_rules WHERE subject_id=?", (r["subject_id"],)).fetchone()[0]
                 c.execute("INSERT INTO rule_allowances VALUES (?,?)", (rule, did))
-            return decision_view(c, find(c, "decisions", did))
+            return decision_view(c, find(c, "decisions", did), actor, at)
 
     def _rule(self, c, actor, rid, at):
         rule = find(c, "policy_rules", rid)
@@ -249,13 +280,15 @@ class Service:
     def rule(self, actor, rid):
         with self.db.transaction() as c:
             c.execute("SELECT id FROM actors LIMIT 1").fetchone()
-            rule, subject, _, _ = self._rule(c, actor, rid, self.clock())
+            at = self.clock()
+            rule, subject, _, _ = self._rule(c, actor, rid, at)
             origin = find(c, "decisions", rule["originating_decision_id"])
             req = find(c, "access_requests", origin["request_id"])
-            allowances = [decision_view(c, d) for d in c.execute("SELECT d.* FROM decisions d JOIN rule_allowances a ON a.decision_id=d.id WHERE a.rule_id=? ORDER BY d.decided_at,d.id", (rid,)).fetchall()]
-            return dict(ruleId=rid, subjectId=subject["id"], state=rule["state"],
+            allowances = [decision_view(c, d, actor, at) for d in c.execute("SELECT d.* FROM decisions d JOIN rule_allowances a ON a.decision_id=d.id WHERE a.rule_id=? ORDER BY d.decided_at,d.id", (rid,)).fetchall()]
+            rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
+            return dict(displayLabel=subject_label(c, subject), trafficLabel=traffic(rev["protocol"], rev["port_start"], rev["port_end"]), ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
                         subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]),
-                        originatingDecision=decision_view(c, origin), originatingRequest=request_view(c, req),
+                        originatingDecision=decision_view(c, origin, actor, at), originatingRequest=request_view(c, req, actor, at),
                         connectivityNeedId=req["need_id"], allowances=allowances)
 
     def export(self, actor, rid):
@@ -264,18 +297,56 @@ class Service:
             c.execute("SELECT id FROM actors LIMIT 1").fetchone()
             at = self.clock()
             rule, subject, src, dst = self._rule(c, actor, rid, at)
-            d = find(c, "decisions", rule["originating_decision_id"])
-            r = find(c, "access_requests", d["request_id"])
-            rows = []
-            if rule["state"] == "ACTIVE" and d["outcome"] == "ALLOWED":
-                se = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (src["resource_id"],)).fetchone()
-                de = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (dst["resource_id"],)).fetchone()
+            return dict(evaluationAt=at, selectedRuleId=rid, rows=self._export_rows(c, rule, subject, src, dst, at))
+
+    def _export_rows(self, c, rule, subject, src, dst, at):
+        rid = rule["id"]
+        d = find(c, "decisions", rule["originating_decision_id"])
+        r = find(c, "access_requests", d["request_id"])
+        rows = []
+        if rule["state"] == "ACTIVE" and d["outcome"] == "ALLOWED":
+            se = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (src["resource_id"],)).fetchone()
+            de = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (dst["resource_id"],)).fetchone()
+            rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
+            rows.append(dict(ruleId=rid, subjectId=subject["id"], sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
+                sourceEndpointId=se["id"], destinationEndpointId=de["id"], sourceAddress=se["address"], destinationAddress=de["address"],
+                ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
+                readiness="READY" if se["address"] and de["address"] else "INCOMPLETE",
+                interactionRevisionId=rev["id"], connectivityNeedId=r["need_id"], requestId=r["id"], requesterActorId=r["actor_id"],
+                decisionId=d["id"], deciderActorId=d["actor_id"], evaluationAt=at, requestSubmittedAt=r["submitted_at"],
+                decisionAt=d["decided_at"], sourceAddressKind=se["kind"], destinationAddressKind=de["kind"]))
+        return rows
+
+    def _visible_rules(self, c, actor, at, active_only=False):
+        for r in c.execute("SELECT id FROM policy_rules WHERE (?=0 OR state='ACTIVE') ORDER BY id", (active_only,)).fetchall():
+            try:
+                yield self._rule(c, actor, r["id"], at)
+            except Problem as error:
+                if error.status != 403:
+                    raise
+
+    def list_rules(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            at = self.clock()
+            eligible = list(self._visible_rules(c, actor, at))
+            page = eligible[offset:offset + limit + 1]
+            items = []
+            for rule, subject, src, dst in page[:limit]:
                 rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
-                rows.append(dict(ruleId=rid, subjectId=subject["id"], sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
-                    sourceEndpointId=se["id"], destinationEndpointId=de["id"], sourceAddress=se["address"], destinationAddress=de["address"],
+                items.append(dict(ruleId=rule["id"], subjectId=subject["id"], state=rule["state"], displayLabel=subject_label(c, subject),
+                    subject=dict(sourceDeploymentId=src["id"], destinationDeploymentId=dst["id"], interactionRevisionId=rev["id"]),
+                    sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
                     ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
-                    readiness="READY" if se["address"] and de["address"] else "INCOMPLETE",
-                    interactionRevisionId=rev["id"], connectivityNeedId=r["need_id"], requestId=r["id"], requesterActorId=r["actor_id"],
-                    decisionId=d["id"], deciderActorId=d["actor_id"], evaluationAt=at, requestSubmittedAt=r["submitted_at"],
-                    decisionAt=d["decided_at"], sourceAddressKind=se["kind"], destinationAddressKind=de["kind"]))
-            return dict(evaluationAt=at, selectedRuleId=rid, rows=rows)
+                    trafficLabel=traffic(rev["protocol"], rev["port_start"], rev["port_end"]), originatingDecisionId=rule["originating_decision_id"],
+                    allowanceDecisionIds=[r[0] for r in c.execute("SELECT decision_id FROM rule_allowances WHERE rule_id=? ORDER BY decision_id", (rule["id"],))]))
+            return dict(items=items, limit=limit, offset=offset, hasMore=len(page) > limit)
+
+    def export_current(self, actor):
+        with self.db.transaction() as c:
+            c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+            at = self.clock()
+            rows = []
+            for rule, subject, src, dst in self._visible_rules(c, actor, at, active_only=True):
+                rows.extend(self._export_rows(c, rule, subject, src, dst, at))
+            return dict(scope="authorized", evaluationAt=at, rows=rows)

@@ -86,7 +86,7 @@ test('requester creates, lists and opens persisted request', async ({ page, cred
   await expect(page.getByText('Нет доступных заявок.')).toBeVisible()
   const id = await create(page, credentials.requester.token)
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
-  await page.getByRole('link', { name: id, exact: true }).click()
+  await page.locator(`tbody a[href^="/access-requests/${id}"]`).click()
   await expect(page.getByText('PENDING', { exact: true })).toBeVisible()
   await page.reload()
   await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')
@@ -102,7 +102,7 @@ test('real ALLOWED and DENIED persist across credential switches and browser rel
   for (const outcome of ['ALLOWED', 'DENIED'] as const) {
     const id = await create(page, credentials.requester.token)
     await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
-    await page.getByRole('link', { name: id, exact: true }).click()
+    await page.locator(`tbody a[href^="/access-requests/${id}"]`).click()
     await page.getByLabel('Demo mode').selectOption('decider')
     await expect(page.getByText(id, { exact: true })).toHaveCount(0)
     await expect(page.getByLabel('Bearer token', { exact: true })).toHaveValue('')

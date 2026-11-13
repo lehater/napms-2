@@ -85,7 +85,11 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
   await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})
-  const selectedNeed = await page.locator('tbody button').first().innerText()
+  await expect(page.locator('tbody button').first()).toContainText('Harness acceptance · Демонстрационный HTTPS · Отправитель → Получатель')
+  await expect(page.getByLabel('Revision',{exact:true}).locator('option:checked')).toContainText('Отправитель → Получатель · tcp(443)')
+  await expect(page.getByLabel('Source Deployment',{exact:true}).locator('option:checked')).toContainText('Отправитель @ sender.demo.example')
+  await expect(page.getByLabel('Destination Deployment',{exact:true}).locator('option:checked')).toContainText('Получатель @ receiver.demo.example')
+  const selectedNeed = await page.locator('tbody button').first().locator('small').innerText()
   await expectSummary(page, selectedNeed)
   await expect(page.getByRole('button', {name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Подтверждаю состав заявки', {exact:true}).check()
@@ -118,9 +122,14 @@ test('one-command actor switching preserves independent grants and actual persis
   const ruleLink = page.getByRole('link', {name:'Открыть правило политики',exact:true})
   const rulePath = await ruleLink.getAttribute('href')
   expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[1]])
+  const repeated = await page.request.post('/access-requests',{headers:actorHeaders('requester'),data:{...pendingFacts.subject,connectivityNeedId:pendingFacts.connectivityNeedId}})
+  expect(repeated.status()).toBe(201)
+  const repeatedDecision = await page.request.post('/access-requests/'+(await repeated.json()).requestId+'/decision',{headers:actorHeaders('decider'),data:{outcome:'ALLOWED'}})
+  expect((await repeatedDecision.json()).policyRuleId).toBe(rulePath!.split('/').pop())
+  expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[1]])
   await ruleLink.click()
-  await expect(page.getByRole('navigation',{name:'Breadcrumbs'}).getByRole('link',{name:'Заявки на доступ',exact:true})).toHaveAttribute('href','/access-requests')
-  await expect(page.getByRole('link',{name:'К заявкам на доступ',exact:true})).toBeVisible()
+  await expect(page.getByRole('navigation',{name:'Breadcrumbs'}).getByRole('link',{name:'Правила политики',exact:true})).toHaveAttribute('href','/policy-rules')
+  await expect(page.getByRole('link',{name:'К правилам политики',exact:true})).toBeVisible()
   await expect(page.getByRole('alert')).toContainText('403')
   await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
   await expect(page.getByText(/ · ACTIVE$/)).toBeVisible()
@@ -169,6 +178,46 @@ test('one-command actor switching preserves independent grants and actual persis
       }
     }
   }
+  await page.getByRole('navigation',{name:'Основная навигация'}).getByRole('link',{name:'Правила политики',exact:true}).click()
+  await expect(page.locator('tbody tr')).toHaveCount(1)
+  await expect(page.locator('tbody tr').first()).toContainText('Отправитель @ sender.demo.example')
+  await expect(page.locator('tbody tr').first()).toContainText('ACTIVE')
+  await expect(page.locator('tbody tr').first()).toContainText('tcp(443)')
+  await expect(page.locator('tbody tr').first()).toContainText('2 · Происхождение')
+  await expect(page.getByRole('link',{name:'Происхождение и Detail',exact:true})).toHaveAttribute('href',rulePath!)
+  await expect(page.getByText(/Это доступная выборка/)).toBeVisible()
+  for (const [width,height] of [[1440,900],[1920,1080],[2560,1440]]) {
+    await page.setViewportSize({width,height})
+    await expect(page.getByRole('button',{name:'Текущая политика · JSON',exact:true})).toBeInViewport()
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBe(width)
+    await page.screenshot({path:test.info().outputPath(`real-current-policy-${width}.png`)})
+  }
+  for (const format of ['json','csv'] as const) {
+    const pendingDownload = page.waitForEvent('download')
+    await page.getByRole('button',{name:'Текущая политика · '+format.toUpperCase(),exact:true}).click()
+    const download = await pendingDownload
+    expect(download.suggestedFilename()).toBe(`authorized-current-policy.${format}`)
+    const target = test.info().outputPath(download.suggestedFilename())
+    await download.saveAs(target)
+    const bytes = await readFile(target,'utf8')
+    const metadata=await page.request.get('/policy/export/current?format='+format,{headers:actorHeaders('exporter')})
+    expect(metadata.headers()['x-policy-scope']).toBe('authorized')
+    expect(Number.isNaN(Date.parse(metadata.headers()['x-evaluation-at']))).toBe(false)
+    if (format === 'json') {
+      const body = JSON.parse(bytes)
+      expect(body.scope).toBe('authorized')
+      expect(body.selectedRuleId).toBeUndefined()
+      expect(body.rows).toHaveLength(1)
+      expect(body.rows[0]).toEqual({...exportedRow,evaluationAt:body.evaluationAt})
+    } else {
+      const [columns, values] = bytes.trim().split(/\r?\n/).map(line=>line.split(','))
+      const row = Object.fromEntries(columns.map((key,index)=>[key,values[index]]))
+      for (const [key,value] of Object.entries(exportedRow)) {
+        if (key==='evaluationAt') expect(Number.isNaN(Date.parse(row[key]))).toBe(false)
+        else expect(row[key]).toBe(value===null?'':String(value))
+      }
+    }
+  }
   await page.goto(requestUrl)
   await page.getByLabel('Demo actor', {exact:true}).selectOption('exporter')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('exporter')
@@ -198,7 +247,7 @@ test('one-command actor switching preserves independent grants and actual persis
       else if (url.startsWith('/business')) await expect(page.getByRole('button', {name:'Сохранить',exact:true})).toBeVisible()
       else await expect(page.getByRole('link', {name:'Выбрать процесс и потребность'})).toBeVisible()
       await expect(page.locator('.ux-shell')).toHaveCount(1)
-      await expect(page.getByRole('navigation', {name:'Основная навигация'}).getByRole('link')).toHaveCount(2)
+      await expect(page.getByRole('navigation', {name:'Основная навигация'}).getByRole('link')).toHaveCount(3)
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(size.width)
     }
   }
@@ -561,10 +610,10 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await page.goto('/')
     await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
     const nav=page.getByRole('navigation',{name:'Основная навигация',exact:true})
-    await expect(nav.getByRole('link')).toHaveText(['Бизнес-процессы','Заявки на доступ'])
+    await expect(nav.getByRole('link')).toHaveText(['Бизнес-процессы','Заявки на доступ','Правила политики'])
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст','Управление доступом'])
     await expect(nav.getByRole('link',{name:'Бизнес-процессы',exact:true})).toHaveAttribute('aria-current','page')
-    await expect(page.locator('aside')).not.toContainText(/MOCK|REAL|Каталоги|Simulation|Правила политики|Потребности в коммуникациях/)
+    await expect(page.locator('aside')).not.toContainText(/MOCK|REAL|Каталоги|Simulation|Потребности в коммуникациях/)
     await expect(page.locator('a[href^="/prototype"]')).toHaveCount(0)
     await expect(page.getByLabel('Демонстрационная роль',{exact:true})).toHaveCount(0)
     const separator=page.getByRole('separator',{name:'Sidebar width'})
@@ -584,6 +633,9 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await nav.getByRole('link',{name:'Заявки на доступ',exact:true}).click()
     await expect(page).toHaveURL(/\/access-requests$/)
     await expect(nav.getByRole('link',{name:'Заявки на доступ',exact:true})).toHaveAttribute('aria-current','page')
+    await nav.getByRole('link',{name:'Правила политики',exact:true}).click()
+    await expect(page.getByText('Нет доступных правил на этой странице.',{exact:true})).toBeVisible()
+    await expect(nav.getByRole('link',{name:'Правила политики',exact:true})).toHaveAttribute('aria-current','page')
   }
   expect(researchModules).toEqual([])
   // Only an explicit research URL loads its state/data and seven synthetic collections.
@@ -596,4 +648,128 @@ test('REAL navigation is bounded, resizable and independent of the research modu
   await expect(page.locator('.ux-topbar')).toContainText('RESEARCH / MOCK')
   expect(researchModules.length).toBeGreaterThan(0)
   expect(harness.file).toBeTruthy()
+})
+
+test('current authorized policy empty, INACTIVE and INCOMPLETE states use actual backend files', async ({page,request,harness})=>{
+  const id = await selectedRule(request)
+  await page.goto('/policy-rules')
+  await expect(page.getByRole('alert')).toContainText('401')
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+  await expect(page.getByText('Нет доступных правил на этой странице.',{exact:true})).toBeVisible()
+  await expect(page.locator('tbody tr')).toHaveCount(0)
+  async function currentBytes(format:'json'|'csv') {
+    const waiting = page.waitForEvent('download')
+    await page.getByRole('button',{name:'Текущая политика · '+format.toUpperCase(),exact:true}).click()
+    const download=await waiting, target=test.info().outputPath(download.suggestedFilename())
+    await download.saveAs(target)
+    return readFile(target,'utf8')
+  }
+  expect(JSON.parse(await currentBytes('json')).rows).toEqual([])
+  expect((await currentBytes('csv')).trim().split('\n')).toHaveLength(1)
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+  await expect(page.locator('tbody tr').filter({hasText:id})).toContainText('ACTIVE')
+  harness.sql("UPDATE policy_rules SET state='INACTIVE' WHERE id=?",[id])
+  try {
+    await page.getByRole('button',{name:'Обновить правила',exact:true}).click()
+    await expect(page.locator('tbody tr').filter({hasText:id})).toContainText('INACTIVE')
+    expect(JSON.parse(await currentBytes('json')).rows.some((r:{ruleId:string})=>r.ruleId===id)).toBe(false)
+    expect(await currentBytes('csv')).not.toContain(id)
+  } finally {harness.sql("UPDATE policy_rules SET state='ACTIVE' WHERE id=?",[id])}
+  harness.sql("UPDATE endpoints SET address=NULL,kind=NULL WHERE id='00000000-0000-0000-0000-000000000004'")
+  try {
+    const row=JSON.parse(await currentBytes('json')).rows.find((r:{ruleId:string})=>r.ruleId===id)
+    expect(row.readiness).toBe('INCOMPLETE');expect(row.destinationAddress).toBeNull()
+    expect(await currentBytes('csv')).toContain('INCOMPLETE')
+  } finally {harness.sql("UPDATE endpoints SET address='192.0.2.20',kind='HOST' WHERE id='00000000-0000-0000-0000-000000000004'")}
+  for(const resource of ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002']) {
+    harness.sql("UPDATE grants SET valid_until='2000-01-01T00:00:00Z' WHERE action='policy.export' AND scope=?",[resource])
+    try {
+      await page.getByRole('button',{name:'Обновить правила',exact:true}).click()
+      await expect(page.getByText('Нет доступных правил на этой странице.',{exact:true})).toBeVisible()
+      expect(JSON.parse(await currentBytes('json')).rows).toEqual([])
+      expect((await currentBytes('csv')).trim().split('\n')).toHaveLength(1)
+    } finally {harness.sql("UPDATE grants SET valid_until=NULL WHERE action='policy.export' AND scope=?",[resource])}
+  }
+})
+
+test('late Rule collection and current-policy downloads cannot cross actor boundary',async ({page,request,harness})=>{
+  const id=await selectedRule(request)
+  for(const path of ['/policy-rules?limit=20&offset=0','/policy/export/current?format=json','/policy/export/current?format=csv']) {
+    await page.goto('/policy-rules')
+    const isExport=path.startsWith('/policy/export')
+    if(isExport) {
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+      await expect(page.locator('tbody tr').filter({hasText:id})).toBeVisible()
+    }
+    let release!:()=>void,received!:()=>void
+    const gate=new Promise<void>(r=>{release=r}),held=new Promise<void>(r=>{received=r})
+    let downloads=0
+    const onDownload=()=>{downloads++}
+    page.on('download',onDownload)
+    await page.route('**'+path,async route=>{
+      if(route.request().headers()['x-napms-demo-actor']!=='exporter'){await route.continue();return}
+      const response=await route.fetch({headers:{...await route.request().allHeaders(),origin:'http://127.0.0.1:5173','sec-fetch-site':'same-origin'}})
+      expect(response.status()).toBe(200);received();await gate;await route.fulfill({response})
+    })
+    try {
+      if(isExport) await page.getByRole('button',{name:'Текущая политика · '+(path.endsWith('csv')?'CSV':'JSON'),exact:true}).click()
+      else await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+      await held
+      if(!isExport) await expect(page.getByText('Загрузка правил…',{exact:true})).toBeVisible()
+      await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+      await expect(page.getByText('Нет доступных правил на этой странице.',{exact:true})).toBeVisible()
+    } finally {release();await page.unrouteAll({behavior:'wait'})}
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
+    await expect(page.locator('tbody tr')).toHaveCount(0)
+    expect(downloads).toBe(0)
+    page.off('download',onDownload)
+  }
+  expect(harness.file).toBeTruthy()
+})
+
+
+test('new policy proxy routes preserve method, origin and actor boundaries',async ({request,harness})=>{
+  for(const path of ['/policy-rules','/policy/export/current?format=csv']) {
+    expect((await request.get(path,{headers:actorHeaders('anonymous')})).status()).toBe(401)
+    expect((await request.get(path,{headers:actorHeaders('exporter')})).status()).toBe(200)
+    for(const change of [{Origin:'http://evil.example'},{'X-NAPMS-Demo-Actor':'admin'},{Authorization:'Bearer conflicting'}] as Record<string,string>[]) {
+      expect((await request.get(path,{headers:{...actorHeaders('exporter'),...change}})).status()).toBe(change.Origin?403:422)
+    }
+    expect((await request.post(path,{headers:actorHeaders('exporter')})).status()).toBe(404)
+  }
+  expect(harness.file).toBeTruthy()
+})
+
+
+test('Rule collection paging and actor reset preserve readable current-policy scope',async ({page,request,harness})=>{
+  for(let i=0;i<21;i++) {
+    const revision='ffffffff-ffff-ffff-ffff-'+(100+i).toString(16).padStart(12,'0')
+    harness.sql('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions WHERE id=?',[revision,10000+i,10000+i,demoInput.interactionRevisionId])
+    const created=await request.post('/access-requests',{headers:actorHeaders('requester'),data:{...demoInput,interactionRevisionId:revision}})
+    expect(created.status()).toBe(201)
+    const decision=await request.post('/access-requests/'+(await created.json()).requestId+'/decision',{headers:actorHeaders('decider'),data:{outcome:'ALLOWED'}})
+    expect(decision.status()).toBe(201)
+  }
+  await page.goto('/policy-rules')
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+  await expect(page.locator('tbody tr')).toHaveCount(20)
+  await page.getByRole('button',{name:'Следующие правила',exact:true}).click()
+  const secondPage=await (await request.get('/policy-rules?limit=20&offset=20',{headers:actorHeaders('exporter')})).json()
+  await expect(page.locator('tbody tr')).toHaveCount(secondPage.items.length)
+  await expect(page.locator('tbody td:first-child small')).toHaveText(secondPage.items.map((r:{ruleId:string})=>r.ruleId))
+  await expect(page.getByRole('button',{name:'Предыдущие правила',exact:true})).toBeEnabled()
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+  await expect(page.locator('tbody tr')).toHaveCount(0)
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('exporter')
+  await expect(page.locator('tbody tr')).toHaveCount(20)
+  await expect(page.getByRole('button',{name:'Предыдущие правила',exact:true})).toBeDisabled()
+  const waiting=page.waitForEvent('download')
+  await page.getByRole('button',{name:'Текущая политика · JSON',exact:true}).click()
+  const download=await waiting,target=test.info().outputPath(download.suggestedFilename())
+  await download.saveAs(target)
+  const data=JSON.parse(await readFile(target,'utf8'))
+  const visible=await (await request.get('/policy-rules?limit=100',{headers:actorHeaders('exporter')})).json()
+  expect(data.rows.length).toBeGreaterThan(20)
+  expect(data.rows.map((r:{ruleId:string})=>r.ruleId)).toEqual(visible.items.filter((r:{state:string})=>r.state==='ACTIVE').map((r:{ruleId:string})=>r.ruleId))
+  expect(data.scope).toBe('authorized')
 })

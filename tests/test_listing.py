@@ -43,7 +43,7 @@ def test_visibility_before_paging_and_historical_owner(env):
     assert listing(env, limit=1)['hasMore'] is True
     assert listing(env, limit=1, offset=1) == dict(items=[first], limit=1, offset=1, hasMore=False)
     assert listing(env, offset=2)['items'] == []
-    assert listing(env, 'decider')['items'] == [foreign, second, first]
+    assert listing(env, 'decider')['items'] == [{**foreign, 'displayLabel': first['displayLabel']}, second, first]
     assert listing(env, 'exporter') == dict(items=[], limit=20, offset=0, hasMore=False)
     change(env, 'UPDATE grants SET valid_until=? WHERE id=?', ('2000-01-01T00:00:00Z', IDS['requestGrant']))
     assert listing(env)['items'] == [second, first]
@@ -62,7 +62,7 @@ def test_decider_falls_back_to_own_requests(env, sql, params):
                   (str(uuid4()), IDS['decider'], 'access.request', IDS['sourceResource']))
     own = env[2].state.service.submit(IDS['decider'], DEMO_REQUEST)
     change(env, sql, params)
-    assert listing(env, 'decider')['items'] == [own]
+    assert listing(env, 'decider')['items'] == [{**own, 'displayLabel': 'Название недоступно'}]
 
 
 @pytest.mark.parametrize('query', ['limit=0', 'limit=101', 'limit=1.5', 'limit=true', 'offset=-1', 'offset=no',

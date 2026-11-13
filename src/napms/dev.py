@@ -56,6 +56,22 @@ def init_demo(db, credentials):
         seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]), "id,process_id,interaction_id,component_id")
         for role in ("requester", "decider", "exporter"):
             seed("actors", (IDS[role],), "id")
+        # Explicit synthetic operator input, never inferred from IDs or addresses.
+        for table, column, names in (
+            ("resource_names", "resource_id", {"sourceResource": "sender.demo.example", "destinationResource": "receiver.demo.example"}),
+            ("application_names", "application_id", {"application": "Демонстрационный HTTPS"}),
+            ("component_names", "component_id", {"sender": "Отправитель", "receiver": "Получатель"}),
+        ):
+            for key, name in names.items():
+                if c.execute(f"SELECT 1 FROM {table} WHERE {column}=?", (IDS[key],)).fetchone():
+                    continue
+                if table == "component_names" and c.execute(
+                    "SELECT 1 FROM component_names n JOIN components a ON a.id=n.component_id JOIN components b ON b.id=? WHERE a.application_id=b.application_id AND n.name=?",
+                    (IDS[key], name),
+                ).fetchone():
+                    # An operator already owns this name in the Application; leave missing metadata absent.
+                    continue
+                seed(table, (IDS[key], name), column + ",name")
         for key, actor, action, scope in (
             ("requestGrant", "requester", "access.request", IDS["sourceResource"]),
             ("decideGrant", "decider", "access.decide", "demo-policy"),

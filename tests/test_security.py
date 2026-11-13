@@ -16,7 +16,7 @@ from test_acceptance import approved, change, decide, export, submit
 def test_openapi_docs_and_no_secrets(env, caplog, capsys):
     schema = env[3].get('/openapi.json')
     assert schema.status_code == 200
-    assert len(schema.json()['paths']) == 10
+    assert len(schema.json()['paths']) == 12
     assert env[3].get('/docs').status_code == 200
     assert schema.json()['components']['schemas']['AccessInput']['example'] == DEMO_REQUEST
     rid = approved(env)

@@ -12,10 +12,10 @@ export default function PolicyRule() {
     const current = session.current
     return api(token, () => { if (current === session.current) { session.current++; setToken(''); setDraft('') } })
   }, [token])
-  return <><nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to="/access-requests">Заявки на доступ</Link><span>/</span><span aria-current="page">Правило политики</span></nav><section className="ux-panel ux-panel-body"><h1>Правило политики</h1>
+  return <><nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to="/policy-rules">Правила политики</Link><span>/</span><span aria-current="page">Правило политики</span></nav><section className="ux-panel ux-panel-body"><h1>Правило политики</h1>
     {!profile.enabled && <section aria-label="Demo credentials">{token ? <Button onClick={() => { session.current++; setToken('') }}>Очистить credential</Button> : <form onSubmit={e => { e.preventDefault(); session.current++; setToken(draft.trim()); setDraft('') }}><label>Bearer token<input type="password" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} /></label><Button disabled={!draft.trim()}>Применить token</Button></form>}</section>}
     {(profile.enabled || token) && <RuleDetail key={ruleId + ':' + token + ':' + profile.actor} ruleId={ruleId} client={profile.client ?? client} />}
-    <Link to="/access-requests">К заявкам на доступ</Link>
+    <Link to="/policy-rules">К правилам политики</Link>
   </section></>
 }
 function RuleDetail({ ruleId, client }: { ruleId: string; client: Client }) {
@@ -40,6 +40,6 @@ function RuleDetail({ ruleId, client }: { ruleId: string; client: Client }) {
     finally { downloading.current = false; if (alive.current) setBusy(false) }
   }
   return <>{error && <p role="alert">{error}</p>}{!rule && !error && <p role="status">Загрузка PolicyRule…</p>}<Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить PolicyRule</Button>
-    {rule && <><p>{rule.ruleId} · {rule.state}</p><div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={() => download('json')}>Скачать JSON</Button><Button disabled={busy} onClick={() => download('csv')}>Скачать CSV</Button></div><h2>Точный Subject</h2><dl className="ux-properties">{Object.entries(rule.subject).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl><h2>Происхождение и разрешения</h2><pre className="overflow-x-auto">{JSON.stringify({ originatingRequest: rule.originatingRequest, originatingDecision: rule.originatingDecision, allowances: rule.allowances }, null, 2)}</pre><p>{rule.state === 'INACTIVE' ? 'INACTIVE: экспорт не содержит строк.' : 'READY / INCOMPLETE определяет сервер при экспорте.'} Политика не доказывает сетевую доступность.</p></>}
+    {rule && <><p>{rule.displayLabel}</p><p>{rule.trafficLabel}</p><p>{rule.ruleId} · {rule.state}</p><div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={() => download('json')}>Скачать JSON</Button><Button disabled={busy} onClick={() => download('csv')}>Скачать CSV</Button></div><h2>Точный Subject</h2><dl className="ux-properties">{Object.entries(rule.subject).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl><h2>Происхождение и разрешения</h2><pre className="overflow-x-auto">{JSON.stringify({ originatingRequest: rule.originatingRequest, originatingDecision: rule.originatingDecision, allowances: rule.allowances }, null, 2)}</pre><p>{rule.state === 'INACTIVE' ? 'INACTIVE: экспорт не содержит строк.' : 'READY / INCOMPLETE определяет сервер при экспорте.'} Политика не доказывает сетевую доступность.</p></>}
   </>
 }

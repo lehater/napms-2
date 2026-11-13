@@ -162,6 +162,11 @@
         "group": "Управление доступом",
         "title": "Заявки на доступ",
         "path": "/access-requests"
+      },
+      {
+        "group": "Управление доступом",
+        "title": "Правила политики",
+        "path": "/policy-rules"
       }
     ],
     "contextualRoutes": {

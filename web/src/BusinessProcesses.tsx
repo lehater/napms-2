@@ -65,7 +65,7 @@ function ProcessList({ client }: { client: Client }) {
   return <><div className="ux-heading"><h1>Бизнес-процессы</h1><Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button></div>
     <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
       {!page && !error && <p role="status">Загрузка…</p>}
-      {page && <>{page.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Название</th><th>Ответственная организация</th></tr></thead><tbody>{page.items.map(p => <tr key={p.processId}><td><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не указано'}</Link></td><td>{p.responsibleOrganization ?? 'Не указана'}</td></tr>)}</tbody></table></div> : <p>На этой странице нет бизнес-процессов.</p>}
+      {page && <>{page.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Название</th><th>Ответственная организация</th></tr></thead><tbody>{page.items.map(p => <tr key={p.processId}><td><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не задано'}</Link></td><td>{p.responsibleOrganization ?? 'Не указана'}</td></tr>)}</tbody></table></div> : <p>На этой странице нет бизнес-процессов.</p>}
         <div><Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span> Страница {offset / page.limit + 1} </span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div></>}
     </section></>
 }
@@ -104,7 +104,7 @@ function ProcessDetail({ client }: { client: Client }) {
   }, [client, processId, reload])
   return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
     {!item && !error && <p role="status">Загрузка…</p>}
-    {item && item.processId === processId && <><h1>{item.name ?? 'Название не указано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
-    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не указано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
+    {item && item.processId === processId && <><h1>{item.name ?? 'Название не задано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
+    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не задано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
   </section>
 }

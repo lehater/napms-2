@@ -35,13 +35,13 @@ def test_options_shapes_paging_and_address_independence(env):
     body = response.json()
     assert body['kind'] == 'revisions' and body['hasMore']
     assert body['items'][0]['interactionRevisionId'] == min(extra, IDS['revision'])
-    assert set(body['items'][0]) == {'interactionRevisionId', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'destinationPortStart', 'destinationPortEnd'}
+    assert set(body['items'][0]) == {'interactionRevisionId', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'destinationPortStart', 'destinationPortEnd', 'displayLabel', 'trafficLabel'}
     assert len(options(env, '?offset=1').json()['items']) == 1
     assert options(env, '?offset=' + '9'*60).json()['items'] == []
     for kind, key in [('source-deployments', 'sourceDeployment'), ('destination-deployments', 'destinationDeployment')]:
         page = options(env, f'?kind={kind}&interactionRevisionId={extra}').json()
         assert page['items'][0]['deploymentId'] == IDS[key]
-        assert set(page['items'][0]) == {'deploymentId', 'componentId', 'resourceId'}
+        assert set(page['items'][0]) == {'deploymentId', 'componentId', 'resourceId', 'displayLabel'}
 
 
 @pytest.mark.parametrize('query', ['?kind=bad', '?limit=0', '?limit=101', '?offset=-1', '?offset=x', '?kind=source-deployments', '?interactionRevisionId='+IDS['revision'], '?kind=revisions&kind=revisions', '?limit=1&limit=2', '?actorId=forged', '?kind=destination-deployments&interactionRevisionId=bad'])
@@ -109,7 +109,10 @@ def test_dto_historical_and_source_only_no_get(env):
         assert env[3].get('/access-requests/'+request['requestId'],headers=auth(env,role)).json()['subject'] == request['subject']
     listing = env[3].get('/access-requests',headers=auth(env,'requester')).json()['items'][0]
     nested = env[3].get('/policy-rules/'+decision['policyRuleId'],headers=auth(env,'exporter')).json()['originatingRequest']
-    assert listing == nested
+    assert listing['displayLabel'] == 'Название недоступно'
+    assert 'receiver.demo.example' in nested['displayLabel']
+    assert {k: v for k, v in listing.items() if k not in ('displayLabel', 'decision')} == {k: v for k, v in nested.items() if k not in ('displayLabel', 'decision')}
+    assert {k: v for k, v in listing['decision'].items() if k != 'displayLabel'} == {k: v for k, v in nested['decision'].items() if k != 'displayLabel'}
 
 
 def test_submission_neutral_precedence_and_atomic_failure(env):
@@ -159,7 +162,7 @@ def test_read_snapshot_and_seed_upgrade(env):
     init_demo(env[0],env[1])
     assert env[1].read_bytes() == credentials
     with env[0].transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 3
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 4
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
 
 
