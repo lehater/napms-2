@@ -280,10 +280,10 @@ def csv_export(result, headers):
     return Response(output.getvalue(), media_type="text/csv", headers={"X-Evaluation-At": result["evaluationAt"], **headers})
 
 
-def create_app(db, credentials):
+def create_app(db, credentials, *, shared_read=False):
     """Explicit local profile: no global app, auto-seed, or default credentials."""
     app = FastAPI(title="NAPMS local development API", version="0.1.0")
-    service = Service(db)
+    service = Service(db, shared_read=shared_read)
     app.state.service = service
     bearer = HTTPBearer(auto_error=False)
 
