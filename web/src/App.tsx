@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Route, Routes, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ApiError, api, message, type AccessRequest, type Client, type Collection, type Outcome } from './api'
 import { Button } from '@/components/ui/button'
@@ -7,10 +7,11 @@ import { useDemoProfile } from './DemoProfile'
 import { Badge } from '@/components/ui/badge'
 import { CollectionView } from './components/real/CollectionView'
 import { DetailView } from './components/real/DetailView'
+import ErrorNotice from './components/ErrorNotice'
+import { formatDate } from './lib/format'
 
 type Mode = 'requester' | 'decider'
 
-function ErrorNotice({ text }: { text: string }) { return text ? <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900">{text}</p> : null }
 function Status({ value }: { value: AccessRequest['status'] }) {
   return <Badge variant="outline" className={value === 'ALLOWED' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : value === 'DENIED' ? 'border-red-200 bg-red-50 text-red-800' : 'border-amber-200 bg-amber-50 text-amber-900'}>{value}</Badge>
 }
@@ -69,6 +70,8 @@ export default function App() {
 }
 
 function RequestList({ client }: { client: Client }) {
+  const profile = useDemoProfile()
+  const restrictedDemo = profile.enabled && ['decider', 'exporter'].includes(profile.actor)
   const [params, setParams] = useSearchParams()
   const rawOffset = Number(params.get('offset') ?? 0)
   const offset = Number.isSafeInteger(rawOffset) && rawOffset >= 0 ? rawOffset : 0
@@ -82,16 +85,18 @@ function RequestList({ client }: { client: Client }) {
     client.list(offset).then(p => { if (active) setPage(p) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, offset, reload])
-  return <CollectionView<AccessRequest> title="Заявки на доступ" description="Заявки, доступные по серверным полномочиям." actions={<Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}
+  return <CollectionView<AccessRequest> title="Заявки на доступ" description="Заявки, доступные по серверным полномочиям." actions={restrictedDemo ? <p>В стандартном демопрофиле заявки создаёт Requester. Переключите Demo actor.</p> : <Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}
     rows={page?.items ?? []} columns={[
       {key:'request',title:'Заявка',render:r=><Link to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.listLabel}<small>{r.listContext}</small><small>{r.requestId}</small></Link>},
-      {key:'submitted',title:'Подана',render:r=>new Date(r.submittedAt).toLocaleString()},
+      {key:'submitted',title:'Подана',render:r=>formatDate(r.submittedAt)},
       {key:'requester',title:'Заявитель',render:r=><><span>{r.requesterDisplayName}</span>{r.requesterDisplayName === 'Имя не задано' && <small className="font-mono">{r.requesterActorId}</small>}</>},
       {key:'status',title:'Статус',render:r=><Status value={r.status} />},
     ]} getKey={r=>r.requestId} emptyText="Нет доступных заявок." loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }
 
 function NewRequest() {
+  const profile = useDemoProfile()
+  if (profile.enabled && ['decider', 'exporter'].includes(profile.actor)) return <section className="panel"><h1>Новая заявка</h1><p>В стандартном демопрофиле заявки создаёт Requester. Переключите Demo actor.</p><Link to="/access-requests">К заявкам</Link></section>
   return <section className="panel"><h1>Новая заявка</h1><p>Выберите сохранённую потребность процесса, затем Revision и два Deployment. Допуск создаёт PENDING, а не разрешение.</p><Link to="/business-processes">Выбрать процесс и потребность</Link></section>
 }
 
@@ -107,6 +112,7 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
   const [error, setError] = useState('')
   const [reload, setReload] = useState(0)
   const [feedback, setFeedback] = useState('')
+  const focusResult = useRef(false)
   useEffect(() => { setFeedback('') }, [requestId])
   useEffect(() => {
     let active = true
@@ -114,6 +120,12 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     client.request(requestId).then(r => { if (active) setRequest(r) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, requestId, reload])
+  useLayoutEffect(() => {
+    if (!focusResult.current || !request || request.requestId !== requestId) return
+    const heading = document.querySelector('.ux-heading h1')
+    if (heading instanceof HTMLElement) { heading.tabIndex = -1; heading.focus() }
+    focusResult.current = false
+  }, [request, requestId])
   if (!request || request.requestId !== requestId) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} />{!error && <p role="status">Загрузка заявки…</p>}{feedback && <p role="status">{feedback}</p>}</section>
   const listHref = '/access-requests' + (params.has('offset') ? '?offset=' + params.get('offset') : '')
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={listHref}>Заявки на доступ</Link><span>/</span><span aria-current="page">{request.displayLabel}</span></>}
@@ -123,7 +135,7 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     <ErrorNotice text={error} />{feedback && <p role="status">{feedback}</p>}
     {!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} /><h2>Основания допуска</h2><Evidence entries={request.admission} />{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
     {decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
-    {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
+    {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { focusResult.current = true; setFeedback(text); setReload(x => x + 1) }} />}
   </DetailView>
 }
 
@@ -133,13 +145,22 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
   const [error, setError] = useState('')
   const submitting = useRef(false)
   const alive = useRef(true)
+  const confirmMessage = useRef<HTMLParagraphElement>(null)
+  const restoreOutcome = useRef<Outcome | null>(null)
+  useLayoutEffect(() => {
+    if (outcome) confirmMessage.current?.focus()
+    else if (restoreOutcome.current) {
+      document.querySelector<HTMLButtonElement>(`button[data-outcome="${restoreOutcome.current}"]`)?.focus()
+      restoreOutcome.current = null
+    }
+  }, [outcome])
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   async function confirm() {
     if (!outcome || submitting.current) return
     submitting.current = true; setBusy(true); setError('')
     try {
       await client.decide(requestId, outcome)
-      if (alive.current) refresh('Решение сохранено. Загружается серверный статус.')
+      if (alive.current) refresh('Решение сохранено.')
     } catch (e) {
       if (!alive.current) return
       if (e instanceof ApiError && e.status === 409) refresh(message(e))
@@ -149,10 +170,10 @@ function DecisionPanel({ client, requestId, refresh }: { client: Client; request
   return <section className="space-y-4 border-t pt-6" aria-label="Decision">
     <h2>Принять решение</h2><p className="text-sm text-slate-500">Сервер проверяет полномочия. Подтверждённое решение окончательно.</p>
     <ErrorNotice text={error} />
-    {!outcome ? <div className="flex flex-wrap gap-3"><Button onClick={() => setOutcome('ALLOWED')}>ALLOWED</Button><Button variant="destructive" onClick={() => setOutcome('DENIED')}>DENIED</Button></div> :
+    {!outcome ? <div className="flex flex-wrap gap-3"><Button data-outcome="ALLOWED" onClick={() => setOutcome('ALLOWED')}>ALLOWED</Button><Button data-outcome="DENIED" variant="destructive" onClick={() => setOutcome('DENIED')}>DENIED</Button></div> :
       <div role="group" aria-label="Подтверждение решения" className="space-y-3 rounded-lg border bg-slate-50 p-4">
-        <p>Подтвердить {outcome} для этой заявки? Изменить решение нельзя.</p>
-        <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Сохранение…' : `Подтвердить ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { setOutcome(null); setError('') }}>Отмена</Button></div>
+        <p ref={confirmMessage} tabIndex={-1}>Подтвердить {outcome} для этой заявки? Изменить решение нельзя.</p>
+        <div className="flex flex-wrap gap-3"><Button disabled={busy} onClick={confirm}>{busy ? 'Сохранение…' : `Подтвердить ${outcome}`}</Button><Button variant="outline" disabled={busy} onClick={() => { restoreOutcome.current = outcome; setOutcome(null); setError('') }}>Отмена</Button></div>
       </div>}
   </section>
 }

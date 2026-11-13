@@ -1,6 +1,6 @@
 # Implementation tasks: Semantic labels and current policy
 
-Specification accepted via PR #56, squash commit `f66c23ff1cdf6d59ccbf63bcca2a16da9e0ddd7c`. Implementation evidence: `docs/evidence/semantic-labels-current-policy.md`; final HEAD and matching CI are recorded in PR #55. Owner acceptance remains pending: task 5.3 below and `compose-access-request-from-need` task 4.3 stay open.
+Specification accepted via PR #56, squash commit `f66c23ff1cdf6d59ccbf63bcca2a16da9e0ddd7c`. Implementation evidence: `docs/evidence/semantic-labels-current-policy.md`; final HEAD and matching CI are recorded in PR #55. The owner explicitly accepted the completed product outcome for integration; this agent did not perform a manual GUI smoke.
 
 ## 1. Minimal naming metadata and migration
 
@@ -32,7 +32,7 @@ Specification accepted via PR #56, squash commit `f66c23ff1cdf6d59ccbf63bcca2a16
 
 - [x] 5.1 Run strict OpenSpec, full pytest/coverage, blocking Ruff, web build/typecheck, semantic contract, proxy and full Playwright; record final HEAD and matching CI. Advisory baseline debt tracked separately.
 - [x] 5.2 Record reproducible owner smoke for human-readable REAL objects, visible Rule collection and current actor-authorized aggregate JSON/CSV export; retain bytes/evaluation provenance without credentials.
-- [ ] 5.3 Obtain **explicit owner manual acceptance** for the extended product outcome. Until then keep PR #55 Draft and its existing task 4.3 open; do not merge on automated tests alone.
+- [x] 5.3 Owner explicitly accepted the extended product outcome for integration (recorded in the PR #55 implementation handoff). This records the owner's acceptance; it does not claim a manual GUI smoke by this agent.
 
 ## Non-goals
 

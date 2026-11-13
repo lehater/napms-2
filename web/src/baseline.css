@@ -57,3 +57,10 @@ section[aria-label="Потребности процесса"] { min-width: 0; }
 section[aria-label="Потребности процесса"] td { overflow-wrap: anywhere; }
 
 .ux-real button[aria-pressed=true]{color:#145fc3;font-weight:700;text-decoration:underline}
+section[aria-label="Потребности REAL"] { min-width: 0; }
+section[aria-label="Потребности REAL"] td { overflow-wrap: anywhere; }
+.ux-mobile-navigation{display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:#0e2035;color:white}
+.ux-mobile-navigation button{border:1px solid #64809d;border-radius:5px;padding:7px 10px;color:white}
+.ux-skip-link{position:fixed;z-index:20;top:8px;left:8px;transform:translateY(-160%);padding:8px 12px;border-radius:5px;background:white;color:#123b6b;box-shadow:0 1px 6px #0004}
+.ux-skip-link:focus{transform:translateY(0)}
+@media(max-width:767px){.ux-mobile-navigation{display:flex}.ux-sidebar{display:none}.ux-sidebar[data-open=true]{display:flex}.ux-navigation{grid-template-columns:minmax(0,1fr)}.ux-properties>div{grid-template-columns:minmax(0,1fr);gap:5px}}

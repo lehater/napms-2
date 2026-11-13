@@ -3,6 +3,7 @@ import { ApiError, message, type Client, type Need, type NeedOption, type NeedPa
 import ComposeRequest from './ComposeRequest'
 import { Button } from './components/ui/button'
 import { EntityTable } from './components/real/EntityTable'
+import ErrorNotice from './components/ErrorNotice'
 
 function explain(e: unknown) {
   if (e instanceof ApiError) {
@@ -18,6 +19,7 @@ export default function Needs({ client, processId }: { client: Client; processId
   const [options, setOptions] = useState<NeedPage<NeedOption> | null>(null)
   const [offset, setOffset] = useState(0), [optionOffset, setOptionOffset] = useState(0)
   const [revision, setRevision] = useState(''), [error, setError] = useState(''), [optionError, setOptionError] = useState('')
+  const selectedOption = options?.items.find(option => option.interactionRevisionId === revision)
   const [reload, setReload] = useState(0), [busy, setBusy] = useState(false), [feedback, setFeedback] = useState('')
   const submitting = useRef(false), alive = useRef(true)
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
@@ -46,7 +48,7 @@ export default function Needs({ client, processId }: { client: Client; processId
   }
   return <section aria-label="Потребности процесса"><h2>Потребности</h2>
     <p>Потребность обосновывает коммуникацию и не разрешает доступ.</p>
-    <EntityTable<Need> rows={needs?.items ?? []} columns={[
+    <section aria-label="Сохранённые потребности"><EntityTable<Need> rows={needs?.items ?? []} columns={[
       {key:'need',title:'Потребность',render:n=><button aria-pressed={selected?.connectivityNeedId === n.connectivityNeedId} onClick={() => setSelected(n)}>{n.displayLabel}<small>{n.connectivityNeedId}</small></button>},
       {key:'interaction',title:'Interaction',render:n=>n.interactionId},
       {key:'component',title:'Исходный Component',render:n=>n.componentId},
@@ -54,12 +56,15 @@ export default function Needs({ client, processId }: { client: Client; processId
     {needs && <>
       <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button><Button variant="outline" disabled={!needs.hasMore} onClick={() => setOffset(offset + 20)}>Следующие потребности</Button></>}
     {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
-    <h3>Создать потребность</h3>
-    {optionError && <p role="alert">{optionError}</p>}
+    </section><section aria-label="Создание потребности"><h3>Создать потребность</h3>
+    <ErrorNotice text={optionError} />
     {!options && !optionError && <p role="status">Загрузка коммуникаций…</p>}
-    {options && <>{options.items.length ? <form className="process-form" onSubmit={submit}><label htmlFor="need-communication">Коммуникация</label><select id="need-communication" value={revision} disabled={busy} onChange={e => setRevision(e.target.value)} required><option value="">Выберите коммуникацию</option>{options.items.map(o => <option key={o.interactionRevisionId} value={o.interactionRevisionId}>{o.displayLabel} · ID {o.interactionRevisionId}</option>)}</select><Button disabled={busy || !revision}>Создать потребность</Button></form> : <p>На этой странице нет доступных коммуникаций.</p>}
+    {options && <>{options.items.length ? <form className="process-form" onSubmit={submit}><label htmlFor="need-communication">Коммуникация</label><select id="need-communication" value={revision} disabled={busy} onChange={e => setRevision(e.target.value)} required><option value="">Выберите коммуникацию</option>{options.items.map(o => <option key={o.interactionRevisionId} value={o.interactionRevisionId}>{o.displayLabel} · {o.trafficLabel} · Revision {o.interactionRevisionId}</option>)}</select>
+      {selectedOption && <dl className="ux-properties ux-choice-facts">{Object.entries({ 'Коммуникация': selectedOption.displayLabel, 'Трафик выбранной ревизии': selectedOption.trafficLabel, 'Исходный Component': selectedOption.sourceComponentId, 'Целевой Component': selectedOption.destinationComponentId }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
+      <Button disabled={busy || !revision}>Создать потребность</Button></form> : <p>На этой странице нет доступных коммуникаций.</p>}
       <Button variant="outline" disabled={!optionOffset || busy} onClick={() => setOptionOffset(Math.max(0, optionOffset - 20))}>Предыдущие коммуникации</Button><Button variant="outline" disabled={!options.hasMore || busy} onClick={() => setOptionOffset(optionOffset + 20)}>Следующие коммуникации</Button></>}
     {feedback && <p role="status">{feedback}</p>}
+    </section>
     <Button variant="outline" disabled={busy} onClick={() => setReload(x => x + 1)}>Обновить потребности</Button>
   </section>
 }

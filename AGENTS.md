@@ -10,3 +10,12 @@
 - Implementation handoff must identify the exact PR head SHA, matching CI run and blocking/advisory outcomes, OpenSpec task status, and outstanding limitations. Include a reproducible user smoke scenario when applicable; record owner acceptance in the PR before squash merge. Recheck CI on the final head after substantive fixes.
 - Never commit secrets or confidential infrastructure details to this public repository.
 - REAL UI changes must follow [`docs/ux/real-ui-conformance.md`](docs/ux/real-ui-conformance.md). Before handoff, identify the shared components reused by each REAL screen and inspect one actual desktop render; screenshots alone and green CI do not establish conformance.
+
+## Codex subagents
+
+- Use one executor by default for short tasks.
+- For substantial independent work, the main agent may delegate up to three scoped tasks to built-in `explorer` (fact gathering), built-in `worker` (implementation), and project `reviewer` (diff review). Use only the agents needed; exploration and review may run in parallel, while review of implementation follows the changes.
+- Give each subagent its inputs, file boundary, and expected concise response. Share only the history it needs; the coordinator combines results into one handoff.
+- Assign one owner to edit each file because agents may share a working directory. Do not promise file or database isolation between agents.
+- Subagents do not decide architecture, merge, or run optional expensive checks. They return questions to the coordinator when requirements are unclear.
+- Use the existing Fast/Full process without duplicating checks. Do not create new Skills, gates, test frameworks, or OpenSpec tasks unless needed.

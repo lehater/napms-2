@@ -309,6 +309,7 @@ test('one-command actor switching preserves independent grants and actual persis
       else if (url.startsWith('/business')) await expect(page.getByRole('button', {name:'Сохранить',exact:true})).toBeVisible()
       else await expect(page.getByRole('link', {name:'Выбрать процесс и потребность'})).toBeVisible()
       await expect(page.locator('.ux-shell')).toHaveCount(1)
+      if (size.width < 768) await page.getByRole('button', { name: 'Открыть меню', exact: true }).click()
       await expect(page.getByRole('navigation', {name:'Основная навигация'}).getByRole('link')).toHaveCount(3)
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(size.width)
     }
