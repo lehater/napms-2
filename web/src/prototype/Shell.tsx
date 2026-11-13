@@ -16,7 +16,21 @@ export function Shell({ children }: { children: ReactNode }) {
   const mockObject = simulation.objects.find(object => object.id === pathname.split('/')[3])
   const section = !real && mockObject?.kind === 'BusinessProcess' ? 'processes' : pathname.startsWith('/business-processes') ? 'processes' : pathname.startsWith('/access-requests') ? 'requests' : pathname.split('/')[2]
   const main = useRef<HTMLElement>(null)
-  useLayoutEffect(() => { main.current?.scrollTo(0, 0); window.scrollTo(0, 0) }, [pathname])
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuButton = useRef<HTMLButtonElement>(null)
+  const sectionTitle = sections.find(item => item.id === section)?.title ?? 'NAPMS'
+  useLayoutEffect(() => {
+    setMenuOpen(false)
+    main.current?.scrollTo(0, 0); window.scrollTo(0, 0)
+    main.current?.focus({ preventScroll: true })
+  }, [pathname])
+  useLayoutEffect(() => {
+    const update = () => { const heading = main.current?.querySelector('h1'); document.title = `${heading?.getAttribute('data-document-title') || heading?.textContent || sectionTitle} — NAPMS` }
+    update()
+    const observer = new MutationObserver(update)
+    if (main.current) observer.observe(main.current, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['data-document-title'] })
+    return () => observer.disconnect()
+  }, [pathname, sectionTitle, profile.actor])
   const [width, setWidth] = useState(() => {
     try {
       const saved = Number(localStorage.getItem(sidebarWidthKey))
@@ -29,7 +43,9 @@ export function Shell({ children }: { children: ReactNode }) {
     try { localStorage.setItem(sidebarWidthKey, String(next)) } catch { /* Session-only preference when storage is unavailable. */ }
   }
   return <div className="ux-shell" style={{ '--sidebar-width': `${width}px` } as CSSProperties}>
-    <aside id="prototype-sidebar" className="ux-sidebar">
+    <a className="ux-skip-link" href="#main-content" onClick={event => { event.preventDefault(); setMenuOpen(false); main.current?.focus() }}>Перейти к содержимому</a>
+    <div className="ux-mobile-navigation"><strong>{sectionTitle}</strong><button ref={menuButton} aria-controls="prototype-sidebar" aria-expanded={menuOpen} onClick={() => setMenuOpen(open => !open)}>{menuOpen ? 'Закрыть меню' : 'Открыть меню'}</button></div>
+    <aside id="prototype-sidebar" className="ux-sidebar" data-open={menuOpen} onKeyDown={event => { if (event.key === 'Escape' && menuOpen) { setMenuOpen(false); menuButton.current?.focus() } }}>
       <Link to="/" className="ux-brand"><span className="ux-brand-icon">N</span><span><strong>NAPMS 2.0</strong><small>Network Access Policy Management</small></span></Link>
       <nav aria-label="Prototype navigation" className="ux-navigation">
         {Array.from(new Set(sections.map(item => item.group))).map(group => <div key={group}><p className="ux-nav-label">{group}</p><ul>{sections.filter(item => item.group === group).map(item => <li key={item.id}><Link to={item.id === 'processes' ? '/business-processes' : item.id === 'requests' ? '/access-requests' : `/prototype/${item.id}`} title={['processes', 'requests'].includes(item.id) ? 'REAL · SQLite' : 'MOCK · Simulation'} aria-current={section === item.id ? 'page' : undefined} className={section === item.id ? 'selected' : ''}>{item.title}</Link><small>{['processes', 'requests'].includes(item.id) ? ' REAL' : ' MOCK'}</small></li>)}</ul></div>)}
@@ -46,7 +62,7 @@ export function Shell({ children }: { children: ReactNode }) {
       onPointerUp={event => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId) }}><span aria-hidden="true">⋮</span></div>
     <div className="ux-workspace">
       <header className="ux-topbar"><span>NAPMS / UI Baseline v0.2</span><strong>{real ? (profile.enabled ? 'REAL / LOCAL DEMO' : 'REAL / API') : 'RESEARCH / MOCK'}</strong><span>{real ? 'FastAPI · SQLite · серверная авторизация' : 'Фиктивные данные · Simulation · без API'}</span>{real && <DemoActor />}{!real && <><label className="nid-role">MOCK · Демонстрационная роль<select aria-label="Демонстрационная роль" value={simulation.role} onChange={e => simulation.setRole(e.target.value as MockRole)}><option value="Requester">Requester · alice-orders</option><option value="Decider">Decider · bob-policy</option><option value="Policy Viewer">Policy Viewer · policy.export (mock)</option></select></label><button onClick={() => { simulation.reset(); navigate('/prototype/needs/mock-need?tab=communication') }}>Сбросить mock-state</button></>}</header>
-      <main ref={main} className={real ? 'ux-main ux-real' : 'ux-main'}>{children}</main>
+      <main id="main-content" tabIndex={-1} ref={main} className={real ? 'ux-main ux-real' : 'ux-main'}>{children}</main>
     </div>
   </div>
 }

@@ -4,14 +4,13 @@ import { api, ApiError, message, type BusinessProcess, type Client, type Process
 import Needs from './Needs'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
+import ErrorNotice from './components/ErrorNotice'
+import { useFormDraft } from './FormDrafts'
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 422) return 'Проверьте название и допустимую длину полей.'
   if (error instanceof ApiError && error.status === 404) return 'Бизнес-процесс не найден.'
   return message(error)
-}
-function ErrorNotice({ error, retry }: { error: string; retry?: () => void }) {
-  return error && <div><p role="alert">{error}</p>{retry && <Button variant="outline" onClick={retry}>Повторить</Button>}</div>
 }
 export default function BusinessProcesses() {
   const { pathname, search } = useLocation()
@@ -35,7 +34,7 @@ export default function BusinessProcesses() {
     {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
       <strong>REAL · локальный демонстрационный каталог</strong>
       <p>Сервер проверяет отдельные права чтения и создания. Ответственная организация — описание, не полномочие.</p>
-      <ErrorNotice error={notice} />
+      <ErrorNotice text={notice} />
       {token ? <><p role="status">Credential активен</p><Button variant="outline" onClick={() => { credentialSession.current++; setToken(''); setDraft(''); setNotice('') }}>Очистить credential</Button></> : <form onSubmit={e => { e.preventDefault(); credentialSession.current++; setToken(draft.trim()); setDraft(''); setNotice('') }}>
         <label htmlFor="process-token">Bearer token</label><input id="process-token" type="password" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} required />
         <Button disabled={!draft.trim()}>Применить token</Button>
@@ -64,33 +63,37 @@ function ProcessList({ client }: { client: Client }) {
     return () => { active = false }
   }, [client, offset, reload])
   return <><div className="ux-heading"><p className="ux-eyebrow">BusinessProcess · REAL</p><h1>Бизнес-процессы</h1><Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button></div>
-    <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
+    <section className="ux-panel ux-panel-body"><ErrorNotice text={error} retry={() => setReload(x => x + 1)} />
       {!page && !error && <p role="status">Загрузка…</p>}
       {page && <>{page.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Название</th><th>Ответственная организация</th></tr></thead><tbody>{page.items.map(p => <tr key={p.processId}><td><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не указано'}</Link></td><td>{p.responsibleOrganization ?? 'Не указана'}</td></tr>)}</tbody></table></div> : <p>На этой странице нет бизнес-процессов.</p>}
         <div><Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span> Страница {offset / page.limit + 1} </span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div></>}
     </section></>
 }
 function NewProcess({ client }: { client: Client }) {
-  const [name, setName] = useState(''), [description, setDescription] = useState(''), [organization, setOrganization] = useState('')
+  const [{ name, description, organization }, setDraft, clearDraft] = useFormDraft('process', { name: '', description: '', organization: '' })
+  const [nameError, setNameError] = useState('')
+  const nameInput = useRef<HTMLInputElement>(null)
+  const profile = useDemoProfile()
   const [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const submitting = useRef(false), alive = useRef(true), navigate = useNavigate()
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   async function submit(e: FormEvent) {
     e.preventDefault(); if (submitting.current) return
-    if (!name.trim()) { setError('Укажите непустое название.'); return }
+    if (!name.trim()) { setNameError('Укажите непустое название.'); nameInput.current?.focus(); return }
     submitting.current = true; setBusy(true); setError('')
     try {
       const item = await client.createProcess({ name, description: description || null, responsibleOrganization: organization || null })
-      if (alive.current) navigate('/business-processes/' + item.processId)
+      if (alive.current) { clearDraft(); navigate('/business-processes/' + item.processId) }
     } catch (e) { if (alive.current) setError(errorMessage(e)) }
     finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section className="ux-panel ux-panel-body"><h1>Создать бизнес-процесс</h1><ErrorNotice error={error} />
-    <form className="process-form" onSubmit={submit}><label htmlFor="process-name">Название</label><input id="process-name" required maxLength={300} value={name} disabled={busy} onChange={e => setName(e.target.value)} />
-      <label htmlFor="process-description">Описание</label><textarea id="process-description" maxLength={10000} value={description} disabled={busy} onChange={e => setDescription(e.target.value)} />
-      <label htmlFor="process-organization">Ответственная организация</label><input id="process-organization" maxLength={300} value={organization} disabled={busy} onChange={e => setOrganization(e.target.value)} />
-      <Button disabled={busy}>{busy ? 'Сохранение…' : 'Сохранить'}</Button><Link to="/business-processes">Отмена</Link>
-    </form></section>
+  return <section className="ux-panel ux-panel-body"><h1>Создать бизнес-процесс</h1><ErrorNotice text={error} />
+    <form className="process-form" onSubmit={submit}><label htmlFor="process-name">Название</label><input ref={nameInput} id="process-name" required maxLength={300} value={name} disabled={busy} aria-invalid={Boolean(nameError)} aria-describedby={nameError ? "process-name-error" : undefined} onChange={e => { setDraft(d => ({ ...d, name: e.target.value })); setNameError('') }} />
+      {nameError && <p id="process-name-error" role="alert" className="ux-field-error">{nameError}</p>}
+      <label htmlFor="process-description">Описание</label><textarea id="process-description" maxLength={10000} value={description} disabled={busy} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} />
+      <label htmlFor="process-organization">Ответственная организация</label><input id="process-organization" maxLength={300} value={organization} disabled={busy} onChange={e => setDraft(d => ({ ...d, organization: e.target.value }))} />
+      <Button disabled={busy}>{busy ? 'Сохранение…' : 'Сохранить'}</Button><Link to="/business-processes" onClick={clearDraft}>Отмена</Link>
+    </form><p className="ux-note">{profile.enabled ? 'Черновик сохраняется при переходах в этой вкладке до сохранения, отмены или смены Demo actor. Перезагрузка очистит его.' : 'Черновик хранится в форме; выход из раздела или очистка credential удалит его.'}</p></section>
 }
 function ProcessDetail({ client }: { client: Client }) {
   const { processId = '' } = useParams()
@@ -103,7 +106,7 @@ function ProcessDetail({ client }: { client: Client }) {
     client.process(processId).then(p => { if (active) setItem(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, processId, reload])
-  return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
+  return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} retry={() => setReload(x => x + 1)} />
     {!item && !error && <p role="status">Загрузка…</p>}
     {item && item.processId === processId && <><p className="ux-eyebrow">BusinessProcess · REAL</p><h1>{item.name ?? 'Название не указано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
     {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не указано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}

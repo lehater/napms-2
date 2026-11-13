@@ -8,15 +8,16 @@ import Prototype from './prototype/Prototype'
 import { SimulationProvider } from './prototype/simulation'
 import './index.css'
 import { Shell } from './prototype/Shell'
+import { FormDrafts } from './FormDrafts'
 function Layout() {
  const profile = useDemoProfile()
- return <Shell><div key={profile.actor}><Routes>
+ return <Shell><FormDrafts key={profile.actor}><div><Routes>
   <Route path="/" element={<Navigate to="/business-processes" replace />} />
   <Route path="/business-processes/*" element={<BusinessProcesses />} />
   <Route path="/access-requests/*" element={<App />} />
   <Route path="/prototype/:section?/:objectId?" element={<Prototype />} />
   <Route path="*" element={<NotFound />} />
- </Routes></div></Shell>
+ </Routes></div></FormDrafts></Shell>
 }
 function NotFound() {
  const { pathname } = useLocation()
