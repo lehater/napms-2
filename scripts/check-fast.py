@@ -220,7 +220,15 @@ def main() -> int:
             base = None
             entries = [("?", ("<diff-selection-error>",))]
 
-    missing = [path for path in sorted(FAST_FILES) if not (root / path).is_file()]
+    missing: list[str] = []
+    for path in sorted(FAST_FILES):
+        if not (root / path).is_file():
+            missing.append(f"{path} (missing from worktree)")
+        elif base:
+            try:
+                git(root, "cat-file", "-e", f"{base}:{path}")
+            except subprocess.CalledProcessError:
+                missing.append(f"{path} (missing from merge-base)")
     profile, reasons = select_profile(entries, missing)
     checks = FAST_CHECKS if profile == "fast" else FULL_CHECKS
     print(f"BASE: {base or 'unavailable'}")
