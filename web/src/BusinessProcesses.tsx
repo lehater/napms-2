@@ -4,6 +4,8 @@ import { api, ApiError, message, type BusinessProcess, type Client, type Process
 import Needs from './Needs'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
+import { CollectionView } from './components/real/CollectionView'
+import { DetailView } from './components/real/DetailView'
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 422) return 'Проверьте название и допустимую длину полей.'
@@ -31,7 +33,7 @@ export default function BusinessProcesses() {
   const client = profile.client ?? manualClient
   if (leaf.length > 1) return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link></section>
   return <>
-    <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Бизнес-процессы</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">{leaf[0] === 'new' ? 'Создание' : 'Карточка'}</span></>}</nav>
+    {(leaf.length === 0 || leaf[0] === 'new') && <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Бизнес-процессы</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">Создание</span></>}</nav>}
     {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
       <strong>Локальный демонстрационный каталог</strong>
       <p>Сервер проверяет отдельные права чтения и создания. Ответственная организация — описание, не полномочие.</p>
@@ -62,12 +64,11 @@ function ProcessList({ client }: { client: Client }) {
     client.processes(offset).then(p => { if (active) setPage(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, offset, reload])
-  return <><div className="ux-heading"><h1>Бизнес-процессы</h1><Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button></div>
-    <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
-      {!page && !error && <p role="status">Загрузка…</p>}
-      {page && <>{page.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Название</th><th>Ответственная организация</th></tr></thead><tbody>{page.items.map(p => <tr key={p.processId}><td><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не задано'}</Link></td><td>{p.responsibleOrganization ?? 'Не указана'}</td></tr>)}</tbody></table></div> : <p>На этой странице нет бизнес-процессов.</p>}
-        <div><Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span> Страница {offset / page.limit + 1} </span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div></>}
-    </section></>
+  return <CollectionView<BusinessProcess> title="Бизнес-процессы" actions={<Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button>}
+    rows={page?.items ?? []} columns={[
+      {key:'name',title:'Название',render:p=><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не задано'}</Link>},
+      {key:'organization',title:'Ответственная организация',render:p=>p.responsibleOrganization ?? 'Не указана'},
+    ]} getKey={p=>p.processId} emptyText="На этой странице нет бизнес-процессов" loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }
 function NewProcess({ client }: { client: Client }) {
   const [name, setName] = useState(''), [description, setDescription] = useState(''), [organization, setOrganization] = useState('')
@@ -102,9 +103,10 @@ function ProcessDetail({ client }: { client: Client }) {
     client.process(processId).then(p => { if (active) setItem(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, processId, reload])
-  return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
-    {!item && !error && <p role="status">Загрузка…</p>}
-    {item && item.processId === processId && <><h1>{item.name ?? 'Название не задано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
-    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не задано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
-  </section>
+  if (!item || item.processId !== processId) return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />{!error && <p role="status">Загрузка…</p>}</section>
+  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>Бизнес-процессы</Link><span>/</span><span aria-current="page">{item.name ?? 'Название не задано'}</span></>}
+    title={item.name ?? 'Название не задано'}
+    tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'needs',label:'Потребности',href:tabPath('needs')}]} activeTab={needs ? 'needs' : 'overview'}>
+    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не задано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}
+  </DetailView>
 }

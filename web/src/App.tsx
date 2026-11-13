@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useDemoProfile } from './DemoProfile'
 import { Badge } from '@/components/ui/badge'
+import { CollectionView } from './components/real/CollectionView'
+import { DetailView } from './components/real/DetailView'
 
 type Mode = 'requester' | 'decider'
 
@@ -36,7 +38,7 @@ export default function App() {
   const client = profile.client ?? manualClient
   if (leaf.length > 1) return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link></section>
   return <>
-    <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Заявки на доступ</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">{leaf[0] === 'new' ? 'Создание' : 'Карточка'}</span></>}</nav>
+    {(leaf.length === 0 || leaf[0] === 'new') && <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Заявки на доступ</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">Создание</span></>}</nav>}
     {!profile.enabled && <>
         <section className="space-y-3 rounded-lg border bg-white p-4" aria-label="Demo credentials">
           <label className="text-sm font-medium" htmlFor="mode">Demo mode</label>
@@ -80,17 +82,13 @@ function RequestList({ client }: { client: Client }) {
     client.list(offset).then(p => { if (active) setPage(p) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, offset, reload])
-  return <section className="panel space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h1>Заявки на доступ</h1><p>Заявки, доступные по серверным полномочиям.</p></div><Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button></div>
-    <ErrorNotice text={error} />
-    {error && <Button variant="outline" onClick={() => setReload(x => x + 1)}>Повторить</Button>}
-    {!page && !error && <p role="status">Загрузка заявок…</p>}
-    {page && (page.items.length === 0 ? <p>Нет доступных заявок.</p> : <div className="overflow-x-auto"><table className="ux-table">
-      <thead><tr>{['Заявка', 'Подана', 'Заявитель', 'Статус'].map(t => <th className="border-b px-2 py-3" key={t}>{t}</th>)}</tr></thead>
-      <tbody>{page.items.map(r => <tr key={r.requestId}><td className="border-b px-2 py-4"><Link className="text-sm" to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.displayLabel}<small className="block font-mono">{r.requestId}</small></Link></td><td className="border-b px-2 py-4">{new Date(r.submittedAt).toLocaleString()}</td><td className="border-b px-2 py-4 font-mono text-xs">{r.requesterActorId}</td><td className="border-b px-2 py-4"><Status value={r.status} /></td></tr>)}</tbody>
-    </table></div>)}
-    {page && <div className="flex items-center gap-3"><Button variant="outline" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - page.limit))}>Назад</Button><span className="text-sm">Страница {Math.floor(offset / page.limit) + 1}</span><Button variant="outline" disabled={!page.hasMore} onClick={() => setOffset(offset + page.limit)}>Далее</Button></div>}
-  </section>
+  return <CollectionView<AccessRequest> title="Заявки на доступ" description="Заявки, доступные по серверным полномочиям." actions={<Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}
+    rows={page?.items ?? []} columns={[
+      {key:'request',title:'Заявка',render:r=><Link to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.displayLabel}<small>{r.requestId}</small></Link>},
+      {key:'submitted',title:'Подана',render:r=>new Date(r.submittedAt).toLocaleString()},
+      {key:'requester',title:'Заявитель',render:r=><span className="font-mono text-xs">{r.requesterActorId}</span>},
+      {key:'status',title:'Статус',render:r=><Status value={r.status} />},
+    ]} getKey={r=>r.requestId} emptyText="Нет доступных заявок." loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }
 
 function NewRequest() {
@@ -116,17 +114,17 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     client.request(requestId).then(r => { if (active) setRequest(r) }).catch(e => { if (active) setError(message(e)) })
     return () => { active = false }
   }, [client, requestId, reload])
-  return <section className="panel space-y-6"><div className="flex flex-wrap items-center justify-between gap-3"><h1>Заявка на доступ</h1><Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить статус</Button></div>
-    <ErrorNotice text={error} />
-    {!request && !error && <p role="status">Загрузка заявки…</p>}
-    {feedback && <p role="status">{feedback}</p>}
-    {request && request.requestId === requestId && <><p>{request.displayLabel}</p><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} />
-      <h2>Основания допуска</h2><Evidence entries={request.admission} />
-      </>}{decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}</>}
-      {request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}
-      {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
-    </>}
-  </section>
+  if (!request || request.requestId !== requestId) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} />{!error && <p role="status">Загрузка заявки…</p>}{feedback && <p role="status">{feedback}</p>}</section>
+  const listHref = '/access-requests' + (params.has('offset') ? '?offset=' + params.get('offset') : '')
+  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={listHref}>Заявки на доступ</Link><span>/</span><span aria-current="page">{request.displayLabel}</span></>}
+    title={request.displayLabel} state={request.status}
+    actions={<Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить статус</Button>}
+    tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'decision',label:'Решение и основания',href:tabPath('decision')}]} activeTab={decisionTab ? 'decision' : 'overview'}>
+    <ErrorNotice text={error} />{feedback && <p role="status">{feedback}</p>}
+    {!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} /><h2>Основания допуска</h2><Evidence entries={request.admission} />{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
+    {decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}{request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}</>}
+    {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
+  </DetailView>
 }
 
 function DecisionPanel({ client, requestId, refresh }: { client: Client; requestId: string; refresh: (text: string) => void }) {

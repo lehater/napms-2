@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, message, type Client, type Need, type NeedOption, type NeedPage } from './api'
 import ComposeRequest from './ComposeRequest'
 import { Button } from './components/ui/button'
+import { EntityTable } from './components/real/EntityTable'
 
 function explain(e: unknown) {
   if (e instanceof ApiError) {
@@ -45,9 +46,12 @@ export default function Needs({ client, processId }: { client: Client; processId
   }
   return <section aria-label="Потребности процесса"><h2>Потребности</h2>
     <p>Потребность обосновывает коммуникацию и не разрешает доступ.</p>
-    {error && <p role="alert">{error}</p>}
-    {!needs && !error && <p role="status">Загрузка потребностей…</p>}
-    {needs && <>{needs.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Потребность</th><th>Interaction</th><th>Исходный Component</th></tr></thead><tbody>{needs.items.map(n => <tr key={n.connectivityNeedId}><td><button aria-pressed={selected?.connectivityNeedId === n.connectivityNeedId} onClick={() => setSelected(n)}>{n.displayLabel}<small className="block font-mono">{n.connectivityNeedId}</small></button></td><td>{n.interactionId}</td><td>{n.componentId}</td></tr>)}</tbody></table></div> : <p>На этой странице нет потребностей.</p>}
+    <EntityTable<Need> rows={needs?.items ?? []} columns={[
+      {key:'need',title:'Потребность',render:n=><button aria-pressed={selected?.connectivityNeedId === n.connectivityNeedId} onClick={() => setSelected(n)}>{n.displayLabel}<small>{n.connectivityNeedId}</small></button>},
+      {key:'interaction',title:'Interaction',render:n=>n.interactionId},
+      {key:'component',title:'Исходный Component',render:n=>n.componentId},
+    ]} getKey={n=>n.connectivityNeedId} emptyText="На этой странице нет потребностей" loading={!needs && !error} error={error} />
+    {needs && <>
       <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button><Button variant="outline" disabled={!needs.hasMore} onClick={() => setOffset(offset + 20)}>Следующие потребности</Button></>}
     {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
     <h3>Создать потребность</h3>
