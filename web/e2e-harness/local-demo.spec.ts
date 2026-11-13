@@ -693,7 +693,7 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await expect(page).toHaveURL(/\/access-requests$/)
     await expect(nav.getByRole('link',{name:'Заявки на доступ',exact:true})).toHaveAttribute('aria-current','page')
     await nav.getByRole('link',{name:'Правила политики',exact:true}).click()
-    await expect(page.getByText('Нет доступных вам правил',{exact:true})).toBeVisible()
+    await expect(page.getByRole('table').getByRole('columnheader')).toHaveText(['Правило','Состояние','Трафик','Основания'])
     await expect(nav.getByRole('link',{name:'Правила политики',exact:true})).toHaveAttribute('aria-current','page')
   }
   expect(researchModules).toEqual([])
