@@ -30,7 +30,7 @@ Specification accepted via PR #56, squash commit `f66c23ff1cdf6d59ccbf63bcca2a16
 
 ## 5. Exit criteria and handoff
 
-- [ ] 5.1 Run strict OpenSpec, full pytest/coverage, blocking Ruff, web build/typecheck, semantic contract, proxy and full Playwright; record final HEAD and matching CI. Advisory baseline debt tracked separately.
+- [x] 5.1 Run strict OpenSpec, full pytest/coverage, blocking Ruff, web build/typecheck, semantic contract, proxy and full Playwright; record final HEAD and matching CI. Advisory baseline debt tracked separately.
 - [x] 5.2 Record reproducible owner smoke for human-readable REAL objects, visible Rule collection and current actor-authorized aggregate JSON/CSV export; retain bytes/evaluation provenance without credentials.
 - [ ] 5.3 Obtain **explicit owner manual acceptance** for the extended product outcome. Until then keep PR #55 Draft and its existing task 4.3 open; do not merge on automated tests alone.
 
