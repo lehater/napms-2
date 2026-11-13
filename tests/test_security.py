@@ -65,6 +65,35 @@ def test_independent_authority_and_forgeries(env):
     assert env[3].post(path, json={'outcome': 'DENIED'}, headers=auth(env, 'decider')).status_code == 409
 
 
+
+def test_local_demo_shared_read_preserves_mutation_authority(env):
+    rid = approved(env)
+    with env[0].transaction() as c:
+        request_id = c.execute("SELECT id FROM access_requests LIMIT 1").fetchone()[0]
+    with TestClient(create_app(env[0], load_credentials(env[1]), shared_read=True)) as client:
+        for role in ("requester", "decider", "exporter"):
+            headers = auth(env, role)
+            for url in (
+                "/business-processes",
+                "/business-processes/" + IDS["process"],
+                "/business-processes/" + IDS["process"] + "/needs",
+                "/access-requests",
+                "/access-requests/" + request_id,
+                "/policy-rules",
+                "/policy-rules/" + rid,
+                "/policy/export/current?format=json",
+                "/policy/export?ruleId=" + rid + "&format=json",
+            ):
+                assert client.get(url, headers=headers).status_code == 200, (role, url)
+            assert any(r["requestId"] == request_id for r in client.get("/access-requests", headers=headers).json()["items"])
+            assert any(r["ruleId"] == rid for r in client.get("/policy-rules", headers=headers).json()["items"])
+        assert client.get("/policy-rules").status_code == 401
+        assert client.post("/access-requests", json=DEMO_REQUEST, headers=auth(env, "decider")).status_code == 403
+        assert client.post("/business-processes", json={"name": "No"}, headers=auth(env, "exporter")).status_code == 403
+        assert client.post("/access-requests/" + request_id + "/decision", json={"outcome": "DENIED"},
+                           headers=auth(env, "requester")).status_code == 403
+
+
 @pytest.mark.parametrize('extra', ['evaluationAt=2000-01-01T00:00:00Z', 'actorId=forged', 'grants=forged'])
 def test_unsupported_query(env, extra):
     rid = approved(env)
