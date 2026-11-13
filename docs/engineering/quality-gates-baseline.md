@@ -55,7 +55,7 @@ GitHub `Verify` выполняет те же команды в job `application`
 
 Это baseline **качества продукта**, а не доказательство эффективности Codex/Harness. CI не записывает внутренние решения агента, его токены и стоимость. Метрики процесса `PR → CI → merge` — отдельная задача [#8](https://github.com/lehater/napms-2/issues/8). Результат не служит разрешением эксплуатации NAPMS вне локального dev/test.
 
-## 6. Локальные профили проверок для PolicyRule
+## 6. Локальные профили проверок (исторический пилот PolicyRule)
 
 [Issue #57](https://github.com/lehater/napms-2/issues/57) вводит ограниченный локальный профиль для коротких итераций над REAL PolicyRule. Это выбор набора локальных проверок, а не изменение GitHub `Verify`: workflow, required checks, docs-only классификация и security-регрессии остаются прежними. Размер экономии времени не измерялся; парные прогоны и бенчмарки не выполняются.
 
@@ -108,3 +108,30 @@ openspec validate --all --strict
 | Не установлены зависимости или Playwright не находит тесты | Остановка | Ненулевой статус и явная инструкция; профиль остаётся обязательным |
 
 FAST автоматически доступен только после появления обоих целевых файлов в базисе. Пока этого нет, даже UI-пути выбирают FULL. Локальный результат не заменяет полный GitHub `Verify` на PR HEAD и merge-кандидате.
+
+## 7. Staged verification (Issue #57)
+
+**Workflow:** `.github/workflows/verify.yml` keeps the existing required contexts `validate`, `semantic-contract`, `application`, and `web`.
+
+| Stage | Checks | Integration status |
+| --- | --- | --- |
+| Local iterations | `python3 scripts/check-fast.py`: Python Ruff core and changed test files, Web build/semantic check, OpenSpec on spec changes, or FULL for unknown/dependency/CI scope | Development feedback only |
+| Draft PR (known cumulative diff) | Python compile + Ruff core; Web build/typecheck only when `web/` changed; OpenSpec and semantic-contract | Required application/web deliberately fail with clear **EXPECTED Draft FAST** summary, so FAST cannot be mistaken for FULL |
+| Ready PR and subsequent synchronize | FULL backend/coverage, Ruff and advisory, Web build, proxy + both Playwright suites, OpenSpec + semantic-contract on pull-request merge candidate | Required checks PASS only after FULL |
+| Unknown/unsafe PR scope | FULL even in Draft | Draft required contexts remain blocked |
+| docs-only PR | Existing strict documentation allowlist; app/web skipped | validate + semantic-contract still run |
+| `push main` and manual dispatch | FULL | Post-integration regression preserved for now |
+
+The classifier uses the **cumulative PR diff** (merge candidate against current base), not just the last commit. Draft `synchronize` stays FAST for known changes; `ready_for_review` triggers FULL on the same HEAD. GitHub may count a skipped required job as successful. Therefore Draft application/web jobs intentionally finish non-green; this is an interim fail-closed compromise until the repository Ruleset is migrated to a single dedicated integration gate. A Draft PR cannot be merged anyway, but checks must still not imply FULL happened.
+
+Current Ruleset `main` (#26658822) has `strict_required_status_checks_policy=false`. Before merge, recheck freshness against current `main`; update the PR branch and rerun FULL if the base changed. The `push main` FULL remains because loose checks do not establish that the actual integrated tree was tested. **Do not remove the post-merge FULL or change required contexts until a separately accepted strict/integration-gate migration.** No tests are removed, no quality gates weakened, and a failed classification takes the FULL path.
+
+### Local usage
+
+```bash
+python3 scripts/check-fast.py --dry-run  # show affected areas and selected commands
+python3 scripts/check-fast.py            # run the selected local checks
+python3 scripts/check-fast.py --full     # optional full local regression for diagnosis
+```
+
+Local FAST intentionally avoids the full pytest and Playwright suites; the final Ready PR performs both in GitHub. If a test file under `tests/` changed, its specific pytest file is run locally. Renames, deletions, unknown paths, dependency and CI configuration changes, and unavailable diff classification fall back to FULL. Full regression remains available explicitly.
