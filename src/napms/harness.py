@@ -44,8 +44,8 @@ def run(db_path, credentials_path):
         raise KeyboardInterrupt
     signal.signal(signal.SIGTERM, stop_signal)
     try:
-        env = {**os.environ, 'NAPMS_LOCAL_DEMO': '1', 'NAPMS_CREDENTIALS_FILE': str(credentials)}
-        children.append(subprocess.Popen([sys.executable, '-m', 'napms.dev', 'serve', '--db', str(db), '--credentials', str(credentials)], cwd=root))
+        env = {**os.environ, 'NAPMS_LOCAL_DEMO': '1', 'NAPMS_DEMO_SHARED_READ': '1', 'NAPMS_CREDENTIALS_FILE': str(credentials)}
+        children.append(subprocess.Popen([sys.executable, '-m', 'napms.dev', 'serve', '--db', str(db), '--credentials', str(credentials)], cwd=root, env=env))
         children.append(subprocess.Popen(['npm', 'run', 'dev', '--', '--mode', 'local-demo'], cwd=web, env=env, start_new_session=True))
         opener = build_opener(ProxyHandler({}))
         deadline = time.monotonic() + 30
