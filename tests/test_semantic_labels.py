@@ -17,7 +17,7 @@ def rows(c):
 
 def downgrade_v3(db):
     with db.connect() as c:
-        for table in ("component_names", "application_names", "resource_names"):
+        for table in ("actor_names", "component_names", "application_names", "resource_names"):
             c.execute(f"DROP TABLE {table}")
         c.execute("PRAGMA user_version=3")
 
@@ -37,7 +37,7 @@ def test_v3_upgrade_preserves_history_and_credentials(env):
         ]
     db.initialize()  # Explicit migration alone does not invent any historical names.
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
         assert rows(c) == before
         assert c.execute("SELECT * FROM resource_names").fetchall() == []
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -100,6 +100,50 @@ def test_v3_migration_rolls_back_ddl_and_version(env):
             == []
         )
         assert rows(c) == before
+
+
+def test_v4_actor_names_migration_is_additive_repeatable_and_atomic(env):
+    db, path = env[:2]
+    request = __import__("test_acceptance").submit(env)
+    credentials = path.read_bytes()
+    with db.connect() as c:
+        c.execute("DROP TABLE actor_names")
+        c.execute("PRAGMA user_version=4")
+        before = rows(c)
+        identities = {
+            table: [tuple(row) for row in c.execute(f"SELECT * FROM {table} ORDER BY rowid")]
+            for table in ("actors", "grants", "access_requests")
+        }
+    db.initialize()
+    db.initialize()
+    with db.transaction() as c:
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
+        assert rows(c) == before
+        assert c.execute("SELECT * FROM actor_names").fetchall() == []
+        assert {
+            table: [tuple(row) for row in c.execute(f"SELECT * FROM {table} ORDER BY rowid")]
+            for table in identities
+        } == identities
+    assert path.read_bytes() == credentials
+    from napms.dev import init_demo
+    init_demo(db, path)
+    assert path.read_bytes() == credentials
+    with db.transaction() as c:
+        assert c.execute("SELECT id FROM access_requests").fetchone()[0] == request["requestId"]
+        assert c.execute("SELECT name FROM actor_names WHERE actor_id=?", (IDS["requester"],)).fetchone()[0] == "Демонстрационный заявитель"
+
+
+def test_actor_names_migration_rolls_back_table_and_version(env):
+    db = env[0]
+    with db.connect() as c:
+        c.execute("DROP TABLE actor_names")
+        c.execute("CREATE TABLE actor_names(injected TEXT)")
+        c.execute("PRAGMA user_version=4")
+    with pytest.raises(sqlite3.OperationalError, match="already exists"):
+        db.initialize()
+    with db.connect() as c:
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert [row[1] for row in c.execute("PRAGMA table_info(actor_names)")] == ["injected"]
 
 
 def test_names_validate_and_component_names_are_application_scoped(env):
@@ -204,6 +248,12 @@ def test_semantic_labels_missing_names_and_confidentiality(env):
     assert alternate["displayLabel"].endswith("udp(8000-8010)")
     assert needs()[0]["displayLabel"] == need["displayLabel"]
     request = submit(env)
+    assert request["listLabel"] == "Отправитель → Получатель · tcp(443)"
+    assert request["listContext"] == "Демонстрационный HTTPS · sender.demo.example → receiver.demo.example"
+    assert request["requesterDisplayName"] == "Демонстрационный заявитель"
+    duplicate = submit(env)
+    assert duplicate["listLabel"] == request["listLabel"]
+    assert duplicate["requestId"] != request["requestId"]
     decision = decide(env, request)
     rule = rule_detail(decision["policyRuleId"])
     assert rule["displayLabel"] == request["displayLabel"]
@@ -216,6 +266,9 @@ def test_semantic_labels_missing_names_and_confidentiality(env):
         assert response.status_code == 200
         assert "receiver.demo.example" not in response.text
         assert "Название недоступно" in response.text
+        assert "Отправитель → Получатель" not in response.text
+        item = response.json()["items"][0] if path == "/access-requests" else response.json()
+        assert item["listLabel"] == item["listContext"] == "Название недоступно"
     change(
         env, "DELETE FROM resource_names WHERE resource_id=?", (IDS["sourceResource"],)
     )
@@ -262,6 +315,18 @@ def test_historical_request_read_survives_each_disclosure_revocation_without_nam
         assert "Название недоступно" in response.text
         assert "receiver.demo.example" not in response.text
         assert "Отправитель" not in response.text
+
+
+def test_requester_name_uses_metadata_and_missing_name_fallback(env):
+    from conftest import auth
+    from test_acceptance import submit
+
+    request = submit(env)
+    with env[0].transaction(write=True) as c:
+        c.execute("DELETE FROM actor_names WHERE actor_id=?", (IDS["requester"],))
+    result = env[3].get("/access-requests/" + request["requestId"], headers=auth(env, "requester")).json()
+    assert result["requesterActorId"] == IDS["requester"]
+    assert result["requesterDisplayName"] == "Имя не задано"
 
 
 @pytest.mark.parametrize(

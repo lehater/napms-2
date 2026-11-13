@@ -2,7 +2,7 @@
 import sqlite3
 from uuid import uuid4
 
-from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, traffic
+from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, subject_list_projection, traffic
 from .domain import Problem, effective, now, validate_subject, validate_process_name
 
 
@@ -60,7 +60,15 @@ def decision_view(c, d, actor, at):
 def request_view(c, r, actor, at):
     d = c.execute("SELECT * FROM decisions WHERE request_id=?", (r["id"],)).fetchone()
     subject = find(c, "access_subjects", r["subject_id"])
-    return dict(displayLabel=request_label(c, r, actor, at), connectivityNeedId=r["need_id"], subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]), requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
+    visible = catalog_visible(c, actor, subject, at)
+    list_projection = subject_list_projection(c, subject) if visible else dict(listLabel=REDACTED, listContext=REDACTED)
+    actor_names_exist = c.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='actor_names'"
+    ).fetchone()
+    requester_name = c.execute("SELECT name FROM actor_names WHERE actor_id=?", (r["actor_id"],)).fetchone() if actor_names_exist else None
+    return dict(displayLabel=subject_label(c, subject) if visible else REDACTED, **list_projection,
+                requesterDisplayName=requester_name["name"] if requester_name else "Имя не задано",
+                connectivityNeedId=r["need_id"], subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]), requestId=r["id"], subjectId=r["subject_id"], status=d["outcome"] if d else "PENDING",
                 submittedAt=r["submitted_at"], requesterActorId=r["actor_id"],
                 admission=dict(sourceResourceId=r["source_resource_id"], grantId=r["grant_id"], checkedAt=r["checked_at"]),
                 decision=decision_view(c, d, actor, at) if d else None)

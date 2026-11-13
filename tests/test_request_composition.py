@@ -111,7 +111,9 @@ def test_dto_historical_and_source_only_no_get(env):
     nested = env[3].get('/policy-rules/'+decision['policyRuleId'],headers=auth(env,'exporter')).json()['originatingRequest']
     assert listing['displayLabel'] == 'Название недоступно'
     assert 'receiver.demo.example' in nested['displayLabel']
-    assert {k: v for k, v in listing.items() if k not in ('displayLabel', 'decision')} == {k: v for k, v in nested.items() if k not in ('displayLabel', 'decision')}
+    assert {k: v for k, v in listing.items() if k not in ('displayLabel', 'listLabel', 'listContext', 'decision')} == {k: v for k, v in nested.items() if k not in ('displayLabel', 'listLabel', 'listContext', 'decision')}
+    assert listing['listLabel'] == listing['listContext'] == 'Название недоступно'
+    assert 'receiver.demo.example' in nested['listContext']
     assert {k: v for k, v in listing['decision'].items() if k != 'displayLabel'} == {k: v for k, v in nested['decision'].items() if k != 'displayLabel'}
 
 
@@ -162,7 +164,7 @@ def test_read_snapshot_and_seed_upgrade(env):
     init_demo(env[0],env[1])
     assert env[1].read_bytes() == credentials
     with env[0].transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 4
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 5
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
 
 

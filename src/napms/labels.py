@@ -1,9 +1,14 @@
 """Server-owned presentation of typed domain facts; callers authorize before resolving names."""
 
-from typing import Literal
+from typing import Literal, TypedDict
 
 MISSING = "Название не задано"
 REDACTED = "Название недоступно"
+
+
+class SubjectListProjection(TypedDict):
+    listLabel: str
+    listContext: str
 
 
 def traffic(protocol: Literal["TCP", "UDP"], start: int, end: int) -> str:
@@ -75,3 +80,18 @@ def subject_label(c, subject):
         (subject["interaction_revision_id"],),
     ).fetchone()
     return f"{deployment_label(c, src)} → {deployment_label(c, dst)} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'])}"
+
+
+def subject_list_projection(c, subject) -> SubjectListProjection:
+    src = c.execute("SELECT * FROM deployments WHERE id=?", (subject["source_deployment_id"],)).fetchone()
+    dst = c.execute("SELECT * FROM deployments WHERE id=?", (subject["destination_deployment_id"],)).fetchone()
+    rev = c.execute("SELECT * FROM interaction_revisions WHERE id=?", (subject["interaction_revision_id"],)).fetchone()
+    app = name(c, "application", rev["application_id"])
+    source_component = name(c, "component", src["component_id"])
+    destination_component = name(c, "component", dst["component_id"])
+    source_resource = name(c, "resource", src["resource_id"])
+    destination_resource = name(c, "resource", dst["resource_id"])
+    return {
+        "listLabel": f"{source_component} → {destination_component} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'])}",
+        "listContext": f"{app} · {source_resource} → {destination_resource}",
+    }

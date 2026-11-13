@@ -166,6 +166,9 @@ class Decision(Strict):
 
 class AccessRequest(Strict):
     displayLabel: str
+    listLabel: str
+    listContext: str
+    requesterDisplayName: str
     connectivityNeedId: UUID
     subject: Subject
     requestId: UUID

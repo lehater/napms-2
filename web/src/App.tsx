@@ -84,9 +84,9 @@ function RequestList({ client }: { client: Client }) {
   }, [client, offset, reload])
   return <CollectionView<AccessRequest> title="Заявки на доступ" description="Заявки, доступные по серверным полномочиям." actions={<Button asChild><Link to="/access-requests/new">Новая заявка</Link></Button>}
     rows={page?.items ?? []} columns={[
-      {key:'request',title:'Заявка',render:r=><Link to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.displayLabel}<small>{r.requestId}</small></Link>},
+      {key:'request',title:'Заявка',render:r=><Link to={'/access-requests/' + r.requestId + (offset ? '?offset=' + offset : '')}>{r.listLabel}<small>{r.listContext}</small><small>{r.requestId}</small></Link>},
       {key:'submitted',title:'Подана',render:r=>new Date(r.submittedAt).toLocaleString()},
-      {key:'requester',title:'Заявитель',render:r=><span className="font-mono text-xs">{r.requesterActorId}</span>},
+      {key:'requester',title:'Заявитель',render:r=><><span>{r.requesterDisplayName}</span>{r.requesterDisplayName === 'Имя не задано' && <small className="font-mono">{r.requesterActorId}</small>}</>},
       {key:'status',title:'Статус',render:r=><Status value={r.status} />},
     ]} getKey={r=>r.requestId} emptyText="Нет доступных заявок." loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }

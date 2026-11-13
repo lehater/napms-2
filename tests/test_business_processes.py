@@ -137,7 +137,7 @@ def test_historical_v1_upgrade(env):
     init_demo(db, env[1])
     init_demo(db, env[1])
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 4
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 5
         assert c.execute('PRAGMA foreign_key_check').fetchall() == []
         assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' ORDER BY name")] == triggers
         for table, rows in before.items():

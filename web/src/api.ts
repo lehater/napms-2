@@ -22,6 +22,7 @@ export type Decision = {
 }
 export type AccessRequest = {
   displayLabel: string;
+  listLabel: string; listContext: string; requesterDisplayName: string;
   requestId: string; subjectId: string; status: 'PENDING' | Outcome
   connectivityNeedId: string; subject: Omit<AccessInput, 'connectivityNeedId'>
   submittedAt: string; requesterActorId: string

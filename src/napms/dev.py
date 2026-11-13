@@ -56,6 +56,12 @@ def init_demo(db, credentials):
         seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]), "id,process_id,interaction_id,component_id")
         for role in ("requester", "decider", "exporter"):
             seed("actors", (IDS[role],), "id")
+        for role, display_name in (
+            ("requester", "Демонстрационный заявитель"),
+            ("decider", "Демонстрационный согласующий"),
+            ("exporter", "Демонстрационный оператор политики"),
+        ):
+            seed("actor_names", (IDS[role], display_name), "actor_id,name")
         # Explicit synthetic operator input, never inferred from IDs or addresses.
         for table, column, names in (
             ("resource_names", "resource_id", {"sourceResource": "sender.demo.example", "destinationResource": "receiver.demo.example"}),

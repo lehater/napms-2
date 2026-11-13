@@ -41,6 +41,10 @@ CREATE TRIGGER unique_component_name_update BEFORE UPDATE ON component_names BEG
 END;
 """
 
+ACTOR_NAMES_SCHEMA = """
+CREATE TABLE actor_names(actor_id TEXT PRIMARY KEY NOT NULL REFERENCES actors(id), name TEXT NOT NULL CHECK(length(trim(name)) BETWEEN 1 AND 300));
+"""
+
 
 class Database:
     def __init__(self, path):
@@ -57,7 +61,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4):
+            if version not in (0, 1, 2, 3, 4, 5):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -67,7 +71,7 @@ class Database:
                     for operation in ("UPDATE", "DELETE"):
                         triggers += f"CREATE TRIGGER immutable_{table}_{operation} BEFORE {operation} ON {table} BEGIN SELECT RAISE(ABORT,'immutable record'); END;\n"
                 triggers += "CREATE TRIGGER immutable_rule_identity BEFORE UPDATE OF id,subject_id,originating_decision_id ON policy_rules BEGIN SELECT RAISE(ABORT,'immutable rule identity'); END;"
-                c.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + triggers + "\nCREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id);\n" + NAMES_SCHEMA + "\nPRAGMA user_version=4; COMMIT;")
+                c.executescript("BEGIN IMMEDIATE;\n" + SCHEMA + triggers + "\nCREATE UNIQUE INDEX unique_need ON needs(process_id,interaction_id,component_id);\n" + NAMES_SCHEMA + ACTOR_NAMES_SCHEMA + "\nPRAGMA user_version=5; COMMIT;")
 
             elif version in (1, 2, 3):
                 try:
@@ -87,7 +91,22 @@ class Database:
                         if sqlite3.complete_statement(statement):
                             c.execute(statement)
                             statement = ""
-                    c.execute("PRAGMA user_version=4")
+                    for line in ACTOR_NAMES_SCHEMA.splitlines():
+                        statement += line + "\n"
+                        if sqlite3.complete_statement(statement):
+                            c.execute(statement)
+                            statement = ""
+                    c.execute("PRAGMA user_version=5")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
+            elif version == 4:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    c.execute(ACTOR_NAMES_SCHEMA.strip())
+                    c.execute("PRAGMA user_version=5")
                     c.commit()
                 except BaseException:
                     c.rollback()
@@ -97,7 +116,7 @@ class Database:
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 4:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 5:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c
