@@ -27,6 +27,5 @@ export function DemoActor() {
     {error ? <p role="alert">{error}</p> : !ready ? <p role="status">Проверка local-demo…</p> : <label>Demo actor <select aria-label="Demo actor" value={actor} onChange={e => setActor(e.target.value as Actor)}>
       <option value="anonymous">Без авторизации · 401</option><option value="requester">Requester</option><option value="decider">Decider</option><option value="exporter">Exporter</option>
     </select></label>}
-    <small>REAL · Полномочия проверяет FastAPI</small>
   </section>
 }

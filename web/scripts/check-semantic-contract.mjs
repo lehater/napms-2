@@ -1,6 +1,8 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { objects, objectPath, visibleCollection, stateDefinitions, dataNature, sections } from '../src/prototype/data.ts'
 
+import { navigation } from '../src/navigation.ts'
+
 const contract = JSON.parse(readFileSync(new URL('../../docs/contracts/ux-0-semantic-boundaries.json', import.meta.url), 'utf8'))
 const enforced = contract.enforced
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
@@ -57,6 +59,7 @@ function validate(items, policyRows) {
 }
 
 const errors = validate(objects, visibleCollection('policy'))
+if (!same(navigation, contract.realNavigation?.entries)) errors.push('REAL main navigation differs from its accepted two-collection contract')
 // Validator sentinels: these check detection branches, not an actual UI render mutation.
 const request = objects.find(o => o.kind === 'AccessRequest')
 if (!request) errors.push('missing AccessRequest fixture')
@@ -71,5 +74,5 @@ if (errors.length) {
   process.exitCode = 1
 } else {
   console.log('SEMANTIC_CONTRACT_PASS: ' + Object.keys(enforced.statusDomains).length +
-    ' kinds, ' + sections.length + ' top-level sections, routes, denied provenance, 2 validator sentinels')
+    ' kinds, ' + sections.length + ' research sections, 2 REAL collections, routes, denied provenance, 2 validator sentinels')
 }

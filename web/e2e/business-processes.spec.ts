@@ -73,8 +73,8 @@ async function login(page: Page, token: string) {
 
 test('REAL Process persists through refresh and actual backend restart; MOCK remains isolated', async ({ page, backend }) => {
   const { credentials } = backend
-  await page.goto('/prototype')
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
+  await page.goto('/')
+  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page).toHaveURL(/\/business-processes$/)
   await login(page, credentials.requester.token)
   await page.getByRole('link', { name: 'Создать бизнес-процесс', exact: true }).click()
@@ -89,14 +89,14 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   await expect(page.getByLabel('Коммуникация', { exact: true })).toBeVisible()
   await page.getByLabel('Коммуникация', { exact: true }).selectOption('00000000-0000-0000-0000-000000000009')
   await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody tr')).toHaveCount(1)
+  await expect(page.getByRole('region', { name: 'Потребности процесса' }).locator('tbody tr')).toHaveCount(1)
   await expect(page.getByText('На этой странице нет доступных коммуникаций.')).toBeVisible()
   const needsPath = new URL(detail).pathname + '/needs'
   const headers = { Authorization: 'Bearer ' + credentials.requester.token }
   const saved = (await (await page.request.get(needsPath, { headers })).json()).items[0]
   const replay = await page.request.post(needsPath, { headers, data: { interactionRevisionId: '00000000-0000-0000-0000-000000000009' } })
   expect(replay.status()).toBe(409)
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('table')).toContainText('Приёмка SQLite')
   await page.getByRole('link', { name: 'Приёмка SQLite', exact: true }).click()
   await page.reload()
@@ -111,7 +111,7 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   await expect(page.getByRole('heading', { name: 'Приёмка SQLite', exact: true })).toBeVisible()
   await expect(page.getByText('Финансы', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Потребности', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody')).toContainText(saved.connectivityNeedId)
+  await expect(page.getByRole('region', { name: 'Потребности процесса' }).locator('tbody')).toContainText(saved.connectivityNeedId)
   const second = await page.request.post('/business-processes', { headers, data: { name: 'Повторное использование' } })
   const otherId = (await second.json()).processId
   await page.goto(`/business-processes/${otherId}?tab=needs`)
@@ -120,7 +120,7 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   expect((await page.request.post(`/business-processes/${otherId}/needs`, { headers, data: { interactionRevisionId: '00000000-0000-0000-0000-000000000009' } })).status()).toBe(201)
   await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
   await expect(page.getByText('Такая потребность уже существует.', { exact: true })).toBeVisible()
-  await expect(page.getByRole('region', { name: 'Потребности REAL' }).locator('tbody tr')).toHaveCount(1)
+  await expect(page.getByRole('region', { name: 'Потребности процесса' }).locator('tbody tr')).toHaveCount(1)
 
 
   const stored = await page.request.get('/business-processes', { headers: { Authorization: 'Bearer ' + credentials.requester.token } })
@@ -129,7 +129,7 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   expect(items.some((p: { processId: string }) => p.processId.startsWith('mock-'))).toBe(false)
   const storage = await page.evaluate(() => [...Object.values(localStorage), ...Object.values(sessionStorage), document.cookie])
   expect(Object.values(credentials).some(c => storage.some(v => v.includes(c.token)))).toBe(false)
-  await page.getByRole('link', { name: /MOCK Simulation:/ }).click()
+  await page.goto('/prototype/processes')
   await expect(page.getByRole('heading', { name: 'Бизнес-процессы', exact: true })).toBeVisible()
   await expect(page.getByText('Приёмка SQLite', { exact: true })).toHaveCount(0)
 })
@@ -149,14 +149,14 @@ test('REAL Process authorization, failed POST and actual API outage have safe re
   await expect(page).toHaveURL(/\/business-processes\/new$/)
   await page.getByRole('button', { name: 'Очистить credential' }).click()
   await login(page, credentials.requester.token)
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('table')).not.toContainText('Нельзя сохранить')
   await backend.stop()
   await page.getByRole('link', { name: 'Создать бизнес-процесс', exact: true }).click()
   await page.getByLabel('Название', { exact: true }).fill('Не записано при сбое')
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
   await expect(page.getByRole('alert')).toBeVisible()
-  await page.getByRole('navigation', { name: 'Prototype navigation' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
   await expect(page.getByRole('alert')).toBeVisible()
   await expect(page.getByRole('table')).toHaveCount(0)
   await backend.start()

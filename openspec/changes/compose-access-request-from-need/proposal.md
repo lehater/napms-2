@@ -15,6 +15,8 @@ At accepted `main@4864706e54535e947b6f8b4e4ed09e4c6138b66a` (PR #51), a user can
 - Provide an authorized REAL PolicyRule Detail and actual selected-rule JSON/CSV downloads through existing `GET /policy-rules/{ruleId}` and `GET /policy/export?ruleId=...&format=...`. Handoff from ALLOWED Request to an Exporter-capable route must preserve the Rule ID without granting the Decider export rights.
 - Specify real browser acceptance through backend restart, independent ALLOWED decision, Rule inspection and successful downloaded JSON/CSV bytes, plus negative security and atomicity checks.
 
+- Owner-approved acceptance cleanup: show only live Process/Request collections in main navigation; isolate historical `/prototype/*` navigation/state, preserve resizable geometry, and remove obsolete main UI links/labels.
+
 ## Capabilities
 
 ### New Capabilities

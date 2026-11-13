@@ -8,9 +8,9 @@ export const sections = [
   { id: 'requests', group: 'Управление доступом', title: 'Заявки на доступ', description: 'Предмет запроса и решение ALLOWED / DENIED. Заявка и правило — разные сущности.', kind: 'AccessRequest' },
   { id: 'policy', group: 'Управление доступом', title: 'Правила политики', description: 'Авторитетные разрешения для точного AccessSubject и основания их появления.', kind: 'PolicyRule' },
 ] as const
-// Existing technical URLs and fixture identities stay available outside the Sidebar.
+// Historical technical URLs and fixture identities stay available within research.
 export const legacySections = [
-  { id: 'overview', group: 'Research', title: 'Overview', description: 'Исторический обзор UX-0. Целевые коллекции доступны в Sidebar.' },
+  { id: 'overview', group: 'Research', title: 'Overview', description: 'Исторический обзор UX-0. Учебные коллекции доступны в Sidebar прототипа.' },
   { id: 'network', group: 'Research', title: 'Network evidence', description: 'Фиктивные сетевые данные; маршрут и доставка не доказаны.' },
   { id: 'comparison', group: 'Research', title: 'Reconciliation', description: 'Сравнение фиктивных permits в выбранном scope.' },
 ] as const

@@ -22,7 +22,7 @@ export default function Needs({ client, processId }: { client: Client; processId
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
   useEffect(() => {
     let active = true
-    setNeeds(null); setError('')
+    setSelected(null); setNeeds(null); setError('')
     client.needs(processId, offset).then(p => { if (active) setNeeds(p) }).catch(e => { if (active) setError(explain(e)) })
     return () => { active = false }
   }, [client, processId, offset, reload])
@@ -43,11 +43,11 @@ export default function Needs({ client, processId }: { client: Client; processId
       if (alive.current) { setFeedback(explain(e)); if (e instanceof ApiError && e.status === 409) { setOptionOffset(0); setReload(x => x + 1) } }
     } finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section aria-label="Потребности REAL"><h2>Потребности</h2>
-    <p>REAL · Потребность обосновывает коммуникацию и не разрешает доступ.</p>
+  return <section aria-label="Потребности процесса"><h2>Потребности</h2>
+    <p>Потребность обосновывает коммуникацию и не разрешает доступ.</p>
     {error && <p role="alert">{error}</p>}
     {!needs && !error && <p role="status">Загрузка потребностей…</p>}
-    {needs && <>{needs.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Потребность</th><th>Interaction</th><th>Исходный Component</th></tr></thead><tbody>{needs.items.map(n => <tr key={n.connectivityNeedId}><td><button onClick={() => setSelected(n)}>{n.connectivityNeedId}</button></td><td>{n.interactionId}</td><td>{n.componentId}</td></tr>)}</tbody></table></div> : <p>На этой странице нет потребностей.</p>}
+    {needs && <>{needs.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Потребность</th><th>Interaction</th><th>Исходный Component</th></tr></thead><tbody>{needs.items.map(n => <tr key={n.connectivityNeedId}><td><button aria-pressed={selected?.connectivityNeedId === n.connectivityNeedId} onClick={() => setSelected(n)}>{n.connectivityNeedId}</button></td><td>{n.interactionId}</td><td>{n.componentId}</td></tr>)}</tbody></table></div> : <p>На этой странице нет потребностей.</p>}
       <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button><Button variant="outline" disabled={!needs.hasMore} onClick={() => setOffset(offset + 20)}>Следующие потребности</Button></>}
     {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
     <h3>Создать потребность</h3>

@@ -94,7 +94,7 @@ function RequestList({ client }: { client: Client }) {
 }
 
 function NewRequest() {
-  return <section className="panel"><h1>Новая заявка</h1><p>Выберите сохранённую потребность процесса, затем Revision и два Deployment. Допуск создаёт PENDING, а не разрешение.</p><Link to="/business-processes">Выбрать процесс и потребность REAL</Link></section>
+  return <section className="panel"><h1>Новая заявка</h1><p>Выберите сохранённую потребность процесса, затем Revision и два Deployment. Допуск создаёт PENDING, а не разрешение.</p><Link to="/business-processes">Выбрать процесс и потребность</Link></section>
 }
 
 function Evidence({ entries }: { entries: Record<string, string | null> }) {
@@ -123,7 +123,7 @@ function RequestDetail({ client, mode }: { client: Client; mode: Mode }) {
     {request && request.requestId === requestId && <><Status value={request.status} /><nav className="ux-tabs" aria-label="Вкладки заявки"><Link to={tabPath('overview')} aria-current={!decisionTab ? 'page' : undefined}>Обзор</Link><Link to={tabPath('decision')} aria-current={decisionTab ? 'page' : undefined}>Решение и основания</Link></nav>{!decisionTab && <><Evidence entries={{ requestId: request.requestId, subjectId: request.subjectId, requesterActorId: request.requesterActorId, submittedAt: request.submittedAt, connectivityNeedId: request.connectivityNeedId, ...request.subject }} />
       <h2>Основания допуска</h2><Evidence entries={request.admission} />
       </>}{decisionTab && <><h2>Решение сервера</h2>{request.decision ? <Evidence entries={request.decision} /> : <p>Решение ещё не принято.</p>}</>}
-      {request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть PolicyRule REAL</Link>}
+      {request.decision?.policyRuleId && <Link to={'/policy-rules/' + request.decision.policyRuleId}>Открыть правило политики</Link>}
       {mode === 'decider' && request.status === 'PENDING' && <DecisionPanel key={requestId} client={client} requestId={requestId} refresh={text => { setFeedback(text); setReload(x => x + 1) }} />}
     </>}
   </section>

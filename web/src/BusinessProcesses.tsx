@@ -33,7 +33,7 @@ export default function BusinessProcesses() {
   return <>
     <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Бизнес-процессы</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">{leaf[0] === 'new' ? 'Создание' : 'Карточка'}</span></>}</nav>
     {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
-      <strong>REAL · локальный демонстрационный каталог</strong>
+      <strong>Локальный демонстрационный каталог</strong>
       <p>Сервер проверяет отдельные права чтения и создания. Ответственная организация — описание, не полномочие.</p>
       <ErrorNotice error={notice} />
       {token ? <><p role="status">Credential активен</p><Button variant="outline" onClick={() => { credentialSession.current++; setToken(''); setDraft(''); setNotice('') }}>Очистить credential</Button></> : <form onSubmit={e => { e.preventDefault(); credentialSession.current++; setToken(draft.trim()); setDraft(''); setNotice('') }}>
@@ -48,7 +48,6 @@ export default function BusinessProcesses() {
       <Route path=":processId" element={<ProcessDetail client={client} />} />
       <Route path="*" element={<h1>Страница не найдена</h1>} />
     </Routes></div>}
-    <p className="ux-note">Эта коллекция использует FastAPI и SQLite. <Link to="/prototype/processes">MOCK Simulation: учебный сценарий процесса → потребности → заявки</Link>. Заявки на доступ также REAL; остальные пять коллекций MOCK.</p>
   </>
 }
 function ProcessList({ client }: { client: Client }) {
@@ -63,7 +62,7 @@ function ProcessList({ client }: { client: Client }) {
     client.processes(offset).then(p => { if (active) setPage(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, offset, reload])
-  return <><div className="ux-heading"><p className="ux-eyebrow">BusinessProcess · REAL</p><h1>Бизнес-процессы</h1><Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button></div>
+  return <><div className="ux-heading"><h1>Бизнес-процессы</h1><Button asChild><Link to="/business-processes/new">Создать бизнес-процесс</Link></Button></div>
     <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
       {!page && !error && <p role="status">Загрузка…</p>}
       {page && <>{page.items.length ? <div className="ux-table-scroll"><table className="ux-table"><thead><tr><th>Название</th><th>Ответственная организация</th></tr></thead><tbody>{page.items.map(p => <tr key={p.processId}><td><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не указано'}</Link></td><td>{p.responsibleOrganization ?? 'Не указана'}</td></tr>)}</tbody></table></div> : <p>На этой странице нет бизнес-процессов.</p>}
@@ -105,7 +104,7 @@ function ProcessDetail({ client }: { client: Client }) {
   }, [client, processId, reload])
   return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />
     {!item && !error && <p role="status">Загрузка…</p>}
-    {item && item.processId === processId && <><p className="ux-eyebrow">BusinessProcess · REAL</p><h1>{item.name ?? 'Название не указано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
+    {item && item.processId === processId && <><h1>{item.name ?? 'Название не указано'}</h1><nav className="ux-tabs" aria-label="Вкладки процесса"><Link to={tabPath('overview')} aria-current={!needs ? 'page' : undefined}>Обзор</Link><Link to={tabPath('needs')} aria-current={needs ? 'page' : undefined}>Потребности</Link></nav>
     {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не указано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}<Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>К списку</Link></>}
   </section>
 }
