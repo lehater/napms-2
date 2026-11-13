@@ -571,7 +571,7 @@ test('composition resets, empty/error discovery and uncertain POST remain safe',
   try {
     await page.getByRole('button',{name:'Подтвердить заявку',exact:true}).click()
     await expect(page.getByRole('region',{name:'Запрос из потребности'}).getByRole('alert')).toContainText('403')
-    await expect(page.getByText('На этой странице нет доступных вариантов.')).toBeVisible()
+    await expect(page.getByLabel('Revision',{exact:true})).toBeEnabled()
     await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
   } finally {harness.sql("UPDATE grants SET valid_until=NULL WHERE action='access.request'")}
   await openComposition(page)
