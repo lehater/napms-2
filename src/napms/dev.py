@@ -132,7 +132,8 @@ def main():
     else:
         import uvicorn
         from .http import create_app
-        uvicorn.run(create_app(Database(args.db), load_credentials(args.credentials)),
+        uvicorn.run(create_app(Database(args.db), load_credentials(args.credentials),
+                               shared_read=os.environ.get("NAPMS_DEMO_SHARED_READ") == "1"),
                     host=args.host, port=args.port, access_log=False)
 
 
