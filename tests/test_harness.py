@@ -25,6 +25,19 @@ def test_harness_busy_port_does_not_initialize(tmp_path, monkeypatch):
     assert list(tmp_path.iterdir()) == []
 
 
+def test_harness_requires_explicit_auth_and_leaves_sqlite_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr('napms.harness.shutil.which', lambda _: '/usr/bin/npm')
+    from pathlib import Path
+    original = Path.is_file
+    monkeypatch.setattr(Path, 'is_file', lambda p: p.name == 'vite.js' or original(p))
+    db_path = tmp_path / 'fresh.sqlite3'
+    with pytest.raises(RuntimeError, match='make init-auth'):
+        run(db_path, tmp_path / 'no-credentials.json')
+    with Database(db_path).transaction() as c:
+        for table in ('actors', 'grants', 'applications', 'processes', 'resources'):
+            assert c.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0] == 0
+
+
 def test_harness_missing_npm_is_actionable(tmp_path, monkeypatch):
     monkeypatch.setattr('napms.harness.shutil.which', lambda _: None)
     with pytest.raises(RuntimeError, match='npm ci'):
