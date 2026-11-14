@@ -89,6 +89,7 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await page.getByRole('link', { name: 'Взаимодействия', exact: true }).click()
   await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'Sender' })
   await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'Receiver' })
+  await page.getByLabel('Назначение взаимодействия').fill('Order fulfillment traffic')
   await page.getByLabel('Порт источника от').fill('40000')
   await page.getByLabel('Порт источника до').fill('40100')
   for (const [width, height] of [[1920, 1080], [1440, 900]]) {
