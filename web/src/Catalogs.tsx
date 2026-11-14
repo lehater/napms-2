@@ -9,6 +9,7 @@ import { DetailView } from './components/real/DetailView'
 import { EntityTable } from './components/real/EntityTable'
 
 function catalogError(error: unknown) {
+  if (error instanceof ApiError && error.code === 'INTERACTION_PURPOSE_EXISTS') return 'Связь с этим назначением уже существует. Откройте её и опубликуйте новую ревизию.'
   if (error instanceof ApiError && error.code === 'DUPLICATE_INTERACTION') return 'Такое взаимодействие уже существует: выберите его или укажите другое назначение.'
   if (error instanceof ApiError && error.code === 'DUPLICATE_TRAFFIC_CLAUSE') return 'Повторяющееся условие трафика в одной ревизии.'
   if (error instanceof ApiError && error.code === 'UNCHANGED_REVISION') return 'Состав условий не изменился: новая ревизия не создана.'
@@ -194,7 +195,7 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
       </fieldset>
       <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать'}</Button>
       <label className="interaction-purpose">Назначение взаимодействия
-        <input aria-label="Назначение взаимодействия" maxLength={300} value={purpose}
+        <input aria-label="Назначение взаимодействия" required maxLength={300} value={purpose}
           placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
       </label>
       {additional.map((item,index) => <div className="interaction-extra" key={index}>
