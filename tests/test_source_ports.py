@@ -75,6 +75,13 @@ def test_source_ports_any_and_explicit_end_to_end(env):
         current = client.get('/policy/export/current', headers=exporter).json()["rows"]
         assert any(item["ruleId"] == rule_id and item["sourcePortStart"] == data["sourcePortStart"]
                    for item in current)
+        current_csv = client.get('/policy/export/current?format=csv', headers=exporter)
+        assert current_csv.status_code == 200
+        csv_rows = list(csv.DictReader(io.StringIO(current_csv.text)))
+        assert any(item["ruleId"] == rule_id and
+                   item["sourcePortStart"] == ("" if data["sourcePortStart"] is None else str(data["sourcePortStart"])) and
+                   item["sourcePortEnd"] == ("" if data["sourcePortEnd"] is None else str(data["sourcePortEnd"]))
+                   for item in csv_rows)
         with db.transaction() as c:
             stored = c.execute("SELECT source_port_start,source_port_end FROM interaction_revisions WHERE id=?",
                                (revision["interactionRevisionId"],)).fetchone()
