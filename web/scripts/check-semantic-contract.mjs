@@ -60,8 +60,6 @@ function validate(items, policyRows) {
 
 const errors = validate(objects, visibleCollection('policy'))
 if (!same(navigation, contract.realNavigation?.entries)) errors.push('REAL main navigation differs from its accepted REAL collection contract')
-if (navigation.length !== 6 || navigation.filter(item => item.group === 'Каталоги').map(item => item.path).join(',') !== '/resources,/applications,/deployments')
-  errors.push('REAL navigation must contain six links with Resources first in the Catalogs group')
 // Validator sentinels: these check detection branches, not an actual UI render mutation.
 const request = objects.find(o => o.kind === 'AccessRequest')
 if (!request) errors.push('missing AccessRequest fixture')

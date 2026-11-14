@@ -55,7 +55,7 @@ test('one-command actor switching preserves independent grants and actual persis
   const realNav = page.getByRole('navigation', { name: 'Основная навигация' })
   await expect(realNav.locator('h2')).toHaveText(['Бизнес-контекст', 'Каталоги', 'Управление доступом'])
   await expect(realNav.locator('h2').getByRole('link')).toHaveCount(0)
-  await expect(realNav.getByRole('link')).toHaveText(['Бизнес-процессы', 'Ресурсы', 'Профили приложений', 'Развёрнутые компоненты', 'Заявки на доступ', 'Правила политики'])
+  await expect(realNav.getByRole('link')).toHaveText(['Бизнес-процессы', 'Профили приложений', 'Развёрнутые компоненты', 'Заявки на доступ', 'Правила политики'])
   await expect(realNav.locator('li a').first()).toHaveCSS('margin-left', '14px')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   // Shared REAL collection contract: empty tables retain their headings and context.
@@ -308,7 +308,7 @@ test('one-command actor switching preserves independent grants and actual persis
       else await expect(page.getByRole('link', {name:'Выбрать процесс и потребность'})).toBeVisible()
       await expect(page.locator('.ux-shell')).toHaveCount(1)
       if (size.width < 768) await page.getByRole('button', { name: 'Открыть меню', exact: true }).click()
-      await expect(page.getByRole('navigation', {name:'Основная навигация'}).getByRole('link')).toHaveCount(6)
+      await expect(page.getByRole('navigation', {name:'Основная навигация'}).getByRole('link')).toHaveCount(5)
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBe(size.width)
     }
   }
@@ -669,7 +669,7 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await page.goto('/')
     await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
     const nav=page.getByRole('navigation',{name:'Основная навигация',exact:true})
-    await expect(nav.getByRole('link')).toHaveText(['Бизнес-процессы','Ресурсы','Профили приложений','Развёрнутые компоненты','Заявки на доступ','Правила политики'])
+    await expect(nav.getByRole('link')).toHaveText(['Бизнес-процессы','Профили приложений','Развёрнутые компоненты','Заявки на доступ','Правила политики'])
     await expect(nav.locator('.ux-nav-label')).toHaveText(['Бизнес-контекст','Каталоги','Управление доступом'])
     await expect(nav.getByRole('link',{name:'Бизнес-процессы',exact:true})).toHaveAttribute('aria-current','page')
     await expect(page.locator('aside')).not.toContainText(/MOCK|REAL|Simulation|Потребности в коммуникациях/)
@@ -707,109 +707,6 @@ test('REAL navigation is bounded, resizable and independent of the research modu
   await expect(page.locator('.ux-topbar')).toContainText('RESEARCH / MOCK')
   expect(researchModules.length).toBeGreaterThan(0)
   expect(harness.file).toBeTruthy()
-})
-
-test('REAL Resources create a stable Endpoint and feed a new destination through policy export', async ({page,harness}) => {
-  async function demoApi(path: string, actor: 'requester'|'decider'|'exporter', method = 'GET', body?: unknown) {
-    return page.evaluate(async ({path,actor,method,body}) => {
-      const response = await fetch(path, {method, headers: {'X-NAPMS-Dev':'1','X-NAPMS-Demo-Actor':actor,...(body === undefined ? {} : {'Content-Type':'application/json'})}, ...(body === undefined ? {} : {body:JSON.stringify(body)})})
-      const text = await response.text()
-      let payload: unknown = text
-      try { payload = JSON.parse(text) } catch { /* CSV response */ }
-      return {status:response.status, payload}
-    }, {path,actor,method,body})
-  }
-
-  await page.setViewportSize({width:1440,height:1000})
-  await page.goto('/resources')
-  await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
-  await expect(page.getByRole('table')).toContainText('sender.demo.example')
-  await page.getByRole('link',{name:'Создать Resource',exact:true}).click()
-  await page.getByLabel('Название Resource', {exact:true}).fill('New policy destination')
-  await page.getByRole('button',{name:'Создать Resource',exact:true}).click()
-  await expect(page).toHaveURL(/\/resources\/[0-9a-f-]{36}\?tab=endpoints$/)
-  const resourceId = page.url().match(/resources\/([0-9a-f-]{36})/)![1]
-  await expect(page.getByRole('table')).toContainText('Адрес не задан')
-  const endpointId = (await page.getByRole('table').locator('tbody tr').innerText()).match(/[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}/i)![0]
-  await page.screenshot({path:'/tmp/napms-real-resource-desktop.png',fullPage:true})
-
-  await page.goto('/deployments/new')
-  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
-  await page.getByLabel('Компонент',{exact:true}).selectOption({label:'Демонстрационный HTTPS · Получатель'})
-  await page.getByLabel('Resource',{exact:true}).selectOption({label:'New policy destination'})
-  await page.getByRole('button',{name:'Создать развёртывание',exact:true}).click()
-  await expect(page).toHaveURL(/\/deployments\/[0-9a-f-]{36}$/)
-  const destinationDeploymentId = page.url().split('/').pop()!
-  await page.goto(`/resources/${resourceId}`)
-  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
-  const relatedDeployment = page.getByRole('table').getByRole('link',{name:/Получатель/})
-  await expect(relatedDeployment).toBeVisible()
-  await relatedDeployment.click()
-  await expect(page).toHaveURL(`/deployments/${destinationDeploymentId}`)
-
-  const applications = await demoApi('/applications?limit=100&offset=0','requester')
-  expect(applications.status).toBe(200)
-  const application = (applications.payload as {items:{applicationId:string}[]}).items[0]
-  const interactions = await demoApi(`/applications/${application.applicationId}/interactions?limit=100&offset=0`,'requester')
-  const revisionId = (interactions.payload as {items:{revisions:{interactionRevisionId:string}[]}[]}).items[0].revisions[0].interactionRevisionId
-  const processResult = await demoApi('/business-processes','requester','POST',{name:'Resource endpoint acceptance',description:null,responsibleOrganization:null})
-  expect(processResult.status).toBe(201)
-  const process = processResult.payload as {processId:string}
-  const need = await demoApi(`/business-processes/${process.processId}/needs`,'requester','POST',{interactionRevisionId:revisionId})
-  expect(need.status).toBe(201)
-  const needId = (need.payload as {connectivityNeedId:string}).connectivityNeedId
-  const resources = await demoApi('/resources?limit=100&offset=0','requester')
-  const sourceResource = (resources.payload as {items:{resourceId:string;name:string}[]}).items.find(item=>item.name==='sender.demo.example')!
-  const deployments = await demoApi('/deployments?limit=100&offset=0','requester')
-  const sourceDeployment = (deployments.payload as {items:{deploymentId:string;resourceId:string}[]}).items.find(item=>item.resourceId===sourceResource.resourceId)!
-  const request = await demoApi('/access-requests','requester','POST',{sourceDeploymentId:sourceDeployment.deploymentId,destinationDeploymentId,interactionRevisionId:revisionId,connectivityNeedId:needId})
-  expect(request.status).toBe(201)
-  const requestId = (request.payload as {requestId:string}).requestId
-
-  await page.goto(`/access-requests/${requestId}`)
-  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
-  await page.getByLabel('Demo actor',{exact:true}).selectOption('decider')
-  await page.getByRole('button',{name:'ALLOWED',exact:true}).click()
-  await page.getByRole('button',{name:'Подтвердить ALLOWED',exact:true}).click()
-  await expect(page.getByText('ALLOWED',{exact:true}).first()).toBeVisible()
-  const accepted = await demoApi(`/access-requests/${requestId}`,'requester')
-  const acceptedRequest = accepted.payload as {subjectId:string;status:string;decision:{policyRuleId:string;decisionId:string}}
-  expect(acceptedRequest.status).toBe('ALLOWED')
-  const ruleId = acceptedRequest.decision.policyRuleId
-  const ruleBefore = (await demoApi(`/policy-rules/${ruleId}`,'exporter')).payload as {ruleId:string;subjectId:string;state:string}
-  expect(ruleBefore.state).toBe('ACTIVE')
-  const incomplete = await demoApi(`/policy/export?ruleId=${ruleId}&format=json`,'exporter')
-  const incompleteRow = (incomplete.payload as {rows:{readiness:string;destinationAddress:string|null;destinationEndpointId:string}[]}).rows[0]
-  expect(incompleteRow).toMatchObject({readiness:'INCOMPLETE',destinationAddress:null,destinationEndpointId:endpointId})
-
-  await page.goto(`/resources/${resourceId}?tab=endpoints`)
-  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
-  await page.getByLabel('Тип адреса',{exact:true}).selectOption('HOST')
-  await page.getByLabel('IPv4 / IPv6 адрес',{exact:true}).fill('198.51.100.20')
-  await page.getByRole('button',{name:'Сохранить адрес',exact:true}).click()
-  await expect(page.getByRole('table')).toContainText('198.51.100.20')
-  const ready = await demoApi(`/policy/export?ruleId=${ruleId}&format=json`,'exporter')
-  const readyRow = (ready.payload as {rows:{ruleId:string;subjectId:string;readiness:string;sourceAddress:string;destinationAddress:string;sourceEndpointId:string;destinationEndpointId:string}[]}).rows[0]
-  const sourceEndpoint = (await demoApi(`/resources/${sourceResource.resourceId}/endpoint`,'requester')).payload as {endpointId:string}
-  expect(readyRow).toMatchObject({ruleId:ruleBefore.ruleId,subjectId:acceptedRequest.subjectId,readiness:'READY',sourceAddress:'192.0.2.10',destinationAddress:'198.51.100.20',sourceEndpointId:sourceEndpoint.endpointId,destinationEndpointId:endpointId})
-  const csv = await demoApi(`/policy/export?ruleId=${ruleId}&format=csv`,'exporter')
-  expect(csv.status).toBe(200)
-  const csvLines = (csv.payload as string).trim().split('\n')
-  const csvHeader = csvLines[0].split(','), csvValues = csvLines[1].split(',')
-  const csvFields = Object.fromEntries(csvHeader.map((key,index)=>[key,csvValues[index]]))
-  expect(csvFields).toMatchObject({ruleId:ruleBefore.ruleId,subjectId:acceptedRequest.subjectId,readiness:'READY',sourceAddress:'192.0.2.10',destinationAddress:'198.51.100.20',sourceEndpointId:sourceEndpoint.endpointId,destinationEndpointId:endpointId})
-
-  const extraResource = await demoApi('/resources','requester','POST',{name:'Unauthorized new source'})
-  const extraResourceId = (extraResource.payload as {resourceId:string}).resourceId
-  const components = await demoApi(`/applications/${application.applicationId}/components?limit=100&offset=0`,'requester')
-  const senderComponentId = (components.payload as {items:{componentId:string;name:string}[]}).items.find(item=>item.name==='Отправитель')!.componentId
-  const extraDeployment = await demoApi('/deployments','requester','POST',{componentId:senderComponentId,resourceId:extraResourceId})
-  const extraDeploymentId = (extraDeployment.payload as {deploymentId:string}).deploymentId
-  const requestCount = harness.sql('SELECT count(*) FROM access_requests')[0][0]
-  const unauthorized = await demoApi('/access-requests','requester','POST',{sourceDeploymentId:extraDeploymentId,destinationDeploymentId:sourceDeployment.deploymentId,interactionRevisionId:revisionId,connectivityNeedId:needId})
-  expect(unauthorized.status).toBe(403)
-  expect(harness.sql('SELECT count(*) FROM access_requests')[0][0]).toBe(requestCount)
-  expect(harness.sql('SELECT count(*) FROM grants WHERE action=? AND scope=?',['access.request',extraResourceId])[0][0]).toBe(0)
 })
 
 test('current shared policy INACTIVE and INCOMPLETE states use actual backend files', async ({page,request,harness})=>{

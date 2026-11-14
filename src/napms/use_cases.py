@@ -1,5 +1,4 @@
 """Transactions, authority checks and orchestration; no HTTP dependency."""
-import ipaddress
 import sqlite3
 from uuid import uuid4
 
@@ -124,11 +123,6 @@ def interaction_view(c, interaction_id, application_id):
 
 def resource_view(c, row):
     return dict(resourceId=row["id"], name=catalog_name(c, "resource", row["id"]))
-
-
-def endpoint_view(row):
-    return dict(endpointId=row["id"], resourceId=row["resource_id"],
-                address=row["address"], kind=row["kind"])
 
 
 def catalog_deployment_view(c, row):
@@ -293,51 +287,10 @@ class Service:
             return dict(items=[resource_view(c, row) for row in rows[:limit]], limit=limit,
                         offset=offset, hasMore=len(rows) > limit)
 
-    def create_resource(self, actor, value):
-        with self.db.transaction(write=True) as c:
-            self._catalog_create(c, actor)
-            label, identifier, endpoint_id = self._catalog_name(value), uid(), uid()
-            c.execute("INSERT INTO resources(id) VALUES (?)", (identifier,))
-            c.execute("INSERT INTO resource_names(resource_id,name) VALUES (?,?)", (identifier, label))
-            c.execute("INSERT INTO endpoints(id,resource_id,address,kind) VALUES (?,?,NULL,NULL)",
-                      (endpoint_id, identifier))
-            return resource_view(c, find(c, "resources", identifier))
-
     def resource(self, actor, resource_id):
         with self.db.transaction() as c:
             self._catalog_read(c, actor)
             return resource_view(c, find(c, "resources", resource_id))
-
-    def resource_endpoint(self, actor, resource_id):
-        with self.db.transaction() as c:
-            self._catalog_read(c, actor)
-            find(c, "resources", resource_id)
-            row = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (resource_id,)).fetchone()
-            if row is None:
-                raise Problem(404, "NOT_FOUND", "Entity not found")
-            return endpoint_view(row)
-
-    def set_resource_endpoint(self, actor, resource_id, kind, address):
-        with self.db.transaction(write=True) as c:
-            self._catalog_create(c, actor)
-            find(c, "resources", resource_id)
-            row = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (resource_id,)).fetchone()
-            if row is None:
-                raise Problem(404, "NOT_FOUND", "Entity not found")
-            try:
-                if kind == "HOST":
-                    normalized = str(ipaddress.ip_address(address))
-                elif kind == "PREFIX":
-                    if "/" not in address:
-                        raise ValueError("CIDR prefix required")
-                    normalized = str(ipaddress.ip_network(address, strict=True))
-                else:
-                    raise ValueError("Unsupported address kind")
-            except ValueError as error:
-                raise Problem(422, "INVALID_INPUT", "Invalid IP address for endpoint kind") from error
-            c.execute("UPDATE endpoints SET address=?,kind=? WHERE id=?",
-                      (normalized, kind, row["id"]))
-            return endpoint_view(c.execute("SELECT * FROM endpoints WHERE id=?", (row["id"],)).fetchone())
 
     def create_process(self, actor, data):
         with self.db.transaction(write=True) as c:
