@@ -105,7 +105,7 @@ def test_v2_upgrade_preserves_rows_and_unique_constraint(env):
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 6
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 7
         assert [tuple(r) for r in c.execute('SELECT * FROM needs')] == before
         assert not c.execute('PRAGMA foreign_key_check').fetchall()
     with pytest.raises(sqlite3.IntegrityError, match='needs.process_id'):
