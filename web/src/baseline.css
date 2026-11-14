@@ -47,6 +47,7 @@
 .ux-real .panel{border-radius:9px;box-shadow:none}
 .ux-real input,.ux-real textarea{max-width:100%}
 .ux-real .ux-panel-body>dl{overflow-wrap:anywhere}
+.ux-real .ux-properties a{color:#135fca;text-decoration:underline;text-underline-offset:2px}
 .ux-real .process-form{display:grid;gap:12px;max-width:760px}
 .ux-real .process-form input,.ux-real .process-form textarea{border:1px solid #cbd5e1;border-radius:5px;padding:8px}
 .ux-topbar select{max-width:100%}

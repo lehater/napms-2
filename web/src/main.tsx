@@ -7,6 +7,7 @@ import PolicyRules from './PolicyRules'
 import { DemoProfile, useDemoProfile } from './DemoProfile'
 import { FormDrafts } from './FormDrafts'
 import BusinessProcesses from './BusinessProcesses'
+import { ApplicationCatalog, DeploymentCatalog, ResourceDetail } from './Catalogs'
 import NotFound from './NotFound'
 import './index.css'
 import { Shell } from './Shell'
@@ -16,6 +17,9 @@ function Layout() {
  return <FormDrafts key={profile.actor}><Shell><div><Routes>
   <Route path="/" element={<Navigate to="/business-processes" replace />} />
   <Route path="/business-processes/*" element={<BusinessProcesses />} />
+  <Route path="/applications/*" element={<ApplicationCatalog />} />
+  <Route path="/deployments/*" element={<DeploymentCatalog />} />
+  <Route path="/resources/:resourceId" element={<ResourceDetail />} />
   <Route path="/policy-rules" element={<PolicyRules />} />
   <Route path="/policy-rules/:ruleId" element={<PolicyRule />} />
   <Route path="/access-requests/*" element={<App />} />

@@ -45,6 +45,110 @@ class ProcessCollection(Strict):
     hasMore: bool
 
 
+class NameInput(Strict):
+    name: str = Field(strict=True, min_length=1, max_length=300)
+
+
+class Application(Strict):
+    applicationId: UUID
+    name: str
+
+
+class ApplicationCollection(Strict):
+    items: list[Application]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class Component(Strict):
+    componentId: UUID
+    applicationId: UUID
+    applicationName: str
+    name: str
+
+
+class ComponentCollection(Strict):
+    items: list[Component]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class InteractionRevision(Strict):
+    interactionRevisionId: UUID
+    ipProtocol: Literal["TCP", "UDP"]
+    destinationPortStart: int
+    destinationPortEnd: int
+    trafficLabel: str
+
+
+class Interaction(Strict):
+    interactionId: UUID
+    applicationId: UUID
+    applicationName: str
+    sourceComponentId: UUID
+    sourceComponentName: str
+    destinationComponentId: UUID
+    destinationComponentName: str
+    revisions: list[InteractionRevision]
+
+
+class InteractionCollection(Strict):
+    items: list[Interaction]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class Resource(Strict):
+    resourceId: UUID
+    name: str
+
+
+class ResourceCollection(Strict):
+    items: list[Resource]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class DeploymentInput(Strict):
+    componentId: UUID
+    resourceId: UUID
+
+
+class ComponentDeployment(Strict):
+    deploymentId: UUID
+    componentId: UUID
+    componentName: str
+    applicationId: UUID
+    applicationName: str
+    resourceId: UUID
+    resourceName: str
+
+
+class DeploymentCollection(Strict):
+    items: list[ComponentDeployment]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class InteractionInput(Strict):
+    sourceComponentId: UUID
+    destinationComponentId: UUID
+    ipProtocol: Literal["TCP", "UDP"]
+    destinationPortStart: int = Field(strict=True, ge=1, le=65535)
+    destinationPortEnd: int = Field(strict=True, ge=1, le=65535)
+
+    @model_validator(mode="after")
+    def ordered_ports(self):
+        if self.destinationPortStart > self.destinationPortEnd:
+            raise ValueError("Invalid destination port range")
+        return self
+
+
 class NeedInput(Strict):
     interactionRevisionId: UUID
 
@@ -290,7 +394,7 @@ def create_app(db, credentials, *, shared_read=False):
     @app.middleware("http")
     async def protected_cache(request, call_next):
         response = await call_next(request)
-        if request.url.path.startswith(("/access-requests", "/policy-rules", "/policy/export")) or request.url.path.endswith("/access-request-options"):
+        if request.url.path.startswith(("/access-requests", "/policy-rules", "/policy/export", "/applications", "/deployments", "/resources")) or request.url.path.endswith("/access-request-options"):
             response.headers["Cache-Control"] = "no-store"
         return response
 
@@ -317,6 +421,72 @@ def create_app(db, credentials, *, shared_read=False):
     def no_query(request: Request):
         if request.query_params:
             raise Problem(422, "INVALID_INPUT", "Unsupported query parameters")
+
+    @app.post("/applications", status_code=201, response_model=Application, dependencies=[Depends(no_query)])
+    def create_application(data: NameInput, who: Actor):
+        return service.create_application(who, data.name)
+
+    @app.get("/applications", response_model=ApplicationCollection)
+    def list_applications(who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.applications(who, query.limit, query.offset)
+
+    @app.get("/applications/{applicationId}", response_model=Application, dependencies=[Depends(no_query)])
+    def get_application(applicationId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.application(who, str(applicationId))
+
+    @app.post("/applications/{applicationId}/components", status_code=201, response_model=Component, dependencies=[Depends(no_query)])
+    def create_component(applicationId: UUID, data: NameInput, who: Actor):
+        return service.create_component(who, str(applicationId), data.name)
+
+    @app.get("/applications/{applicationId}/components", response_model=ComponentCollection)
+    def list_components(applicationId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.components(who, str(applicationId), query.limit, query.offset)
+
+    @app.get("/applications/{applicationId}/components/{componentId}", response_model=Component, dependencies=[Depends(no_query)])
+    def get_component(applicationId: UUID, componentId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.component(who, str(applicationId), str(componentId))
+
+    @app.post("/applications/{applicationId}/interactions", status_code=201, response_model=Interaction, dependencies=[Depends(no_query)])
+    def create_interaction(applicationId: UUID, data: InteractionInput, who: Actor):
+        return service.create_interaction(who, str(applicationId), data.model_dump(mode="json"))
+
+    @app.get("/applications/{applicationId}/interactions", response_model=InteractionCollection)
+    def list_interactions(applicationId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.interactions(who, str(applicationId), query.limit, query.offset)
+
+    @app.get("/applications/{applicationId}/interactions/{interactionId}", response_model=Interaction, dependencies=[Depends(no_query)])
+    def get_interaction(applicationId: UUID, interactionId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.interaction(who, str(applicationId), str(interactionId))
+
+    @app.post("/deployments", status_code=201, response_model=ComponentDeployment, dependencies=[Depends(no_query)])
+    def create_deployment(data: DeploymentInput, who: Actor):
+        return service.create_deployment(who, str(data.componentId), str(data.resourceId))
+
+    @app.get("/deployments", response_model=DeploymentCollection)
+    def list_deployments(who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.deployments(who, query.limit, query.offset)
+
+    @app.get("/deployments/{deploymentId}", response_model=ComponentDeployment, dependencies=[Depends(no_query)])
+    def get_deployment(deploymentId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.deployment(who, str(deploymentId))
+
+    @app.get("/resources", response_model=ResourceCollection)
+    def list_resources(who: Actor, query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.resources(who, query.limit, query.offset)
+
+    @app.get("/resources/{resourceId}", response_model=Resource, dependencies=[Depends(no_query)])
+    def get_resource(resourceId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.resource(who, str(resourceId))
 
     @app.post("/business-processes", status_code=201, response_model=BusinessProcess, dependencies=[Depends(no_query)])
     def create_process(data: ProcessInput, who: Actor):
