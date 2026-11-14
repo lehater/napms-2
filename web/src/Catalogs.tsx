@@ -181,7 +181,7 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
         <span aria-hidden="true">–</span>
         <label>До<input aria-label="Порт назначения до" type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
       </fieldset>
-      <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать взаимодействие'}</Button>
+      <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать'}</Button>
     </form>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
       {key:'interaction',title:'Направление',render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link>},
