@@ -147,7 +147,7 @@ def test_historical_v1_upgrade(env):
             elif table == 'grants':
                 assert all(row in actual for row in rows)
             elif table == 'interaction_revisions':
-                assert actual == [(*row, None, None) for row in rows]
+                assert actual == [(*row, None, None, 1, None) for row in rows]
             else:
                 assert actual == rows
     assert Service(db).process(IDS['requester'], IDS['process'])['name'] is None
