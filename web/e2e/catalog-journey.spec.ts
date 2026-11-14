@@ -349,5 +349,8 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await expect(page).toHaveURL(interactionUrl)
   const afterAttempt = await (await page.request.get(`/applications/${applicationId}/interactions`,
     { headers: requester })).json()
-  expect(afterAttempt.items).toHaveLength(1)
+  const sameDirectedPair = afterAttempt.items.filter((item: { sourceComponentId: string; destinationComponentId: string }) =>
+    item.sourceComponentId === senderComponentId && item.destinationComponentId === receiverComponentId)
+  expect(sameDirectedPair).toHaveLength(1)
+  expect(sameDirectedPair[0].interactionId).toBe(interactionId)
 })
