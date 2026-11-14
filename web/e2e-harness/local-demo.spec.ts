@@ -709,6 +709,38 @@ test('REAL navigation is bounded, resizable and independent of the research modu
   expect(harness.file).toBeTruthy()
 })
 
+test('Endpoint draft stays with its Resource during an in-app route change', async ({page,harness}) => {
+  const resourceA = '00000000-0000-0000-0000-000000000001'
+  const resourceB = '00000000-0000-0000-0000-000000000002'
+  await page.goto(`/resources/${resourceA}?tab=endpoints`)
+  await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+  const address = page.getByLabel('IPv4 / IPv6 адрес',{exact:true})
+  await address.fill('198.51.100.111')
+  await expect(address).toHaveValue('198.51.100.111')
+
+  await page.evaluate(id => {
+    history.pushState({},'',`/resources/${id}?tab=endpoints`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  },resourceB)
+  await expect(page).toHaveURL(`/resources/${resourceB}?tab=endpoints`)
+  await expect(page.getByRole('heading',{name:'receiver.demo.example',exact:true})).toBeVisible()
+  await expect(page.getByLabel('IPv4 / IPv6 адрес',{exact:true})).toHaveValue('')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByRole('table')).toContainText('192.0.2.20')
+
+  await page.getByLabel('IPv4 / IPv6 адрес',{exact:true}).fill('198.51.100.22')
+  await page.getByRole('button',{name:'Сохранить адрес',exact:true}).click()
+  await expect(page.getByRole('table')).toContainText('198.51.100.22')
+  const saved = await page.evaluate(async ids => Promise.all(ids.map(async id => {
+    const response = await fetch(`/resources/${id}/endpoint`,{headers:{'X-NAPMS-Dev':'1','X-NAPMS-Demo-Actor':'requester'}})
+    return response.json() as Promise<{resourceId:string;address:string|null}>
+  })),[resourceA,resourceB])
+  expect(saved.map(endpoint=>[endpoint.resourceId,endpoint.address])).toEqual([
+    [resourceA,'192.0.2.10'],[resourceB,'198.51.100.22'],
+  ])
+  expect(harness.file).toBeTruthy()
+})
+
 test('REAL Resources create a stable Endpoint and feed a new destination through policy export', async ({page,harness}) => {
   async function demoApi(path: string, actor: 'requester'|'decider'|'exporter', method = 'GET', body?: unknown) {
     return page.evaluate(async ({path,actor,method,body}) => {

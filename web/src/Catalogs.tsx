@@ -265,7 +265,12 @@ function DeploymentDetail({ client }: { client: Client }) {
 }
 
 function ResourceDetailView({client}:{client:Client}){
-  const {resourceId=''}=useParams(),[params,setParams]=useSearchParams(),tab=params.get('tab')==='endpoints'?'endpoints':'overview'
+  const {resourceId=''}=useParams()
+  return <ResourceDetailForResource key={resourceId} client={client} resourceId={resourceId} />
+}
+
+function ResourceDetailForResource({client,resourceId}:{client:Client;resourceId:string}){
+  const [params,setParams]=useSearchParams(),tab=params.get('tab')==='endpoints'?'endpoints':'overview'
   const [loaded,setLoaded]=useState<{id:string;item:Resource;endpoint:ResourceEndpoint;deployments:ComponentDeployment[]}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
   const [kind,setKind]=useState<'HOST'|'PREFIX'>('HOST'),[address,setAddress]=useState(''),[saving,setSaving]=useState(false),[formError,setFormError]=useState(''),[reload,setReload]=useState(0)
   useEffect(()=>{let active=true;setLoaded(null);setFailure(null);Promise.all([client.resource(resourceId),client.resourceEndpoint(resourceId),allPages((offset,limit)=>client.deployments(offset,limit))]).then(([item,endpoint,deployments])=>{if(active)setLoaded({id:resourceId,item,endpoint,deployments:deployments.filter(row=>row.resourceId===resourceId)})}).catch(reason=>{if(active)setFailure({id:resourceId,text:catalogError(reason)})});return()=>{active=false}},[client,resourceId,reload])
