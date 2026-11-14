@@ -136,26 +136,56 @@ function ComponentsTab({ client, application, reloadKey, refresh }: { client: Cl
   </div>
 }
 
+function portRange(start: number | null, end: number | null) {
+  return start === null || end === null ? 'ANY' : start === end ? String(start) : `${start}–${end}`
+}
+
 function InteractionsTab({ client, application, reloadKey, refresh }: { client: Client; application: Application; reloadKey: number; refresh: () => void }) {
   const [page, setPage] = useState<CatalogPage<Interaction> | null>(null), [components, setComponents] = useState<Component[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false)
-  const [source, setSource] = useState(''), [destination, setDestination] = useState(''), [protocol, setProtocol] = useState<'TCP'|'UDP'>('TCP'), [start, setStart] = useState('443'), [end, setEnd] = useState('443')
+  const [source, setSource] = useState(''), [destination, setDestination] = useState(''), [protocol, setProtocol] = useState<'TCP'|'UDP'>('TCP'), [start, setStart] = useState('443'), [end, setEnd] = useState('443'), [sourceStart, setSourceStart] = useState(''), [sourceEnd, setSourceEnd] = useState('')
   const [params, setParams] = useSearchParams()
   const offset = Math.max(0, Number(params.get('interactionOffset')) || 0)
   useEffect(() => { let active=true; setPage(null); setError(''); Promise.all([client.interactions(application.applicationId,offset), allPages((pageOffset,limit)=>client.components(application.applicationId,pageOffset,limit))]).then(([rows,values])=>{if(active){setPage(rows);setComponents(values)}}).catch(reason=>{if(active)setError(catalogError(reason))}); return ()=>{active=false} }, [client,application.applicationId,offset,reloadKey])
-  async function submit(event: FormEvent) { event.preventDefault(); setBusy(true); setError(''); try { await client.createInteraction(application.applicationId,{sourceComponentId:source,destinationComponentId:destination,ipProtocol:protocol,destinationPortStart:Number(start),destinationPortEnd:Number(end)}); refresh() } catch(reason) { setError(catalogError(reason)) } finally { setBusy(false) } }
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if ((sourceStart === '') !== (sourceEnd === '')) {
+      setError('Укажите обе границы исходного диапазона или оставьте обе пустыми (ANY).')
+      return
+    }
+    setBusy(true); setError('')
+    try {
+      await client.createInteraction(application.applicationId, {
+        sourceComponentId: source, destinationComponentId: destination, ipProtocol: protocol,
+        sourcePortStart: sourceStart === '' ? null : Number(sourceStart),
+        sourcePortEnd: sourceEnd === '' ? null : Number(sourceEnd),
+        destinationPortStart: Number(start), destinationPortEnd: Number(end),
+      })
+      refresh()
+    } catch(reason) { setError(catalogError(reason)) } finally { setBusy(false) }
+  }
   function changePage(nextOffset: number) { setParams(current => { const next = new URLSearchParams(current); next.set('tab','interactions'); if (nextOffset > 0) next.set('interactionOffset',String(nextOffset)); else next.delete('interactionOffset'); return next }) }
   return <div className="space-y-4"><h2>Направленные взаимодействия</h2><ErrorNotice text={error} />
-    <form className="process-form grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={submit}>
+    <form className="process-form interaction-form" onSubmit={submit}>
       <label>Источник<select required value={source} onChange={event=>setSource(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Получатель<select required value={destination} onChange={event=>setDestination(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Протокол<select value={protocol} onChange={event=>setProtocol(event.target.value as 'TCP'|'UDP')}><option value="TCP">TCP</option><option value="UDP">UDP</option></select></label>
-      <label>Порт от<input type="number" required min={1} max={65535} value={start} onChange={event=>setStart(event.target.value)} /></label>
-      <label>Порт до<input type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
+      <fieldset className="interaction-port-group">
+        <legend>Порт источника (ANY)</legend>
+        <label>От<input aria-label="Порт источника от" type="number" min={1} max={65535} placeholder="ANY" value={sourceStart} onChange={event=>setSourceStart(event.target.value)} /></label>
+        <span aria-hidden="true">–</span>
+        <label>До<input aria-label="Порт источника до" type="number" min={1} max={65535} placeholder="ANY" value={sourceEnd} onChange={event=>setSourceEnd(event.target.value)} /></label>
+      </fieldset>
+      <fieldset className="interaction-port-group">
+        <legend>Порт назначения</legend>
+        <label>От<input aria-label="Порт назначения от" type="number" required min={1} max={65535} value={start} onChange={event=>setStart(event.target.value)} /></label>
+        <span aria-hidden="true">–</span>
+        <label>До<input aria-label="Порт назначения до" type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
+      </fieldset>
       <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать взаимодействие'}</Button>
     </form>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
       {key:'interaction',title:'Направление',render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link>},
-      {key:'revision',title:'Текущие ревизии',render:item=>item.revisions.map(revision=><span key={revision.interactionRevisionId}>{revision.ipProtocol} · {revision.destinationPortStart}{revision.destinationPortEnd!==revision.destinationPortStart?`–${revision.destinationPortEnd}`:''}</span>)},
+      {key:'revision',title:'Текущие ревизии',render:item=>item.revisions.map(revision=><span key={revision.interactionRevisionId}>{revision.ipProtocol} · {portRange(revision.sourcePortStart,revision.sourcePortEnd)} → {portRange(revision.destinationPortStart,revision.destinationPortEnd)}</span>)},
     ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы." loading={!page && !error} error={error} />
     <div className="ux-pagination"><Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit??20)))}>Назад</Button><span>Страница {Math.floor(offset/(page?.limit??20))+1}</span><Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit??20))}>Далее</Button></div>
   </div>
@@ -182,7 +212,7 @@ function InteractionDetail({ client }: { client: Client }) {
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}?tab=interactions`}>{item.applicationName}</Link><span>/</span><span aria-current="page">Взаимодействие</span></>}
     title={`${item.sourceComponentName} → ${item.destinationComponentName}`} subtitle={<Link to={`/applications/${applicationId}`}>{item.applicationName}</Link>}
     tabs={[{id:'overview',label:'Ревизии',href:`/applications/${applicationId}/interactions/${interactionId}`}]} activeTab="overview">
-    <EntityTable rows={item.revisions} columns={[{key:'protocol',title:'Протокол',render:revision=>revision.ipProtocol},{key:'ports',title:'Порт назначения',render:revision=>revision.destinationPortStart===revision.destinationPortEnd?String(revision.destinationPortStart):`${revision.destinationPortStart}–${revision.destinationPortEnd}`},{key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>}]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
+    <EntityTable rows={item.revisions} columns={[{key:'protocol',title:'Протокол',render:revision=>revision.ipProtocol},{key:'ports',title:'Порты: источник → назначение',render:revision=>`${portRange(revision.sourcePortStart,revision.sourcePortEnd)} → ${portRange(revision.destinationPortStart,revision.destinationPortEnd)}`},{key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>}]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
   </DetailView>
 }
 

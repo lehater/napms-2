@@ -65,3 +65,16 @@ section[aria-label="Потребности REAL"] td { overflow-wrap: anywhere; 
 .ux-skip-link{position:fixed;z-index:20;top:8px;left:8px;transform:translateY(-160%);padding:8px 12px;border-radius:5px;background:white;color:#123b6b;box-shadow:0 1px 6px #0004}
 .ux-skip-link:focus{transform:translateY(0)}
 @media(max-width:767px){.ux-mobile-navigation{display:flex}.ux-sidebar{display:none}.ux-sidebar[data-open=true]{display:flex}.ux-navigation{grid-template-columns:minmax(0,1fr)}.ux-properties>div{grid-template-columns:minmax(0,1fr);gap:5px}}
+
+/* REAL interaction editor: compact short port inputs without new panels or steps. */
+.ux-real .process-form.interaction-form{max-width:none;grid-template-columns:minmax(135px,1fr) minmax(135px,1fr) 88px minmax(174px,auto) minmax(164px,auto) auto;gap:12px;align-items:end}
+.interaction-form>label{display:grid;gap:6px;min-width:0;font-size:12px}
+.interaction-form>label select{height:38px}
+.interaction-form>.interaction-port-group{border:0;margin:0;padding:0;display:flex;align-items:end;gap:4px;min-width:0}
+.interaction-form>.interaction-port-group legend{font-size:12px;padding:0;margin-bottom:3px;white-space:nowrap}
+.interaction-form>.interaction-port-group label{display:grid;gap:2px;font-size:11px;min-width:0}
+.ux-real .interaction-form .interaction-port-group input{box-sizing:border-box;width:76px;height:38px;padding:6px}
+.interaction-form>.interaction-port-group span{padding-bottom:10px}
+.interaction-form>button{min-height:38px;white-space:nowrap}
+@media(max-width:1200px){.ux-real .process-form.interaction-form{grid-template-columns:repeat(2,minmax(0,1fr))}.interaction-form>button{justify-self:start}}
+@media(max-width:650px){.ux-real .process-form.interaction-form{grid-template-columns:minmax(0,1fr)}}

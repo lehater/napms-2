@@ -1,17 +1,17 @@
 export type DeploymentOption = { displayLabel: string; deploymentId: string; componentId: string; resourceId: string }
 export type Options = (NeedPage<NeedOption> & {kind: 'revisions'}) | (NeedPage<DeploymentOption> & {kind: 'source-deployments' | 'destination-deployments'})
 export type PolicyRuleDisplay = { participantsLabel: string; applicationLabel: string; sourceResourceLabel: string; destinationResourceLabel: string }
-export type Rule = PolicyRuleDisplay & { displayLabel: string; trafficLabel: string; ipProtocol: 'TCP' | 'UDP'; destinationPortStart: number; destinationPortEnd: number; ruleId: string; subjectId: string; state: 'ACTIVE' | 'INACTIVE'; subject: Omit<AccessInput, 'connectivityNeedId'>; originatingRequest: AccessRequest; originatingDecision: Decision; connectivityNeedId: string; allowances: Decision[] }
-export type RuleSummary = PolicyRuleDisplay & Pick<Rule, 'ruleId' | 'subjectId' | 'state' | 'subject' | 'displayLabel' | 'trafficLabel' | 'ipProtocol' | 'destinationPortStart' | 'destinationPortEnd'> & { sourceResourceId: string; destinationResourceId: string; originatingDecisionId: string; allowanceDecisionIds: string[] }
+export type Rule = PolicyRuleDisplay & { displayLabel: string; trafficLabel: string; ipProtocol: 'TCP' | 'UDP'; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number; ruleId: string; subjectId: string; state: 'ACTIVE' | 'INACTIVE'; subject: Omit<AccessInput, 'connectivityNeedId'>; originatingRequest: AccessRequest; originatingDecision: Decision; connectivityNeedId: string; allowances: Decision[] }
+export type RuleSummary = PolicyRuleDisplay & Pick<Rule, 'ruleId' | 'subjectId' | 'state' | 'subject' | 'displayLabel' | 'trafficLabel' | 'ipProtocol' | 'sourcePortStart' | 'sourcePortEnd' | 'destinationPortStart' | 'destinationPortEnd'> & { sourceResourceId: string; destinationResourceId: string; originatingDecisionId: string; allowanceDecisionIds: string[] }
 export type Need = { displayLabel: string; connectivityNeedId: string; processId: string; interactionId: string; componentId: string }
-export type NeedOption = { displayLabel: string; trafficLabel: string; interactionRevisionId: string; interactionId: string; applicationId: string; sourceComponentId: string; destinationComponentId: string; ipProtocol: string; destinationPortStart: number; destinationPortEnd: number }
+export type NeedOption = { displayLabel: string; trafficLabel: string; interactionRevisionId: string; interactionId: string; applicationId: string; sourceComponentId: string; destinationComponentId: string; ipProtocol: string; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number }
 export type NeedPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
 export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null }
 export type ProcessInput = { name: string; description: string | null; responsibleOrganization: string | null }
 export type ProcessCollection = { items: BusinessProcess[]; limit: number; offset: number; hasMore: boolean }
 export type Application = { applicationId: string; name: string }
 export type Component = { componentId: string; applicationId: string; applicationName: string; name: string }
-export type InteractionRevision = { interactionRevisionId: string; ipProtocol: 'TCP' | 'UDP'; destinationPortStart: number; destinationPortEnd: number; trafficLabel: string }
+export type InteractionRevision = { interactionRevisionId: string; ipProtocol: 'TCP' | 'UDP'; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number; trafficLabel: string }
 export type Interaction = { interactionId: string; applicationId: string; applicationName: string; sourceComponentId: string; sourceComponentName: string; destinationComponentId: string; destinationComponentName: string; revisions: InteractionRevision[] }
 export type ComponentDeployment = { deploymentId: string; componentId: string; componentName: string; applicationId: string; applicationName: string; resourceId: string; resourceName: string }
 export type Resource = { resourceId: string; name: string }
@@ -91,7 +91,7 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     createComponent: (applicationId: string, name: string) => call<Component>(`/applications/${encodeURIComponent(applicationId)}/components`, 'POST', { name }),
     interactions: (applicationId: string, offset = 0, limit = 20) => call<CatalogPage<Interaction>>(`/applications/${encodeURIComponent(applicationId)}/interactions?limit=${limit}&offset=${offset}`),
     interaction: (applicationId: string, id: string) => call<Interaction>(`/applications/${encodeURIComponent(applicationId)}/interactions/${encodeURIComponent(id)}`),
-    createInteraction: (applicationId: string, data: { sourceComponentId: string; destinationComponentId: string; ipProtocol: 'TCP' | 'UDP'; destinationPortStart: number; destinationPortEnd: number }) => call<Interaction>(`/applications/${encodeURIComponent(applicationId)}/interactions`, 'POST', data),
+    createInteraction: (applicationId: string, data: { sourceComponentId: string; destinationComponentId: string; ipProtocol: 'TCP' | 'UDP'; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number }) => call<Interaction>(`/applications/${encodeURIComponent(applicationId)}/interactions`, 'POST', data),
     deployments: (offset = 0, limit = 20) => call<CatalogPage<ComponentDeployment>>(`/deployments?limit=${limit}&offset=${offset}`),
     deployment: (id: string) => call<ComponentDeployment>(`/deployments/${encodeURIComponent(id)}`),
     createDeployment: (componentId: string, resourceId: string) => call<ComponentDeployment>('/deployments', 'POST', { componentId, resourceId }),
