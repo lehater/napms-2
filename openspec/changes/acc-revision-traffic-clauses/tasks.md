@@ -8,7 +8,7 @@
 - [x] 1.7 SQLite UNIQUE index, direct-insert registration trigger and API/UI duplicate prevention
 
 ## 2. Verification
-- [ ] 2.1 Backend/API/migration regression and duplicate tests
+- [x] 2.1 Backend/API/migration regression and duplicate tests
 - [x] 2.2 REAL Playwright journey for multi-clause and revisions
-- [ ] 2.3 OpenSpec strict and full Verify on final HEAD
+- [x] 2.3 OpenSpec strict and full Verify on final HEAD
 - [ ] 2.4 Owner visual acceptance and independent review before merge
