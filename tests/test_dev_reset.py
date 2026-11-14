@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from napms.dev import IDS, main
+from napms.dev import main
 from napms.dev_reset import reset_demo
 from napms.storage import Database
 
