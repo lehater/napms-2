@@ -629,7 +629,7 @@ class Service:
             rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
             projection = subject_list_projection(c, subject)
             rule_display = {key: projection[key] for key in ("participantsLabel", "applicationLabel", "sourceResourceLabel", "destinationResourceLabel", "trafficLabel")}
-            return dict(**rule_display, displayLabel=subject_label(c, subject), ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
+            return dict(**rule_display, displayLabel=subject_label(c, subject), trafficClauses=stored_clauses(rev), ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
                         subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]),
                         originatingDecision=decision_view(c, origin, actor, at, self.shared_read), originatingRequest=request_view(c, req, actor, at, self.shared_read),
                         connectivityNeedId=req["need_id"], allowances=allowances)
@@ -651,13 +651,16 @@ class Service:
             se = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (src["resource_id"],)).fetchone()
             de = c.execute("SELECT * FROM endpoints WHERE resource_id=?", (dst["resource_id"],)).fetchone()
             rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
-            rows.append(dict(ruleId=rid, subjectId=subject["id"], sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
-                sourceEndpointId=se["id"], destinationEndpointId=de["id"], sourceAddress=se["address"], destinationAddress=de["address"],
-                ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
-                readiness="READY" if se["address"] and de["address"] else "INCOMPLETE",
-                interactionRevisionId=rev["id"], connectivityNeedId=r["need_id"], requestId=r["id"], requesterActorId=r["actor_id"],
-                decisionId=d["id"], deciderActorId=d["actor_id"], evaluationAt=at, requestSubmittedAt=r["submitted_at"],
-                decisionAt=d["decided_at"], sourceAddressKind=se["kind"], destinationAddressKind=de["kind"]))
+            for clause in stored_clauses(rev):
+                rows.append(dict(ruleId=rid, subjectId=subject["id"], sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
+                    sourceEndpointId=se["id"], destinationEndpointId=de["id"], sourceAddress=se["address"], destinationAddress=de["address"],
+                    clauseIndex=clause["clauseIndex"], ipProtocol=clause["ipProtocol"],
+                    sourcePortStart=clause["sourcePortStart"], sourcePortEnd=clause["sourcePortEnd"],
+                    destinationPortStart=clause["destinationPortStart"], destinationPortEnd=clause["destinationPortEnd"],
+                    readiness="READY" if se["address"] and de["address"] else "INCOMPLETE",
+                    interactionRevisionId=rev["id"], connectivityNeedId=r["need_id"], requestId=r["id"], requesterActorId=r["actor_id"],
+                    decisionId=d["id"], deciderActorId=d["actor_id"], evaluationAt=at, requestSubmittedAt=r["submitted_at"],
+                    decisionAt=d["decided_at"], sourceAddressKind=se["kind"], destinationAddressKind=de["kind"]))
         return rows
 
     def _visible_rules(self, c, actor, at, active_only=False):
@@ -682,7 +685,7 @@ class Service:
                 items.append(dict(**rule_display, ruleId=rule["id"], subjectId=subject["id"], state=rule["state"], displayLabel=subject_label(c, subject),
                     subject=dict(sourceDeploymentId=src["id"], destinationDeploymentId=dst["id"], interactionRevisionId=rev["id"]),
                     sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
-                    ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
+                    trafficClauses=stored_clauses(rev), ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
                     originatingDecisionId=rule["originating_decision_id"],
                     allowanceDecisionIds=[r[0] for r in c.execute("SELECT decision_id FROM rule_allowances WHERE rule_id=? ORDER BY decision_id", (rule["id"],))]))
             return dict(items=items, limit=limit, offset=offset, hasMore=len(page) > limit)
