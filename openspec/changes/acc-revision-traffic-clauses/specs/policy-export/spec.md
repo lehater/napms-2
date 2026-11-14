@@ -1,8 +1,8 @@
 # policy-export Specification Delta
 
-## MODIFIED Requirements
+## ADDED Requirements
 
-### Requirement: Exact source-port fidelity in canonical policy
+### Requirement: Complete multi-clause policy materialization
 
 Selected and current policy exports SHALL materialize **one policy row per TrafficClause** from the exact immutable InteractionRevision referenced by a Rule. Every row SHALL retain the same Rule and provenance identifiers and the clause-specific protocol and source/destination port selectors. A multi-clause Revision SHALL NOT be silently truncated to the first clause.
 
