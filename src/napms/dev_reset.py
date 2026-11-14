@@ -3,7 +3,6 @@ import socket
 from contextlib import closing
 from pathlib import Path
 
-from .dev import init_demo
 
 
 def reset_demo(db, credentials):
@@ -64,5 +63,5 @@ def reset_demo(db, credentials):
                     c.rollback()
                     raise
 
-    # Keep the same private demo tokens; only the schema and demo records reset.
-    init_demo(db, credentials)
+    # Private credential file remains untouched; every SQLite table stays empty.
+    db.initialize()
