@@ -17,7 +17,7 @@
 ### Уровни
 
 1. **Human Product/Architecture Owner** — утверждает значимые развилки, новые зависимости/расходы, изменения политики безопасности, приёмку и merge.
-2. **Execution mode** — по умолчанию активная локальная сессия Orchestrator (A), которая автоматически переходит между ограниченными задачами. Только при требовании гарантированного restart добавляется **Durable Controller (B, не LLM)** с DAG, checkpoint и reconcile.
+2. **Execution mode** — режим A1 для совместимых ролей в одной активной сессии; режим A2 для одной логической задачи через раздельные процессы: Sol в авторизованной read-only среде, Qwen Worker в credential-free sandbox, Validator с объективными проверками. Переход A2 — только по verified evidence, сначала вручную. Только при требовании restart добавляется **Durable Controller (B, не LLM)** с DAG, checkpoint и reconcile.
 3. **Orchestrator (LLM)** — координирует конкретный scoped work item, выбирает специалистов и собирает инженерные результаты. Не меняет утверждённый DAG, budget или owner approval.
 4. **Specialists** — выполняют ограниченные задания в отдельных контекстах; не изменяют основной контракт без запроса.
 5. **Deterministic toolchain** — Git, OpenSpec, pytest, Ruff, TS, Playwright, проверки HTTP/permissions и выборочный/полный CI: решает воспроизводимые вопросы *без LLM*.
@@ -80,7 +80,7 @@ output:
 
 ### Два разных уровня исполнения
 
-**Plan run (A)** = Orchestrator в активной сессии получает утверждённый план и последовательно выполняет разрешённые work packages без нового ручного промпта, фиксируя результаты в Git/OpenSpec. **Plan run (B)** = условный Controller принимает утверждённый DAG, хранит checkpoint и запускает следующий READY task после restart. **Task run** = Orchestrator организует необходимых Explorer/Architect/Planner/Worker/Validator/Reviewer для одной ограниченной задачи. Read-only ветви могут параллелиться; write — один владелец.
+**Plan run (A)** = одна логическая работа в пределах активного исполнения: A1 — одна OpenCode root session; A2 — несколько изолированных сессий под единым task ID и неизменным acceptance, с ручным последовательным handoff до проверки возможности автоматизации. **Plan run (B)** = условный Controller принимает утверждённый DAG, хранит checkpoint и запускает следующий READY task после restart. **Task run** = Orchestrator организует необходимых Explorer/Architect/Planner/Worker/Validator/Reviewer для одной ограниченной задачи. Read-only ветви могут параллелиться; write — один владелец.
 
 Определение статусов, алгоритм checkpoint/restart, бюджет и owner gates — в [ADR-002](execution-engine.md). OpenCode session не является источником истины о результате: при перезапуске сверяется Git/PR/фактические проверки.
 
@@ -209,7 +209,7 @@ Reviewer не вправе утверждать «PASS» на основании
 
 ### Непрерывность и ограничения
 
-**Режим A:** локальный Orchestrator выполняет work packages пока сессия активна, оставляя handoff и реальные артефакты в Git; автоматический resume без проверки side effects не обещается. **Режим B:** условный Controller сохраняет durable-state, останавливается в `WAITING_OWNER`/`BLOCKED`/по hard budget и после restart сверяет побочные эффекты с Git/PR/test evidence до повтора. Границы описаны в [ADR-002](execution-engine.md).
+**Режим A:** A1 использует одну активную сессию Orchestrator; A2 фиксирует логический run ID, отдельные сессии и подтверждённые границы Sol-host/Worker-sandbox/Validator/Reviewer. До принятия сегментированного E2E никакого автоматического перехода между процессами не утверждается; при ошибке gate — BLOCKED. Автоматический resume без проверки side effects не обещается. **Режим B:** условный Controller сохраняет durable-state, останавливается в `WAITING_OWNER`/`BLOCKED`/по hard budget и после restart сверяет побочные эффекты с Git/PR/test evidence до повтора. Границы описаны в [ADR-002](execution-engine.md).
 
 ## 9. Ошибки, повторы и восстановление
 
