@@ -16,32 +16,32 @@
 
 | ID | Область | Работа | Критерий приёмки |
 | --- | --- | --- | --- |
-| A0 | Architecture | Принять ADR-001, matrix ролей, stage gates и unknowns | Владелец согласовал целевой runtime и fallback; status \`accepted\` |
-| A1 | Environment | На WSL записать версии Codex/OpenCode/Ollama, доступность моделей/провайдеров; без публикации credential data | Протокол \`available/unavailable\`, IDs, возможности tools, без секретов |
-| A2 | Capability smoke | В **disposable worktree** проверить V2 синтаксис, \`AGENTS.md\`, \`.agents/skills\`, привязку модели к роли и право edit/shell/external_directory | Все критические запреты работают; нет влияния на продуктивные файлы |
+| A0 | Architecture | Принять ADR-001, matrix ролей, stage gates и unknowns | Владелец согласовал целевой runtime и fallback; status `accepted` |
+| A1 | Environment | На WSL записать версии Codex/OpenCode/Ollama, доступность моделей/провайдеров; без публикации credential data | Протокол `available/unavailable`, IDs, возможности tools, без секретов |
+| A2 | Capability smoke | В **disposable worktree** проверить V2 синтаксис, `AGENTS.md`, `.agents/skills`, привязку модели к роли и право edit/shell/external_directory | Все критические запреты работают; нет влияния на продуктивные файлы |
 | A3 | Local Orchestrator | Описать одно правило выбора workflow и short task contract; определить contract owner gates, Git base freshness и budget profile | Выполнены small/complex routes; архитектурная развилка не принимается без владельца |
-| A4 | Roles | Реализовать локальные \`orchestrator\`/\`architect\`/\`planner\`/\`reviewer\` и использовать встроенных \`explore\`/\`general\` как фактические Explorer/Worker, если покрывают contract | Роли читают нужное и не имеют лишних tool rights; нет дубликатов |
-| A5 | Model policy | Настроить named profiles \`quality\`/\`balanced\`/\`budget\`; реальное распределение провайдер/модель/effort из доступного каталога | Переключается без редактирования принятой архитектуры; фактический model ID отмечен |
-| A6 | Source and Skills | Убедиться в корректной загрузке \`AGENTS.md\`, \`openspec\`, UI contract; общие ограничения в одном источнике | OpenSpec spec-first соблюдается, нет дублирования разнонаправленных инструкций |
-| A7 | Quality and review | Подключить существующий \`check-fast.py\`, OpenSpec strict, pytest, Playwright, Ruff; независимый Reviewer; согласовать реальную ручную политику Verify | Вывод различает not-run/reported/verified; неверный SHA не считается passed |
+| A4 | Roles | Реализовать локальные `orchestrator`/`architect`/`planner`/`reviewer` и использовать встроенных `explore`/`general` как фактические Explorer/Worker, если покрывают contract | Роли читают нужное и не имеют лишних tool rights; нет дубликатов |
+| A5 | Model policy | Настроить named profiles `quality`/`balanced`/`budget`; реальное распределение провайдер/модель/effort из доступного каталога | Переключается без редактирования принятой архитектуры; фактический model ID отмечен |
+| A6 | Source and Skills | Убедиться в корректной загрузке `AGENTS.md`, `openspec`, UI contract; общие ограничения в одном источнике | OpenSpec spec-first соблюдается, нет дублирования разнонаправленных инструкций |
+| A7 | Quality and review | Подключить существующий `check-fast.py`, OpenSpec strict, pytest, Playwright, Ruff; независимый Reviewer; согласовать реальную ручную политику Verify | Вывод различает not-run/reported/verified; неверный SHA не считается passed |
 | A8 | Real workflow pilot | На отдельной тестовой задаче (не PR #66/#67) пройти issue → facts → ADR/plan → bounded code → tests → independent review → Draft PR | Контракт роли, доказательства, отсутствие секретов, smoke и ручная приёмка |
-| A9 | Evaluation and decision | Сопоставить с известным Codex baseline: ошибки, переделки, elapsed time, токены если доступны, риск | Осмысленное \`adopt\` / \`keep Codex\` решение, не синтетический балл |
+| A9 | Evaluation and decision | Сопоставить с известным Codex baseline: ошибки, переделки, elapsed time, токены если доступны, риск | Осмысленное `adopt` / `keep Codex` решение, не синтетический балл |
 | A10 | Operationalize | Нормативный runbook, модели и разрешения, диагностика, rollback; если принято — один основной локальный путь | Владелец самостоятельно запускает типовую работу из WSL |
 
 ### Минимальный набор проектных конфигураций для кандидата OpenCode V2
 
 После проверки установленной версии и только в последующем implementation PR:
-- \`opencode.jsonc\` либо принятая V2 schema в проверяемой версии: модели, permissions, default primary-agent, явные запреты на \`git push\` и секреты; external-directory policy.
-- \`.opencode/agents/orchestrator.md\`, \`architect.md\`, \`planner.md\`, \`reviewer.md\` — точные пути/схему подтвердить локальным CLI. Предпочитать встроенные Explore/General, не плодить копии ради названий.
-- \`.opencode/commands/\` для явных операций \`/design\`, \`/apply\`, \`/review\` только если ручной интерфейс оправдался; не писать собственный orchestration daemon.
-- \`AGENTS.md\` — общий жизненный цикл и решение-вход/выход; project Skills \`.agents/skills\` переиспользовать.
-- \`docs/engineering/\` — единственный runbook и точная актуальная политика CI.
+- `opencode.jsonc` либо принятая V2 schema в проверяемой версии: модели, permissions, default primary-agent, явные запреты на `git push` и секреты; external-directory policy.
+- `.opencode/agents/orchestrator.md`, `architect.md`, `planner.md`, `reviewer.md` — точные пути/схему подтвердить локальным CLI. Предпочитать встроенные Explore/General, не плодить копии ради названий.
+- `.opencode/commands/` для явных операций `/design`, `/apply`, `/review` только если ручной интерфейс оправдался; не писать собственный orchestration daemon.
+- `AGENTS.md` — общий жизненный цикл и решение-вход/выход; project Skills `.agents/skills` переиспользовать.
+- `docs/engineering/` — единственный runbook и точная актуальная политика CI.
 
-**Важно:** это целевая конфигурация, а не готовый совместимый конфиг. У OpenCode V1 и V2 разные ключи; не копировать старые JSON-примеры без проверки \`opencode --version\` и встроенной справки.
+**Важно:** это целевая конфигурация, а не готовый совместимый конфиг. У OpenCode V1 и V2 разные ключи; не копировать старые JSON-примеры без проверки `opencode --version` и встроенной справки.
 
 ### Сохранённый Codex fallback
 
-Текущие \`.codex/config.toml\`, \`.codex/agents/reviewer.toml\`, \`AGENTS.md\` не изменять при capability smoke. При отказе OpenCode реализовать эквивалентные Architect/Planner роли в Codex, с явной оговоркой наследования provider/sandbox и без автоматического multiprovider. Зависимость от нового провайдера не должна блокировать работу в Codex.
+Текущие `.codex/config.toml`, `.codex/agents/reviewer.toml`, `AGENTS.md` не изменять при capability smoke. При отказе OpenCode реализовать эквивалентные Architect/Planner роли в Codex, с явной оговоркой наследования provider/sandbox и без автоматического multiprovider. Зависимость от нового провайдера не должна блокировать работу в Codex.
 
 ## 3. Порядок и границы PR
 
@@ -56,7 +56,7 @@
 
 Команды ниже только читают состояние либо проверяют доступ; **в этой исследовательской ветке не выполнялись**:
 
-\`\`\`bash
+```bash
 git fetch origin main
 git status --short
 git log -1 --oneline origin/main
@@ -67,37 +67,37 @@ opencode run --help
 ollama list
 openspec --version
 python3 scripts/check-fast.py --dry-run
-\`\`\`
+```
 
-Проверка providers в OpenCode: открыть \`opencode\`, затем \`/connect\` и \`/models\` в приватной локальной сессии. Не экспортировать credentials, логин-токены, JSON профиля или whole-model context в GitHub. Не считать Copilot entitlement доказанным на основании GitHub Pro.
+Проверка providers в OpenCode: открыть `opencode`, затем `/connect` и `/models` в приватной локальной сессии. Не экспортировать credentials, логин-токены, JSON профиля или whole-model context в GitHub. Не считать Copilot entitlement доказанным на основании GitHub Pro.
 
 ### Smoke 1 — read-only
 
 - В тестовом worktree Orchestrator поручает Explorer узнать точные файлы/вызовы PolicyRule, а Reviewer анализировать небольшой historical diff без записи.
-- Запретить \`edit\`, опасный \`shell\` и внешнюю запись. Проверить реальным инструментальным отказом, а не только итоговым self-report.
-- Убедиться, что обе роли видят \`AGENTS.md\`, адресованное OpenSpec Skill и правильный model ID; \`git status\` остаётся пустым.
+- Запретить `edit`, опасный `shell` и внешнюю запись. Проверить реальным инструментальным отказом, а не только итоговым self-report.
+- Убедиться, что обе роли видят `AGENTS.md`, адресованное OpenSpec Skill и правильный model ID; `git status` остаётся пустым.
 
 ### Smoke 2 — write + acceptance
 
 - В disposable ветке на безопасной автономной маленькой задаче Planner формирует AC, Worker вносит минимальный diff и targeted test; Reviewer независимо возвращает findings, Orchestrator готовит Draft PR.
 - Проверить sha, scope, отрицательные тесты и policy/gate; хозяин выполняет smoke и принимает/отклоняет.
-- Для продуктовых задач фиксировать защищённую \`main\`, \`gh pr view\` и актуальность CI; не выдавать \`workflow_dispatch\` за автоматический Required Verify.
+- Для продуктовых задач фиксировать защищённую `main`, `gh pr view` и актуальность CI; не выдавать `workflow_dispatch` за автоматический Required Verify.
 
 ### Smoke 3 — fallback
 
-- На одном bounded Explorer вопросе запустить разные *реально доступные* model tiers; записать явный \`actual model\`.
+- На одном bounded Explorer вопросе запустить разные *реально доступные* model tiers; записать явный `actual model`.
 - Принудительно переключить tier **между** task units после ручного остановленного шага. Проверить, что контракт, версии/границы и результаты не потеряны.
 - Автоматический quota-based router — опция только если найден достоверный API квот и предсказуемое управление отказами.
 
 ## 5. Матрица приёмки и контроль качества
 
-- **P0:** нет утечки токенов, несанкционированной записи вне worktree, изменённого \`main\` и автоматического merge. При провале — немедленный rollback.
+- **P0:** нет утечки токенов, несанкционированной записи вне worktree, изменённого `main` и автоматического merge. При провале — немедленный rollback.
 - **P1:** роли соблюдают полномочия; правильно передают артефакты; модели выбираются по задачам; ACL/Policy invariants не теряются; независимый review без фиктивных PASS.
 - **P1:** принимает существующие OpenSpec и test gates; manual Verify на final candidate организован явно, без устаревшего описания.
 - **P2:** рабочее переключение budget-tier; минимальный дополнительный расход/латентность; разумный лимит параллелизма.
 - **P3:** удобные CLI-команды, наблюдаемость, визуальное представление процесса.
 
-Таблица в отчёте каждого smoke: \`environment version | task/role | requested model | actual model (or unknown) | permissions test | changed files | checks and exit codes | base/head | outcomes | limitations\`.
+Таблица в отчёте каждого smoke: `environment version | task/role | requested model | actual model (or unknown) | permissions test | changed files | checks and exit codes | base/head | outcomes | limitations`.
 
 ## 6. Решение по итогам пилота
 
