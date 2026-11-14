@@ -80,6 +80,16 @@ def upgrade_to_v8(c):
             ]
             if any(not history for history in histories):
                 raise RuntimeError(f"Cannot merge Interaction without a revision: {app}/{src}/{dst}")
+            if any(
+                revision["application_id"] != app
+                or revision["source_component_id"] != src
+                or revision["destination_component_id"] != dst
+                for history in histories for revision in history
+            ):
+                raise RuntimeError(
+                    f"Cannot merge inconsistent Interaction direction for {app}/{src}/{dst}; "
+                    "migration rolled back"
+                )
             combined = _union_or_fail(histories, f"{app}/{src}/{dst}")
             ordinal = 0
             for member, history in zip(members, histories):
