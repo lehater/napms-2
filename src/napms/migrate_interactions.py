@@ -118,7 +118,7 @@ def upgrade_to_v8(c):
             BEGIN SELECT RAISE(ABORT,'immutable record'); END""")
 
     # This index is the authoritative uniqueness guard. It is direction-sensitive.
-    c.execute("""CREATE UNIQUE INDEX unique_interaction_pair
+    c.execute("""CREATE UNIQUE INDEX IF NOT EXISTS unique_interaction_pair
         ON interaction_meta(application_id,source_component_id,destination_component_id)""")
     # Direct SQL insertions and seeded legacy revisions cannot bypass Interaction uniqueness.
     c.execute("""CREATE TRIGGER IF NOT EXISTS register_interaction_revision
