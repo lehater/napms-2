@@ -254,8 +254,13 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await expect(page.locator('.ux-heading').getByText('ACTIVE', { exact: true })).toBeVisible()
   await expect(page.locator('.ux-heading')).toContainText('Order')
   for (let index = 0; index < 20; index++) {
+    const extraComponent = await page.request.post(`/applications/${applicationId}/components`, { headers: requester, data: {
+      name: `Pagination receiver ${index}`,
+    } })
+    expect(extraComponent.status()).toBe(201)
+    const extraDestinationId = (await extraComponent.json()).componentId as string
     const extra = await page.request.post(`/applications/${applicationId}/interactions`, { headers: requester, data: {
-      sourceComponentId: senderComponentId, destinationComponentId: receiverComponentId,
+      sourceComponentId: senderComponentId, destinationComponentId: extraDestinationId,
       ipProtocol: 'TCP', destinationPortStart: 20000 + index, destinationPortEnd: 20000 + index,
     } })
     expect(extra.status()).toBe(201)
