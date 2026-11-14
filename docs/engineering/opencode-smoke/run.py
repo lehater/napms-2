@@ -134,7 +134,7 @@ def verify_route(evidence):
     )
     assert (
         root / "role-smoke.txt"
-    ).read_text() == "# Role smoke\n\nBounded Worker write.\n"
+    ).read_bytes() == b"# Role smoke\n\nBounded Worker write.\n"
     for session in sessions:
         for p in tools(session[0]):
             if p["state"]["status"] == "completed" and p["name"] == "shell":
@@ -173,8 +173,8 @@ if mode in {"route", "segment-worker"}:
     target = root / "role-smoke.txt"
     if target.is_symlink() or (
         target.exists()
-        and target.read_text()
-        not in {"PLACEHOLDER\n", "# Role smoke\n\nBounded Worker write.\n"}
+        and target.read_bytes()
+        not in {b"PLACEHOLDER\n", b"# Role smoke\n\nBounded Worker write.\n"}
     ):
         raise SystemExit("Refusing to overwrite an unexpected smoke artifact")
     target.write_text("PLACEHOLDER\n")
