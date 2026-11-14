@@ -1,9 +1,9 @@
 ## 1. Implementation
-- [ ] 1.1 Migrate v6→v7 preserving revision history and adding purpose/numbered owned snapshots
-- [ ] 1.2 Strict typed 1..N clause contracts and legacy payload compatibility
-- [ ] 1.3 Atomic create and immutable publish-next-revision with duplicate detection
-- [ ] 1.4 Preserve exact clauses through Need/Rule and per-clause export
-- [ ] 1.5 REAL UI draft add/remove, revision history and publish workflow
+- [x] 1.1 Migrate v6→v7 preserving revision history and adding purpose/numbered owned snapshots
+- [x] 1.2 Strict typed 1..N clause contracts and legacy payload compatibility
+- [x] 1.3 Atomic create and immutable publish-next-revision with duplicate detection
+- [x] 1.4 Preserve exact clauses through Need/Rule and per-clause export
+- [x] 1.5 REAL UI draft add/remove, revision history and publish workflow
 
 ## 2. Verification
 - [ ] 2.1 Backend/API/migration regression and duplicate tests
