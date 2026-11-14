@@ -856,7 +856,9 @@ test('current shared policy INACTIVE and INCOMPLETE states use actual backend fi
   await expect(page.getByRole('alert')).toContainText('401')
   await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
   await expect(ruleRow).toContainText('ACTIVE')
-  await expect(page.locator('tbody tr')).toHaveCount(1)
+  // Other tests may have created independent rules in this worker's SQLite database.
+  // Assert exactly one row for the selected immutable rule instead of global row count.
+  await expect(ruleRow).toHaveCount(1)
   async function currentBytes(format:'json'|'csv') {
     const waiting = page.waitForEvent('download')
     await page.getByRole('button',{name:'Текущая политика · '+format.toUpperCase(),exact:true}).click()
@@ -1014,11 +1016,24 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByLabel('Название', { exact: true }).fill('NTP synchronization')
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click()
   await page.getByRole('link', { name: 'Потребности', exact: true }).click()
-  await expect(page.getByLabel('Коммуникация', { exact: true })).toBeVisible()
-  const needOptions = await page.locator('#need-communication option').allTextContents()
-  const selfInteraction = needOptions.find(label => label.includes('NTP · NTP Server → NTP Server'))
-  expect(selfInteraction).toBeTruthy()
-  await page.getByLabel('Коммуникация', { exact: true }).selectOption({ label: selfInteraction! })
+  const needSelect = page.getByLabel('Коммуникация', { exact: true })
+  const expectedInteraction = 'NTP · NTP Server → NTP Server'
+  let selfInteraction: string | undefined
+  // Earlier scenarios can add more than 20 revisions to this worker's database.
+  // Exercise the real paginated UI instead of assuming the target is on page one.
+  for (let pageIndex = 0; pageIndex < 30; pageIndex++) {
+    await expect(needSelect).toBeVisible()
+    const labels = await needSelect.locator('option').allTextContents()
+    selfInteraction = labels.find(label => label.includes(expectedInteraction))
+    if (selfInteraction) break
+    const nextPage = page.getByRole('button', { name: 'Следующие коммуникации', exact: true })
+    await expect(nextPage, 'NTP interaction must be reachable via Need options paging').toBeEnabled()
+    const previousLabels = labels.join('|')
+    await nextPage.click()
+    await expect.poll(async () => (await needSelect.locator('option').allTextContents()).join('|')).not.toBe(previousLabels)
+  }
+  expect(selfInteraction, 'Created NTP self-interaction was not found in paginated Need options').toBeTruthy()
+  await needSelect.selectOption({ label: selfInteraction! })
   await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
   await expect(page.getByText('Потребность сохранена.', { exact: true })).toBeVisible()
 
