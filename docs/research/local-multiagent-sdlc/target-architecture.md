@@ -17,7 +17,7 @@
 ### Уровни
 
 1. **Human Product/Architecture Owner** — утверждает значимые развилки, новые зависимости/расходы, изменения политики безопасности, приёмку и merge.
-2. **Durable Controller (не LLM)** — исполняет утверждённый DAG, хранит checkpoint, выбирает READY tasks, соблюдает owner gates и бюджеты, восстанавливает прерванные попытки через reconcile.
+2. **Execution mode** — по умолчанию активная локальная сессия Orchestrator (A), которая автоматически переходит между ограниченными задачами. Только при требовании гарантированного restart добавляется **Durable Controller (B, не LLM)** с DAG, checkpoint и reconcile.
 3. **Orchestrator (LLM)** — координирует конкретный scoped work item, выбирает специалистов и собирает инженерные результаты. Не меняет утверждённый DAG, budget или owner approval.
 4. **Specialists** — выполняют ограниченные задания в отдельных контекстах; не изменяют основной контракт без запроса.
 5. **Deterministic toolchain** — Git, OpenSpec, pytest, Ruff, TS, Playwright, проверки HTTP/permissions и выборочный/полный CI: решает воспроизводимые вопросы *без LLM*.
@@ -27,7 +27,7 @@
 
 | Логическая роль | Ответственность | Вход | Проверяемый выход | Право менять код |
 | --- | --- | --- | --- | --- |
-| **Controller** *(детерминированный процесс)* | Управлять принятым DAG, статусами, checkpoint, бюджетными и owner gates; restart reconcile | Утверждённый план + локальный runtime state + подтверждённые events | Последовательный запуск READY tasks, journal, WAITING_OWNER/BLOCKED/DONE | Только операции по разрешённому плану; не принимает ADR/merge |
+| **Controller** *(не-LLM, только режим B)* | Управлять принятым DAG, статусами, checkpoint, бюджетными и owner gates; restart reconcile | Утверждённый план + локальный runtime state + подтверждённые events | READY task runs, journal, WAITING_OWNER/BLOCKED/DONE | Только операции по разрешённому плану; не принимает ADR/merge |
 | **Orchestrator** | Определить маршрут *внутри work item*, выбрать специалистов, владельцев файлов и отчёт; остановить при P0/P1/неясном праве | Scoped task + `main@SHA` + режим модели | Task contract, вызовы специалистов, единый handoff | Может инициировать Worker, не заменяет независимого Reviewer |
 | **Explorer** | Собрать *факты* о реализации и контрактах | Точный вопрос + scoped paths | Файлы/символы/строки, связи, наблюдения и пробелы | Нет |
 | **Architect** | Предложить границы, инварианты, риски, ADR и условия отказа | Требования + Explorer evidence | Один предпочтительный design, trade-offs, explicit owner decisions | Нет |
@@ -80,7 +80,7 @@ output:
 
 ### Два разных уровня исполнения
 
-Полный **plan run** = Controller принимает утверждённый DAG (список work packages A0–A10), проверяет зависимости и запускает следующий READY work item без нового ручного промпта. **Task run** = Orchestrator организует Explorer → Architect → Planner → Worker → Validator → Reviewer для одной ограниченной задачи. Read-only ветви могут параллелиться; write — один владелец.
+**Plan run (A)** = Orchestrator в активной сессии получает утверждённый план и последовательно выполняет разрешённые work packages без нового ручного промпта, фиксируя результаты в Git/OpenSpec. **Plan run (B)** = условный Controller принимает утверждённый DAG, хранит checkpoint и запускает следующий READY task после restart. **Task run** = Orchestrator организует необходимых Explorer/Architect/Planner/Worker/Validator/Reviewer для одной ограниченной задачи. Read-only ветви могут параллелиться; write — один владелец.
 
 Определение статусов, алгоритм checkpoint/restart, бюджет и owner gates — в [ADR-002](execution-engine.md). OpenCode session не является источником истины о результате: при перезапуске сверяется Git/PR/фактические проверки.
 
@@ -145,7 +145,7 @@ ORCHESTRATOR: classify + snapshot main/base + route + budget
 | Worker | Точная задача, contract, API, affected source/test files | Весь разговор внешнего координатора |
 | Reviewer | Diff against base, спецификация и соседние контракты | Сообщение Worker «всё отлично», не подтверждённые прогоны |
 
-**Source of truth**: принятый план в Git, принятые PR/`main` + актуальный git diff и воспроизводимые evidence. Локальный controller journal (вне репозитория) фиксирует попытки и прогресс, но не утверждает продуктовую истину. Короткий handoff — индекс источников, а не вторая конкурирующая память. Не создавать отдельную векторную БД/граф памяти для этого без обнаруженной проблемы.
+**Source of truth**: принятый план в Git, принятые PR/`main` + актуальный git diff и воспроизводимые evidence. Только в режиме B локальный controller journal (вне репозитория) фиксирует попытки и прогресс, но не утверждает продуктовую истину. Короткий handoff — индекс источников, а не вторая конкурирующая память. Не создавать отдельную векторную БД/граф памяти для этого без обнаруженной проблемы.
 
 **Миграция между рантаймами:** роли и их контракты выражены Markdown/AGENTS/OpenSpec, а привязка к исполнителю — в `.codex/agents` либо `.opencode/agents`/config V2. Не копировать в два места разошедшиеся доменные правила.
 
@@ -183,7 +183,7 @@ ORCHESTRATOR: classify + snapshot main/base + route + budget
 
 - GitHub branch protection и явное разрешение на squash merge — внешний control plane.
 - Worker — допустимый scope записи в отдельном worktree при независимой реализации; read-only роли должны иметь **технический запрет** `edit` + осторожную политику shell, если рантайм её поддерживает. Текст `do not edit` не enforcement.
-- **OpenCode V2**: project agents/permissions ограничивают инструменты по ролям, но не доказывают OS-level sandbox; проверять запрет `shell`, `edit`, `external_directory` и `git push` на практике. V2 синтаксис существенно отличается от V1.
+- **OpenCode V2**: project agents/permissions ограничивают инструменты по ролям, но не доказывают OS-level sandbox. `edit: deny` не защищает, если доступен произвольный `shell`; default external-directory доступ может быть разрешён. Для read-only ролей блокировать shell/edit/внешний доступ либо использовать строго проверенный allowlist, для автономного Worker — ограниченное окружение; отдельно проверять запрет push/merge. V2 синтаксис существенно отличается от V1.
 - **Codex**: субагенты наследуют sandbox/approval и provider; reviewer TOML — только инструкция. Для изоляции использовать отдельный root session/worktree, при необходимости sandbox.
 - Worktrees для *параллельных writers*, не обязательны для каждого read-only Explorer. Раздельные процессы/DB при тестах; shared `local-demo` SQLite не трогать с несколькими Worker.
 - Секреты: не хранить в Markdown prompts, git, screenshots, logs, model routing; брать из разрешённого локального credential store, не копировать provider tokens между средами.
@@ -209,7 +209,7 @@ Reviewer не вправе утверждать «PASS» на основании
 
 ### Непрерывность и ограничения
 
-Controller сохраняет durable-state после каждого перехода и останавливает plan run в `WAITING_OWNER`, `BLOCKED` или по hard budget. После восстановления он сначала сверяет побочные эффекты с Git/PR/test evidence и лишь затем решает, повторить scoped шаг или продолжить проверку. **OpenCode сам по себе не гарантирует такое восстановление**; целевое поведение определяется [ADR-002](execution-engine.md), а не промптом для Orchestrator.
+**Режим A:** локальный Orchestrator выполняет work packages пока сессия активна, оставляя handoff и реальные артефакты в Git; автоматический resume без проверки side effects не обещается. **Режим B:** условный Controller сохраняет durable-state, останавливается в `WAITING_OWNER`/`BLOCKED`/по hard budget и после restart сверяет побочные эффекты с Git/PR/test evidence до повтора. Границы описаны в [ADR-002](execution-engine.md).
 
 ## 9. Ошибки, повторы и восстановление
 
