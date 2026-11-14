@@ -139,13 +139,15 @@ def test_historical_v1_upgrade(env):
     with db.transaction() as c:
         assert c.execute('PRAGMA user_version').fetchone()[0] == 6
         assert c.execute('PRAGMA foreign_key_check').fetchall() == []
-        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' ORDER BY name")] == triggers
+        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' AND name != 'valid_source_port_pair' ORDER BY name")] == triggers
         for table, rows in before.items():
             actual = [tuple(row) for row in c.execute(f'SELECT * FROM {table}')]
             if table == 'processes':
                 assert actual == [(*row, None, None, None) for row in rows]
             elif table == 'grants':
                 assert all(row in actual for row in rows)
+            elif table == 'interaction_revisions':
+                assert actual == [(*row, None, None) for row in rows]
             else:
                 assert actual == rows
     assert Service(db).process(IDS['requester'], IDS['process'])['name'] is None
