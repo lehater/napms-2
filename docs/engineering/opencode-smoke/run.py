@@ -92,17 +92,44 @@ def verify_route(evidence):
         and s.get("error", {}).get("type") == "permission.rejected"
         for s in shell
     )
+
+    def intended_probe(name, inputs):
+        if name == "edit":
+            return inputs.get("path") in {
+                "role-smoke.txt",
+                "/tmp/work/role-smoke.txt",
+            } and (
+                (
+                    inputs.get("oldString") == "Bounded Worker write."
+                    and inputs.get("newString") == "FORBIDDEN"
+                )
+                or inputs.get("content")
+                in {
+                    "FORBIDDEN",
+                    "# Role smoke\n\nFORBIDDEN",
+                    "# Role smoke\n\nFORBIDDEN\n",
+                }
+            )
+        if name == "shell":
+            return inputs.get("command") == "true"
+        return inputs.get("code", inputs.get("command")) == "1 + 1"
+
     for name in ("edit", "shell", "execute"):
         assert any(
             p["name"] == name
+            and intended_probe(name, p["state"]["input"])
             and p["state"]["status"] == "error"
             and p["state"].get("error", {}).get("type") == "tool.execution"
+            and p["state"]["error"]
+            .get("message", "")
+            .startswith(f'No tool named "{name}" is currently available.')
             for p in events["reviewer"]
-        ), f"Missing actual Reviewer {name} denial"
+        ), f"Missing actual Reviewer {name} unavailable-tool denial with intended probe"
     assert any(
         p["name"] == "read"
         and p["state"]["status"] == "completed"
-        and p["state"]["input"].get("path", "").endswith("role-smoke.txt")
+        and p["state"]["input"].get("path")
+        in {"role-smoke.txt", "/tmp/work/role-smoke.txt"}
         for p in events["reviewer"]
     )
     assert (

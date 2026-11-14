@@ -24,6 +24,8 @@ A subsequent route `ses_e273a09f8ffeVYkxIWEHne7VF0` incorrectly batched Explorer
 
 Repeat root `ses_e273828a6ffeu0GY179ugU9Kvs` completed all five stages sequentially; observed child IDs are `ses_e27381d35ffeztaGiSr3Hpi7He`, `ses_e2737e272ffetdovEJyTOqhN4x`, `ses_e27378e6cffegK5JJWkHHhGWk6`, `ses_e27377742ffe2qj3UARWveAgPD`, `ses_e273751ebffezBnTyByw076V0H`. The offline fixture verifier passed: no stage overlaps, Explorer reads/Skill load, Worker edit, both Validator exits 0 and denied `true`, Reviewer read and all three real tool errors. The same verifier rejected the earlier raced route with `Dependent stages overlapped` (exit 1). This is an acceptance check over recorded events, not a runtime Controller or a production gate.
 
+Independent follow-up review found one **P2 fixed** in the offline verifier: unrelated tool errors could count as denials. It now requires the exact unavailable-tool error and intended harmless edit/shell/execute inputs, plus the exact artifact read path. The previously successful sequential route still passes this stricter verifier. Reviewer rechecked the fix and reported no new P0/P1 findings.
+
 ## Local checks
 
 `python3 scripts/check-fast.py --dry-run` selected FULL because root `opencode.jsonc` is unknown scope. The first execution lacked the `python` command; rerun used the existing project virtualenv and Web dependencies in the disposable worktree. The selected FULL finished with **no blocking failures**:
