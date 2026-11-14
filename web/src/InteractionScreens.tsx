@@ -269,7 +269,7 @@ export function InteractionRevisionCreateScreen({client}: {client: Client}) {
   const {applicationId = '', interactionId = ''} = useParams()
   const navigate = useNavigate()
   const {item, error: loadError} = useInteraction(client, applicationId, interactionId)
-  const [clauses, setClauses] = useState<ClauseDraft[] | null>(null)
+  const [clauses, setClauses] = useState<ClauseDraft[]>([])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const latest = item?.revisions.at(-1)
@@ -283,7 +283,7 @@ export function InteractionRevisionCreateScreen({client}: {client: Client}) {
   }, [latest, revisionKey, draftKey])
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!item || !latest || !clauses) return
+    if (!item || !latest) return
     setError('')
     let trafficClauses: TrafficClauseInput[]
     try { trafficClauses = parseSnapshot(clauses) }
@@ -296,7 +296,7 @@ export function InteractionRevisionCreateScreen({client}: {client: Client}) {
     } catch (reason) { setError(catalogError(reason)) }
     finally { setBusy(false) }
   }
-  if (!item || !latest || !clauses) return <section className="ux-panel ux-panel-body">
+  if (!item || !latest || draftKey !== revisionKey) return <section className="ux-panel ux-panel-body">
     {loadError ? <p role="alert">{loadError}</p> : <p role="status">Загрузка черновика ревизии…</p>}
   </section>
   return <DetailView
