@@ -621,7 +621,8 @@ test('composition delayed options and POST do not restore old context or navigat
 })
 
 
-async function expectSummary(page: import('@playwright/test').Page, needId: string, revision = '00000000-0000-0000-0000-000000000009', protocol = 'TCP', ports = '443–443') {
+async function expectSummary(page: import('@playwright/test').Page, needId: string,
+  revision = '00000000-0000-0000-0000-000000000009', clauses = ['#1 · TCP · ANY → 443']) {
   // Scope every assertion to the confirmation summary, not selector labels above it.
   const summary = page.getByRole('group', {name:'Сводка заявки',exact:true})
   await expect(summary).toBeVisible()
@@ -630,13 +631,14 @@ async function expectSummary(page: import('@playwright/test').Page, needId: stri
     Interaction:'00000000-0000-0000-0000-000000000008',
     Revision:revision,
     'Направление Components':'00000000-0000-0000-0000-000000000006 → 00000000-0000-0000-0000-000000000007',
-    'Протокол':protocol,
-    'Порты назначения':ports,
     'Source Deployment':'00000000-0000-0000-0000-00000000000a',
     'Source Resource':'00000000-0000-0000-0000-000000000001',
     'Destination Deployment':'00000000-0000-0000-0000-00000000000b',
     'Destination Resource':'00000000-0000-0000-0000-000000000002',
   })) await expect(summary.locator('dt').filter({hasText:new RegExp('^'+label+'$')}).locator('..').locator('dd')).toHaveText(value)
+  const traffic = summary.locator('dt').filter({hasText:/^Условия трафика$/}).locator('..').locator('dd')
+  await expect(traffic.locator('li')).toHaveCount(clauses.length)
+  for (const clause of clauses) await expect(traffic).toContainText(clause)
   await expect(summary.getByLabel('Подтверждаю состав заявки',{exact:true})).not.toBeChecked()
 }
 
@@ -649,7 +651,7 @@ test('confirmation summary contains the selected backend facts and resets with R
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment',{exact:true}).selectOption({index:1})
-  await expectSummary(page,demoInput.connectivityNeedId,alternate,'UDP','5353–5355')
+  await expectSummary(page,demoInput.connectivityNeedId,alternate,['#1 · UDP · ANY → 5353–5355'])
   await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeEnabled()
   await page.getByRole('button',{name:'Обновить · Revision',exact:true}).click()
