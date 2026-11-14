@@ -8,7 +8,8 @@ from napms.dev import IDS, init_demo
 
 def rows(c):
     return {
-        r[0]: [tuple(x) for x in c.execute(f"SELECT * FROM {r[0]} ORDER BY rowid")]
+        r[0]: [tuple(x)[:8] if r[0] == "interaction_revisions" else tuple(x)
+               for x in c.execute(f"SELECT * FROM {r[0]} ORDER BY rowid")]
         for r in c.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '%_names'"
         ).fetchall()
