@@ -16,9 +16,10 @@ from .domain import Problem
 from .use_cases import Service
 
 COLUMNS = ("ruleId", "subjectId", "sourceResourceId", "destinationResourceId", "sourceEndpointId", "destinationEndpointId",
-           "sourceAddress", "destinationAddress", "ipProtocol", "sourcePortStart", "sourcePortEnd", "destinationPortStart", "destinationPortEnd", "readiness",
+           "sourceAddress", "destinationAddress", "ipProtocol", "destinationPortStart", "destinationPortEnd", "readiness",
            "interactionRevisionId", "connectivityNeedId", "requestId", "requesterActorId", "decisionId", "deciderActorId",
-           "evaluationAt", "requestSubmittedAt", "decisionAt", "sourceAddressKind", "destinationAddressKind")
+           "evaluationAt", "requestSubmittedAt", "decisionAt", "sourceAddressKind", "destinationAddressKind",
+           "sourcePortStart", "sourcePortEnd")
 
 
 class Strict(BaseModel):
@@ -164,7 +165,9 @@ class InteractionInput(Strict):
             raise ValueError("Invalid destination port range")
         if (self.sourcePortStart is None) != (self.sourcePortEnd is None):
             raise ValueError("Incomplete source port range")
-        if self.sourcePortStart is not None and self.sourcePortStart > self.sourcePortEnd:
+        if self.sourcePortStart is not None and (
+            self.sourcePortEnd is None or self.sourcePortStart > self.sourcePortEnd
+        ):
             raise ValueError("Invalid source port range")
         return self
 
