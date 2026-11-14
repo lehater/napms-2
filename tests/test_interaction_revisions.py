@@ -35,7 +35,7 @@ def test_owned_clauses_and_revision_publish_preserve_old_rules(env):
     assert "udp(123)" in rev1["trafficLabel"] and "tcp(40000-40100→443)" in rev1["trafficLabel"]
 
     duplicate = create(client, requester, clauses=[clause("TCP", 40000, 40100, 443), clause()])
-    assert duplicate.status_code == 409 and duplicate.json()["error"]["code"] == "DUPLICATE_INTERACTION"
+    assert duplicate.status_code == 409 and duplicate.json()["error"]["code"] == "INTERACTION_PURPOSE_EXISTS"
     independent = create(client, requester, purpose="Other business purpose")
     assert independent.status_code == 201 and independent.json()["interactionId"] != interaction_id
 
