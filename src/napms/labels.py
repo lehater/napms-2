@@ -2,6 +2,8 @@
 
 from typing import Literal, TypedDict
 
+from .traffic_clauses import clause_summary, stored_clauses
+
 MISSING = "Название не задано"
 REDACTED = "Название недоступно"
 
@@ -59,9 +61,12 @@ def interaction_label(c, revision):
 
 
 def revision_view(c, r):
-    expression = traffic(r["protocol"], r["port_start"], r["port_end"], *source_interval(r))
+    clauses = stored_clauses(r)
+    expression = clause_summary(clauses)
     return {
         "interactionRevisionId": r["id"],
+        "revisionNumber": r["revision_number"] if "revision_number" in r.keys() else 1,
+        "trafficClauses": clauses,
         "interactionId": r["interaction_id"],
         "applicationId": r["application_id"],
         "sourceComponentId": r["source_component_id"],
@@ -103,7 +108,7 @@ def subject_label(c, subject):
         "SELECT * FROM interaction_revisions WHERE id=?",
         (subject["interaction_revision_id"],),
     ).fetchone()
-    return f"{deployment_label(c, src)} → {deployment_label(c, dst)} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'], *source_interval(rev))}"
+    return f"{deployment_label(c, src)} → {deployment_label(c, dst)} · {clause_summary(stored_clauses(rev))}"
 
 
 def subject_list_projection(c, subject) -> SubjectListProjection:
@@ -116,7 +121,7 @@ def subject_list_projection(c, subject) -> SubjectListProjection:
     source_resource = name(c, "resource", src["resource_id"])
     destination_resource = name(c, "resource", dst["resource_id"])
     participants = f"{source_component} → {destination_component}"
-    expression = traffic(rev["protocol"], rev["port_start"], rev["port_end"], *source_interval(rev))
+    expression = clause_summary(stored_clauses(rev))
     return {
         "listLabel": f"{participants} · {expression}",
         "listContext": f"{application} · {source_resource} → {destination_resource}",
