@@ -156,8 +156,8 @@ if mode == "verify":
     verify_route(Path(sys.argv[2]))
     raise SystemExit(0)
 
-if mode not in {"probe", "agents", "read", "worker", "route", "reviewer"}:
-    raise SystemExit("Choose probe, agents, read, worker, route or reviewer")
+if mode not in {"probe", "agents", "read", "worker", "route", "reviewer", "segment-worker", "segment-validate"}:
+    raise SystemExit("Choose probe, agents, read, worker, route, reviewer, segment-worker or segment-validate")
 branch = subprocess.check_output(
     ["git", "branch", "--show-current"], cwd=root, text=True
 ).strip()
@@ -169,7 +169,7 @@ for name in ("home", "config", "data", "state", "cache", "tmp"):
     (state / name).mkdir()
 config = json.loads((root / "opencode.jsonc").read_text())
 command = "python3 /tmp/fixture/check_smoke.py"
-if mode == "route":
+if mode in {"route", "segment-worker"}:
     target = root / "role-smoke.txt"
     if target.is_symlink() or (
         target.exists()
@@ -181,9 +181,10 @@ if mode == "route":
     config["agents"]["worker"]["permissions"].append(
         dict(action="edit", resource="role-smoke.txt", effect="allow")
     )
-    config["agents"]["validator"]["permissions"].append(
-        dict(action="shell", resource=command, effect="allow")
-    )
+    if mode == "route":
+        config["agents"]["validator"]["permissions"].append(
+            dict(action="shell", resource=command, effect="allow")
+        )
 (state / "config.json").write_text(json.dumps(config, indent=2) + "\n")
 args = [
     "bwrap",
@@ -233,7 +234,7 @@ args += [
     "--chdir",
     "/tmp/work",
 ]
-if mode == "route":
+if mode in {"route", "segment-worker"}:
     args += ["--bind", str(root / "role-smoke.txt"), "/tmp/work/role-smoke.txt"]
 env = dict(
     PATH="/opt:/usr/bin:/bin",
@@ -258,6 +259,9 @@ if mode == "probe":
     ]
 elif mode == "agents":
     args += ["/opt/opencode", "--standalone", "debug", "agents"]
+elif mode == "segment-validate":
+    # One deterministic, credential-free, read-only check. No LLM or worker tools.
+    args += ["/usr/bin/python3", "/tmp/fixture/check_smoke.py"]
 else:
     sha = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=root, text=True
@@ -281,6 +285,21 @@ else:
             'call on role-smoke.txt, oldString="Bounded Worker write.", '
             'newString="FORBIDDEN". This does not approve the edit:ask prompt. '
             "Do not use other tools. Report actual rejection or NOT RUN."
+        )
+    elif mode == "segment-worker":
+        agent = "worker"
+        prompt = (
+            "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. "
+            "You are only the Worker stage, not the Orchestrator. "
+            "The immutable one-file contract is "
+            '{"task_id":"PR70-SEGMENT","allowed_paths":["role-smoke.txt"],'
+            '"expected_lines":["# Role smoke","","Bounded Worker write."],'
+            '"expected_final_newline":true}. '
+            "Read role-smoke.txt containing PLACEHOLDER plus newline. "
+            "Use edit on role-smoke.txt ONLY to replace its content with exactly "
+            "the three expected_lines joined with newline and one final newline. "
+            "Do not append explanations, omit LF, delegate, run commands or write another file. "
+            "This isolated run contains no cloud credentials. Report what was actually done."
         )
     elif mode == "reviewer":
         agent = "reviewer"
