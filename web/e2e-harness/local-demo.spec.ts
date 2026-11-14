@@ -945,6 +945,16 @@ test('new policy proxy routes preserve method, origin and actor boundaries',asyn
     }
     expect((await request.post(path,{headers:actorHeaders('exporter')})).status()).toBe(404)
   }
+  // The new publish endpoint must be explicitly allowed, while unsupported verbs stay blocked.
+  const [applicationId, interactionId] = harness.sql(
+    'SELECT application_id,interaction_id FROM interaction_revisions WHERE id=?',
+    [demoInput.interactionRevisionId])[0] as [string,string]
+  const revisionPath = `/applications/${applicationId}/interactions/${interactionId}/revisions`
+  expect((await request.post(revisionPath,{headers:actorHeaders('requester'),
+    data:{trafficClauses:[]}})).status()).toBe(422)
+  expect((await request.get(revisionPath,{headers:actorHeaders('requester')})).status()).toBe(404)
+  expect((await request.post(revisionPath,{headers:{...actorHeaders('requester'),Origin:'http://evil.example'},
+    data:{trafficClauses:[]}})).status()).toBe(403)
   expect(harness.file).toBeTruthy()
 })
 
