@@ -1,7 +1,7 @@
 # Целевая архитектура локального SDLC Harness
 
 **Статус:** proposal, требуется архитектурная приёмка владельца; проектирование выполнено целиком, описанные роли ещё не развёрнуты.
-**Связанный выбор:** [ADR-001](research-and-decision.md#4-adr-001--выбрать-целевой-рантайм).
+**Связанные решения:** [ADR-001: runtime](research-and-decision.md#4-adr-001--выбрать-целевой-рантайм) и [ADR-002: непрерывное исполнение](execution-engine.md).
 **Приоритет:** контракт обязанностей → контекст → маршрутизация → средства и разрешения; модель/рантайм — сменяемая реализация.
 
 ## 1. Система, а не «команда говорящих моделей»
@@ -17,16 +17,18 @@
 ### Уровни
 
 1. **Human Product/Architecture Owner** — утверждает значимые развилки, новые зависимости/расходы, изменения политики безопасности, приёмку и merge.
-2. **Orchestrator** — управляет конкретной задачей, выбирает маршрут/агентов/модели, собирает результаты, останавливает процесс при конфликте и готовит один handoff.
-3. **Specialists** — выполняют ограниченные задания в отдельных контекстах; не изменяют основной контракт без запроса.
-4. **Deterministic toolchain** — Git, OpenSpec, pytest, Ruff, TS, Playwright, проверки HTTP/permissions и выборочный/полный CI: решает воспроизводимые вопросы *без LLM*.
-5. **GitHub contract** — Issues, review, diff, evidence, base/head SHA, разрешённые переходы Draft → Ready → Accepted → Merged.
+2. **Durable Controller (не LLM)** — исполняет утверждённый DAG, хранит checkpoint, выбирает READY tasks, соблюдает owner gates и бюджеты, восстанавливает прерванные попытки через reconcile.
+3. **Orchestrator (LLM)** — координирует конкретный scoped work item, выбирает специалистов и собирает инженерные результаты. Не меняет утверждённый DAG, budget или owner approval.
+4. **Specialists** — выполняют ограниченные задания в отдельных контекстах; не изменяют основной контракт без запроса.
+5. **Deterministic toolchain** — Git, OpenSpec, pytest, Ruff, TS, Playwright, проверки HTTP/permissions и выборочный/полный CI: решает воспроизводимые вопросы *без LLM*.
+6. **GitHub contract** — Issues, review, diff, evidence, base/head SHA, разрешённые переходы Draft → Ready → Accepted → Merged.
 
 ## 2. Каталог ролей: назначение → ответственность → вход/выход
 
 | Логическая роль | Ответственность | Вход | Проверяемый выход | Право менять код |
 | --- | --- | --- | --- | --- |
-| **Orchestrator** | Определить маршрут, бюджет, зависимости, владельцев файлов, переходы и отчёт; остановить при P0/P1/неясном праве | Issue + `main@SHA` + режим модели | Task contract, вызовы специалистов, единый handoff | Может инициировать Worker, не заменяет независимого Reviewer |
+| **Controller** *(детерминированный процесс)* | Управлять принятым DAG, статусами, checkpoint, бюджетными и owner gates; restart reconcile | Утверждённый план + локальный runtime state + подтверждённые events | Последовательный запуск READY tasks, journal, WAITING_OWNER/BLOCKED/DONE | Только операции по разрешённому плану; не принимает ADR/merge |
+| **Orchestrator** | Определить маршрут *внутри work item*, выбрать специалистов, владельцев файлов и отчёт; остановить при P0/P1/неясном праве | Scoped task + `main@SHA` + режим модели | Task contract, вызовы специалистов, единый handoff | Может инициировать Worker, не заменяет независимого Reviewer |
 | **Explorer** | Собрать *факты* о реализации и контрактах | Точный вопрос + scoped paths | Файлы/символы/строки, связи, наблюдения и пробелы | Нет |
 | **Architect** | Предложить границы, инварианты, риски, ADR и условия отказа | Требования + Explorer evidence | Один предпочтительный design, trade-offs, explicit owner decisions | Нет |
 | **Planner** | Превратить принятый дизайн в минимальный исполнимый OpenSpec/task graph | ADR/acceptance + affected files | Plan/список задач, AC, риски, test map, порядок | Только документы в отведённом planning scope при разрешении |
@@ -75,6 +77,12 @@ output:
 ```
 
 Текстовая форма эквивалентна YAML; **не вводить новый парсер ради шаблона**. Для read-only ролей `allowed_paths` означает разрешённые файлы чтения, `write_paths` отсутствует. Не передавать полный чат/PR discussion, когда достаточно 2–3 релевантных артефактов.
+
+### Два разных уровня исполнения
+
+Полный **plan run** = Controller принимает утверждённый DAG (список work packages A0–A10), проверяет зависимости и запускает следующий READY work item без нового ручного промпта. **Task run** = Orchestrator организует Explorer → Architect → Planner → Worker → Validator → Reviewer для одной ограниченной задачи. Read-only ветви могут параллелиться; write — один владелец.
+
+Определение статусов, алгоритм checkpoint/restart, бюджет и owner gates — в [ADR-002](execution-engine.md). OpenCode session не является источником истины о результате: при перезапуске сверяется Git/PR/фактические проверки.
 
 ## 4. Сквозной pipeline и переходы
 
@@ -137,7 +145,7 @@ ORCHESTRATOR: classify + snapshot main/base + route + budget
 | Worker | Точная задача, contract, API, affected source/test files | Весь разговор внешнего координатора |
 | Reviewer | Diff against base, спецификация и соседние контракты | Сообщение Worker «всё отлично», не подтверждённые прогоны |
 
-**Source of truth**: только принятые PR/`main` + актуальный git diff и воспроизводимые evidence. Короткий handoff — индекс источников, а не вторая конкурирующая память. Не создавать отдельную векторную БД/граф памяти для этого без обнаруженной проблемы.
+**Source of truth**: принятый план в Git, принятые PR/`main` + актуальный git diff и воспроизводимые evidence. Локальный controller journal (вне репозитория) фиксирует попытки и прогресс, но не утверждает продуктовую истину. Короткий handoff — индекс источников, а не вторая конкурирующая память. Не создавать отдельную векторную БД/граф памяти для этого без обнаруженной проблемы.
 
 **Миграция между рантаймами:** роли и их контракты выражены Markdown/AGENTS/OpenSpec, а привязка к исполнителю — в `.codex/agents` либо `.opencode/agents`/config V2. Не копировать в два места разошедшиеся доменные правила.
 
@@ -198,6 +206,10 @@ ORCHESTRATOR: classify + snapshot main/base + route + budget
 Инварианты NAPMS, критичные для любой модели: Need ≠ permission; AccessRequest отделён от Allow/Deny; DENIED не создаёт запрещающего Rule; PolicyRule canonical для exact `(src Deployment, dst Deployment, InteractionRevision)`; ALLOWED не доказывает сетевую доступность; export только авторизованного ACTIVE subset, независимые `policy.export` grants; source-only admission; неизменяемая история/ID, сохранённая база и server-side authorization.
 
 Reviewer не вправе утверждать «PASS» на основании чужого summary. Он может указать `NOT RUN` либо `REPORTED BY WORKER` и проверить исходный лог/CI.
+
+### Непрерывность и ограничения
+
+Controller сохраняет durable-state после каждого перехода и останавливает plan run в `WAITING_OWNER`, `BLOCKED` или по hard budget. После восстановления он сначала сверяет побочные эффекты с Git/PR/test evidence и лишь затем решает, повторить scoped шаг или продолжить проверку. **OpenCode сам по себе не гарантирует такое восстановление**; целевое поведение определяется [ADR-002](execution-engine.md), а не промптом для Orchestrator.
 
 ## 9. Ошибки, повторы и восстановление
 
