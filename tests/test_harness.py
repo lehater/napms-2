@@ -4,6 +4,8 @@ import sys
 import pytest
 
 from napms.harness import run
+from napms.dev import init_auth
+from napms.storage import Database
 
 
 def test_harness_requires_explicit_profile():
@@ -61,6 +63,7 @@ def test_child_failure_stops_other_service(tmp_path, monkeypatch):
         def open(self, *_args, **_kwargs):
             return Response()
     monkeypatch.setattr('napms.harness.build_opener', lambda _: Opener())
+    init_auth(Database(tmp_path / 'test.db'), tmp_path / 'credentials.json')
     with pytest.raises(RuntimeError, match='exited before readiness'):
         run(tmp_path / 'test.db', tmp_path / 'credentials.json')
     assert backend.stopped and frontend.stopped
