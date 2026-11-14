@@ -178,6 +178,10 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
   function changePage(nextOffset: number) { setParams(current => { const next = new URLSearchParams(current); next.set('tab','interactions'); if (nextOffset > 0) next.set('interactionOffset',String(nextOffset)); else next.delete('interactionOffset'); return next }) }
   return <div className="space-y-4"><h2>Направленные взаимодействия</h2><ErrorNotice text={error} />
     <form className="process-form interaction-form" onSubmit={submit}>
+      <label className="interaction-purpose">Назначение взаимодействия
+        <input aria-label="Назначение взаимодействия" required maxLength={300} value={purpose}
+          placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
+      </label>
       <label>Источник<select required value={source} onChange={event=>setSource(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Получатель<select required value={destination} onChange={event=>setDestination(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Протокол<select value={protocol} onChange={event=>setProtocol(event.target.value as 'TCP'|'UDP')}><option value="TCP">TCP</option><option value="UDP">UDP</option></select></label>
@@ -194,10 +198,6 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
         <label>До<input aria-label="Порт назначения до" type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
       </fieldset>
       <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать'}</Button>
-      <label className="interaction-purpose">Назначение взаимодействия
-        <input aria-label="Назначение взаимодействия" required maxLength={300} value={purpose}
-          placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
-      </label>
       {additional.map((item,index) => <div className="interaction-extra" key={index}>
         <ClauseFields index={index+1} item={item}
           change={next => setAdditional(items => items.map((clause,i) => i === index ? next : clause))}
