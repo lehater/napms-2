@@ -2,6 +2,9 @@
 import csv
 import io
 import sqlite3
+from uuid import uuid4
+
+import pytest
 
 from conftest import auth
 from napms.dev import DEMO_REQUEST, IDS
@@ -13,18 +16,32 @@ def clause(protocol="UDP", source_start=None, source_end=None, destination=123):
                 destinationPortStart=destination, destinationPortEnd=destination)
 
 
-def create(client, requester, purpose="Time synchronization", clauses=None):
+def source_pair(env):
+    source_id, deployment_id = str(uuid4()), str(uuid4())
+    with env[0].transaction(write=True) as c:
+        c.execute("INSERT INTO components VALUES (?,?)", (source_id, IDS["application"]))
+        c.execute("INSERT INTO deployments VALUES (?,?,?)",
+                  (deployment_id, source_id, IDS["sourceResource"]))
+    return source_id, deployment_id
+
+
+def create(client, requester, purpose="Time synchronization", clauses=None, source_id=None,
+           destination_id=None):
     return client.post(f'/applications/{IDS["application"]}/interactions',
                        headers=requester, json={
-                           "sourceComponentId": IDS["sender"], "destinationComponentId": IDS["receiver"],
-                           "purpose": purpose, "trafficClauses": clauses or [clause(), clause("TCP", 40000, 40100, 443)],
+                           "sourceComponentId": source_id or IDS["sender"],
+                           "destinationComponentId": destination_id or IDS["receiver"],
+                           "purpose": purpose,
+                           "trafficClauses": clauses if clauses is not None else [
+                               clause(), clause("TCP", 40000, 40100, 443)],
                        })
 
 
 def test_owned_clauses_and_revision_publish_preserve_old_rules(env):
     db, _, _, client, _ = env
     requester, exporter = auth(env, "requester"), auth(env, "exporter")
-    created = create(client, requester)
+    source_id, deployment_id = source_pair(env)
+    created = create(client, requester, source_id=source_id)
     assert created.status_code == 201, created.text
     body = created.json()
     interaction_id = body["interactionId"]
@@ -34,17 +51,21 @@ def test_owned_clauses_and_revision_publish_preserve_old_rules(env):
     assert len(rev1["trafficClauses"]) == 2
     assert "udp(123)" in rev1["trafficLabel"] and "tcp(40000-40100→443)" in rev1["trafficLabel"]
 
-    duplicate = create(client, requester, clauses=[clause("TCP", 40000, 40100, 443), clause()])
-    assert duplicate.status_code == 409 and duplicate.json()["error"]["code"] == "INTERACTION_PURPOSE_EXISTS"
-    independent = create(client, requester, purpose="Other business purpose")
-    assert independent.status_code == 201 and independent.json()["interactionId"] != interaction_id
+    duplicate = create(client, requester, clauses=[clause("TCP", 40000, 40100, 443), clause()], source_id=source_id)
+    assert duplicate.status_code == 409 and duplicate.json()["error"]["code"] == "INTERACTION_PAIR_EXISTS"
+    independent = create(client, requester, purpose="Other business purpose", source_id=source_id)
+    assert independent.status_code == 409 and independent.json()["error"]["code"] == "INTERACTION_PAIR_EXISTS"
+    reversed_pair = create(client, requester, purpose="Reverse traffic",
+                           source_id=IDS["receiver"], destination_id=source_id)
+    assert reversed_pair.status_code == 201, reversed_pair.text
 
     need = client.post(f'/business-processes/{IDS["process"]}/needs',
                        headers=requester, json={"interactionRevisionId": rev1["interactionRevisionId"]})
     assert need.status_code == 201, need.text
     nid = need.json()["connectivityNeedId"]
     req = client.post('/access-requests', headers=requester, json={
-        **DEMO_REQUEST, "interactionRevisionId": rev1["interactionRevisionId"],
+        **DEMO_REQUEST, "sourceDeploymentId": deployment_id,
+        "interactionRevisionId": rev1["interactionRevisionId"],
         "connectivityNeedId": nid})
     assert req.status_code == 201, req.text
     rule_id = decide(env, req.json())["policyRuleId"]
@@ -110,20 +131,34 @@ def test_duplicate_and_partial_clause_commands_leave_no_records(env):
 def test_same_purpose_requires_new_revision_and_legacy_exact_duplicates_blocked(env):
     _, _, _, client, _ = env
     requester = auth(env, "requester")
-    first = create(client, requester, purpose="Business purpose A", clauses=[clause(destination=10123)])
+    source_id, _ = source_pair(env)
+    first = create(client, requester, purpose="Business purpose A",
+                   clauses=[clause(destination=10123)], source_id=source_id)
     assert first.status_code == 201, first.text
-    changed = create(client, requester, purpose="Business purpose A", clauses=[clause(destination=10124)])
+    changed = create(client, requester, purpose="Business purpose B",
+                     clauses=[clause(destination=10124)], source_id=source_id)
     assert changed.status_code == 409
-    assert changed.json()["error"]["code"] == "INTERACTION_PURPOSE_EXISTS"
-    legacy = {"sourceComponentId": IDS["sender"], "destinationComponentId": IDS["receiver"],
+    assert changed.json()["error"]["code"] == "INTERACTION_PAIR_EXISTS"
+    legacy = {"sourceComponentId": IDS["receiver"], "destinationComponentId": IDS["sender"],
               "ipProtocol": "UDP", "destinationPortStart": 9999, "destinationPortEnd": 9999}
     base = f'/applications/{IDS["application"]}/interactions'
     assert client.post(base, headers=requester, json=legacy).status_code == 201
     duplicate = client.post(base, headers=requester, json=legacy)
     assert duplicate.status_code == 409
-    assert duplicate.json()["error"]["code"] == "DUPLICATE_INTERACTION"
+    assert duplicate.json()["error"]["code"] == "INTERACTION_PAIR_EXISTS"
     assert client.post(base, headers=requester,
-                       json={**legacy, "destinationPortStart": 9998, "destinationPortEnd": 9998}).status_code == 201
+                       json={**legacy, "destinationPortStart": 9998, "destinationPortEnd": 9998}).status_code == 409
+    with env[0].transaction(write=True) as c:
+        with pytest.raises(sqlite3.IntegrityError):
+            c.execute("""INSERT INTO interaction_meta
+                (interaction_id,application_id,source_component_id,destination_component_id,purpose)
+                VALUES(?,?,?,?,?)""", (str(uuid4()), IDS["application"], source_id, IDS["receiver"], ""))
+        with pytest.raises(sqlite3.IntegrityError):
+            c.execute("""INSERT INTO interaction_revisions(
+                id,interaction_id,application_id,source_component_id,destination_component_id,
+                protocol,port_start,port_end) VALUES (?,?,?,?,?,?,?,?)""",
+                (str(uuid4()), str(uuid4()), IDS["application"], source_id, IDS["receiver"],
+                 "UDP", 9998, 9998))
 
 
 def test_overlapping_clauses_are_rejected(env):
