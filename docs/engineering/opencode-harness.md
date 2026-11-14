@@ -72,3 +72,10 @@ python3 docs/engineering/opencode-smoke/run.py reviewer
 Sandbox скрывает host `/home`, `/tmp` и Git metadata, очищает environment, не монтирует auth store, сохраняет отдельные scratch/state directories и разделяет PID/IPC/UTS/user namespaces. Host networking сохранён для Ollama; это не доказательство сетевой изоляции или универсального сокрытия всех секретов машины. `check-fast.py --dry-run` внутри sandbox ожидаемо видит Git как unavailable и выбирает FULL; он не запускает FULL. Настоящий Git SHA проверяет внешний координатор, настоящий FULL — локальный профиль и Verify на этом SHA.
 
 Результаты и ограничения: [evidence](opencode-role-catalog-evidence-2026-11-14.md). Последние SHA, CI и итоговые runtime sessions фиксируются в PR #70 после финального commit; это позволяет не подменять проверенный HEAD последующим documentation commit.
+
+
+## A2 — manual segmented diagnostic (owner-approved)
+
+[Инструкция и контракт](opencode-smoke/segmented-run.md) описывают **один логический task run** через отдельные OpenCode sessions: Sol host read-only Explorer/Planner → Qwen Worker в credential-free bwrap → deterministic byte Validator в новом read-only bwrap → Sol read-only Reviewer. Секреты OpenAI не передаются Worker. В fixture добавлены opt-in режимы `segment-worker` и `segment-validate`, постоянный каталог ролей и permissions не изменены.
+
+Это **альтернатива единому root-session E2E**, а не доказанный production flow. Руководитель этапов пока оператор; запуск первого теста требует установленного на пользовательской WSL OpenCode/Ollama/bwrap и актуального worktree PR #70. Никакой Controller B, proxy для credentials, авто-публикации или ослабления acceptance нет. До выполненного сегментированного E2E — `BLOCKED`.
