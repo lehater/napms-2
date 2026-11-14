@@ -3,6 +3,8 @@ import sqlite3
 from contextlib import closing, contextmanager
 from pathlib import Path
 
+from .migrate_interactions import upgrade_to_v8
+
 SCHEMA = """
 CREATE TABLE resources(id TEXT PRIMARY KEY);
 CREATE TABLE endpoints(id TEXT PRIMARY KEY, resource_id TEXT NOT NULL UNIQUE REFERENCES resources(id), address TEXT, kind TEXT CHECK(kind IN ('HOST','PREFIX')), CHECK((address IS NULL) = (kind IS NULL)));
@@ -61,7 +63,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5, 6, 7):
+            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -163,11 +165,23 @@ class Database:
                     c.rollback()
                     raise
 
+            # v7 → v8: one directed Interaction per Application / source / target.
+            # All historical Revision IDs and Need IDs survive; duplicates are
+            # consolidated transactionally with alias resolution.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 7:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    upgrade_to_v8(c)
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
     @contextmanager
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 7:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 8:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c
