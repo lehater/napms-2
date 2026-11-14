@@ -11,7 +11,7 @@ def rows(c):
         r[0]: [tuple(x)[:8] if r[0] == "interaction_revisions" else tuple(x)
                for x in c.execute(f"SELECT * FROM {r[0]} ORDER BY rowid")]
         for r in c.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '%_names'"
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '%_names' AND name != 'interaction_meta'"
         ).fetchall()
     }
 
@@ -38,7 +38,7 @@ def test_v3_upgrade_preserves_history_and_credentials(env):
         ]
     db.initialize()  # Explicit migration alone does not invent any historical names.
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 7
         assert rows(c) == before
         assert c.execute("SELECT * FROM resource_names").fetchall() == []
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -118,7 +118,7 @@ def test_v4_actor_names_migration_is_additive_repeatable_and_atomic(env):
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 7
         assert rows(c) == before
         assert c.execute("SELECT * FROM actor_names").fetchall() == []
         assert {
