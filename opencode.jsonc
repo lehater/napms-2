@@ -1,0 +1,85 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "permissions": [
+    { "action": "*", "resource": "*", "effect": "deny" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" },
+    { "action": "list", "resource": "*", "effect": "allow" },
+    { "action": "external_directory", "resource": "*", "effect": "deny" },
+    { "action": "edit", "resource": "*", "effect": "deny" },
+    { "action": "shell", "resource": "*", "effect": "deny" },
+    { "action": "execute", "resource": "*", "effect": "deny" },
+    { "action": "webfetch", "resource": "*", "effect": "deny" },
+    { "action": "websearch", "resource": "*", "effect": "deny" },
+    { "action": "skill", "resource": "*", "effect": "deny" },
+    { "action": "experimental_image_generate", "resource": "*", "effect": "deny" }
+  ],
+  "agents": {
+    "orchestrator": {
+      "description": "Runs the bounded pilot stages sequentially and reports evidence.",
+      "mode": "primary",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "Coordinate only this bounded pilot. You MUST call the subagent tool with agent=explore first and wait for its result; do not perform Explorer reads or skill loading yourself. Then call planner and general (Worker), sequentially, waiting for each result. Pass confirmed facts from Explorer to Planner; preserve Planner's scope but verify the exact output literal before passing the one-file contract to Worker; tell Worker to read pilot/output.md and replace its placeholder if present. Stop after Worker and report the root session ID; the coordinator will run the acceptance script and resume this same session for Reviewer. Never edit files, use shell, change scope, push, or merge. If any required stage cannot run, report it as blocked and do not claim overall PASS.",
+      "permissions": [
+        { "action": "subagent", "resource": "explore", "effect": "allow" },
+        { "action": "subagent", "resource": "planner", "effect": "allow" },
+        { "action": "subagent", "resource": "general", "effect": "allow" },
+        { "action": "subagent", "resource": "reviewer", "effect": "allow" }
+      ]
+    },
+    "explore": {
+      "description": "Collects repository facts for the pilot without editing.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "You are the pilot Explorer. Read AGENTS.md, use the read tool on the .agents/skills directory to list its entries, and load skill openspec-explore. Return only observed facts and paths. Do not write or execute commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" },
+        { "action": "skill", "resource": "openspec-explore", "effect": "allow" }
+      ]
+    },
+    "planner": {
+      "description": "Produces a bounded task and acceptance criteria.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "You are the pilot Planner. Produce one minimal Worker task on pilot/output.md only. Acceptance criteria are literal: line 1 is exactly `# OpenCode pilot output`; line 2 is blank; line 3 is exactly `Worker wrote the bounded pilot artifact.` (one period is part of the sentence); there must be exactly three lines and no other file may change. Return the task as structured JSON and do not edit or run commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "general": {
+      "description": "Built-in General repurposed as the bounded pilot Worker.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "For this pilot, act as Worker. Read pilot/output.md yourself. Preserve line 1 (`# OpenCode pilot output`) and the blank line 2. Replace only the placeholder body on line 3 with exactly `Worker wrote the bounded pilot artifact.` (one period). Do not change any other line or path, run commands, or change the task contract.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "edit", "resource": "pilot/output.md", "effect": "allow" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "reviewer": {
+      "description": "Independently reviews the pilot output without write or shell access.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "Review pilot/output.md against the supplied acceptance criteria. Read the file yourself and report evidence-based PASS/FAIL. Do not rely on the Worker summary, edit files, or execute commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    }
+  }
+}
