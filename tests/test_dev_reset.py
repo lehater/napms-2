@@ -46,6 +46,26 @@ def test_explicit_auth_bootstrap_does_not_create_domain_data(env):
         assert c.execute("SELECT COUNT(*) FROM grants").fetchone()[0] == 0
 
 
+
+def test_resource_grants_require_explicit_command_and_existing_database_resource(env):
+    from uuid import uuid4
+    from napms.dev import init_auth, authorize_demo_resource
+    db, credentials, _, _, _ = env
+    reset_demo(db, credentials)
+    init_auth(db, credentials)
+    resource_id = str(uuid4())
+    with pytest.raises(RuntimeError, match="Resource does not exist"):
+        authorize_demo_resource(db, resource_id)
+    with db.transaction(write=True) as c:
+        c.execute("INSERT INTO resources(id) VALUES (?)", (resource_id,))
+        assert c.execute("SELECT COUNT(*) FROM grants WHERE scope=?", (resource_id,)).fetchone()[0] == 0
+    authorize_demo_resource(db, resource_id)
+    authorize_demo_resource(db, resource_id)
+    with db.transaction() as c:
+        assert c.execute("SELECT COUNT(*) FROM grants WHERE scope=?", (resource_id,)).fetchone()[0] == 3
+        assert c.execute("SELECT COUNT(*) FROM applications").fetchone()[0] == 0
+        assert c.execute("SELECT COUNT(*) FROM interaction_revisions").fetchone()[0] == 0
+
 def test_cli_reset_requires_explicit_yes_and_does_not_modify_db(env, monkeypatch):
     db, credentials, _, _, _ = env
     with db.transaction(write=True) as c:
