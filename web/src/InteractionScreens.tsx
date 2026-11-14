@@ -67,18 +67,20 @@ async function allComponents(client: Client, applicationId: string): Promise<Com
   }
 }
 
-function InteractionBreadcrumbs({ applicationId, applicationName, interactionId, name, revision }: {
+function InteractionBreadcrumbs({ applicationId, applicationName, interactionId, name, currentInteraction = false }: {
   applicationId: string
   applicationName: string
   interactionId?: string
   name?: string
-  revision?: string
+  currentInteraction?: boolean
 }) {
   return <><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span>
     <Link to={`/applications/${applicationId}?tab=interactions`}>{applicationName}</Link><span>/</span>
-    {interactionId ? <Link to={interactionPath(applicationId, interactionId)}>{name}</Link>
+    {interactionId
+      ? currentInteraction
+        ? <span aria-current="page">{name}</span>
+        : <Link to={interactionPath(applicationId, interactionId)}>{name}</Link>
       : <span aria-current="page">Создание взаимодействия</span>}
-    {revision && <><span>/</span><span aria-current="page">{revision}</span></>}
   </>
 }
 
@@ -186,7 +188,7 @@ export function InteractionDetailScreen({client}: {client: Client}) {
   const base = interactionPath(applicationId, interactionId)
   const latest = item.revisions.at(-1)!
   return <DetailView
-    breadcrumbs={<InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName} interactionId={interactionId} name={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`} />}
+    breadcrumbs={<InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName} interactionId={interactionId} name={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`} currentInteraction />}
     title={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}
     subtitle={`${item.sourceComponentName} → ${item.destinationComponentName}`}
     actions={tab === 'revisions' ? <Button asChild><Link to={newRevisionPath(applicationId, interactionId)}>Создать ревизию</Link></Button> : undefined}
