@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint } from './api'
+import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint, type TrafficClauseInput } from './api'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 import { ClauseFields, RevisionPublisher, emptyClause, parseClause, type ClauseDraft } from './TrafficClauseDraft'
@@ -155,7 +155,7 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
   async function submit(event: FormEvent) {
     event.preventDefault()
     setError('')
-    let clauses
+    let clauses: TrafficClauseInput[]
     try {
       clauses = [parseClause({
         ipProtocol: protocol, sourcePortStart: sourceStart, sourcePortEnd: sourceEnd,
@@ -209,7 +209,7 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
       </div>
     </form>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
-      {key:'interaction',title:'Направление',render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link>},
+      {key:'interaction',title:'Направление',render:item=><><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link><small>{item.purpose || 'Без описания (legacy)'}</small></>},
       {key:'revision',title:'Последняя ревизия',render:item=>{ const current=item.revisions.at(-1)!; return <span>#{current.revisionNumber} · {current.trafficLabel}</span> }},
     ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы." loading={!page && !error} error={error} />
     <div className="ux-pagination"><Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit??20)))}>Назад</Button><span>Страница {Math.floor(offset/(page?.limit??20))+1}</span><Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit??20))}>Далее</Button></div>
