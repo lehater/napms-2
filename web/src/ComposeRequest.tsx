@@ -21,7 +21,7 @@ function Selector({ client, need, kind, revision = '', value, choose }: { client
   return <div className="process-form"><label>{label}<select aria-label={label} value={value} disabled={!page} onChange={e => choose(page?.items.find(option => optionId(option) === e.target.value) ?? null)}><option value="">Выберите {label}</option>{page?.kind === 'revisions' ? page.items.map(o => <option key={o.interactionRevisionId} value={o.interactionRevisionId}>{o.displayLabel} · ID {o.interactionRevisionId}</option>) : page?.items.map(o => <option key={o.deploymentId} value={o.deploymentId}>{o.displayLabel} · ID {o.deploymentId}</option>)}</select></label>
     {!page && !error && <p role="status">Загрузка {label}…</p>}{error && <p role="alert">{error}</p>}{page?.items.length === 0 && <p>На этой странице нет доступных вариантов.</p>}
     <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Назад · {label}</Button><Button variant="outline" disabled={!page?.hasMore} onClick={() => setOffset(offset + 20)}>Далее · {label}</Button><Button variant="outline" onClick={() => setReload(x => x + 1)}>Обновить · {label}</Button>
-    {value && page && <p>{page.kind === 'revisions' ? page.items.filter(o => o.interactionRevisionId === value).map(o => `${o.sourceComponentId} → ${o.destinationComponentId} · ${o.ipProtocol} ${o.destinationPortStart}–${o.destinationPortEnd}`).join('') : page.items.filter(o => o.deploymentId === value).map(o => `Component ${o.componentId} · Resource ${o.resourceId}`).join('')}</p>}
+    {value && page && <p>{page.kind === 'revisions' ? page.items.filter(o => o.interactionRevisionId === value).map(o => `${o.sourceComponentId} → ${o.destinationComponentId} · ${o.ipProtocol} ${o.sourcePortStart === null ? 'ANY' : `${o.sourcePortStart}–${o.sourcePortEnd}`} → ${o.destinationPortStart}–${o.destinationPortEnd}`).join('') : page.items.filter(o => o.deploymentId === value).map(o => `Component ${o.componentId} · Resource ${o.resourceId}`).join('')}</p>}
   </div>
 }
 export default function ComposeRequest({ client, need }: { client: Client; need: Need }) {
@@ -57,6 +57,7 @@ export default function ComposeRequest({ client, need }: { client: Client; need:
           'Revision': revision.interactionRevisionId,
           'Направление Components': `${revision.sourceComponentId} → ${revision.destinationComponentId}`,
           'Протокол': revision.ipProtocol,
+          'Порты источника': revision.sourcePortStart === null ? 'ANY' : `${revision.sourcePortStart}–${revision.sourcePortEnd}`,
           'Порты назначения': `${revision.destinationPortStart}–${revision.destinationPortEnd}`,
           'Source Deployment': source.deploymentId,
           'Source Resource': source.resourceId,

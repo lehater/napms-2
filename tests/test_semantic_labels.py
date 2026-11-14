@@ -8,7 +8,8 @@ from napms.dev import IDS, init_demo
 
 def rows(c):
     return {
-        r[0]: [tuple(x) for x in c.execute(f"SELECT * FROM {r[0]} ORDER BY rowid")]
+        r[0]: [tuple(x)[:8] if r[0] == "interaction_revisions" else tuple(x)
+               for x in c.execute(f"SELECT * FROM {r[0]} ORDER BY rowid")]
         for r in c.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE '%_names'"
         ).fetchall()
@@ -37,7 +38,7 @@ def test_v3_upgrade_preserves_history_and_credentials(env):
         ]
     db.initialize()  # Explicit migration alone does not invent any historical names.
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
         assert rows(c) == before
         assert c.execute("SELECT * FROM resource_names").fetchall() == []
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -117,7 +118,7 @@ def test_v4_actor_names_migration_is_additive_repeatable_and_atomic(env):
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
         assert rows(c) == before
         assert c.execute("SELECT * FROM actor_names").fetchall() == []
         assert {
@@ -229,7 +230,7 @@ def test_semantic_labels_missing_names_and_confidentiality(env):
     revision = str(uuid4())
     change(
         env,
-        "INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',8000,8010 FROM interaction_revisions",
+        "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',8000,8010 FROM interaction_revisions",
         (revision,),
     )
     options = (

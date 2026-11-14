@@ -34,7 +34,7 @@ def test_application_component_interaction_catalog_and_need_options(env):
     assert interaction["applicationId"] == app_id
     assert interaction["revisions"] == [{
         "interactionRevisionId": interaction["revisions"][0]["interactionRevisionId"],
-        "ipProtocol": "TCP", "destinationPortStart": 443,
+        "ipProtocol": "TCP", "sourcePortStart": None, "sourcePortEnd": None, "destinationPortStart": 443,
         "destinationPortEnd": 443, "trafficLabel": "tcp(443)",
     }]
     assert UUID(interaction["revisions"][0]["interactionRevisionId"]).version == 4

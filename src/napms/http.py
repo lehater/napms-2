@@ -16,7 +16,7 @@ from .domain import Problem
 from .use_cases import Service
 
 COLUMNS = ("ruleId", "subjectId", "sourceResourceId", "destinationResourceId", "sourceEndpointId", "destinationEndpointId",
-           "sourceAddress", "destinationAddress", "ipProtocol", "destinationPortStart", "destinationPortEnd", "readiness",
+           "sourceAddress", "destinationAddress", "ipProtocol", "sourcePortStart", "sourcePortEnd", "destinationPortStart", "destinationPortEnd", "readiness",
            "interactionRevisionId", "connectivityNeedId", "requestId", "requesterActorId", "decisionId", "deciderActorId",
            "evaluationAt", "requestSubmittedAt", "decisionAt", "sourceAddressKind", "destinationAddressKind")
 
@@ -78,6 +78,8 @@ class ComponentCollection(Strict):
 class InteractionRevision(Strict):
     interactionRevisionId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     trafficLabel: str
@@ -151,6 +153,8 @@ class InteractionInput(Strict):
     sourceComponentId: UUID
     destinationComponentId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None = Field(default=None, strict=True, ge=1, le=65535)
+    sourcePortEnd: int | None = Field(default=None, strict=True, ge=1, le=65535)
     destinationPortStart: int = Field(strict=True, ge=1, le=65535)
     destinationPortEnd: int = Field(strict=True, ge=1, le=65535)
 
@@ -158,6 +162,10 @@ class InteractionInput(Strict):
     def ordered_ports(self):
         if self.destinationPortStart > self.destinationPortEnd:
             raise ValueError("Invalid destination port range")
+        if (self.sourcePortStart is None) != (self.sourcePortEnd is None):
+            raise ValueError("Incomplete source port range")
+        if self.sourcePortStart is not None and self.sourcePortStart > self.sourcePortEnd:
+            raise ValueError("Invalid source port range")
         return self
 
 
@@ -182,6 +190,8 @@ class NeedOption(Strict):
     sourceComponentId: UUID
     destinationComponentId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
 
@@ -310,6 +320,8 @@ class Rule(Strict):
     destinationResourceLabel: str
     trafficLabel: str
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     displayLabel: str
@@ -336,6 +348,8 @@ class RuleSummary(Strict):
     sourceResourceId: UUID
     destinationResourceId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     trafficLabel: str
@@ -360,6 +374,8 @@ class PolicyRow(Strict):
     sourceAddress: str | None
     destinationAddress: str | None
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     readiness: Literal["READY", "INCOMPLETE"]
