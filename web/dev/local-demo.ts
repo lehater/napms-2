@@ -13,7 +13,38 @@ const paths = [
   { pattern: new RegExp(`^/applications/${uuid}/components$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/applications/${uuid}/components/${uuid}$`), methods: ['GET'] },
   { pattern: new RegExp(`^/applications/${uuid}/interactions$`), methods: ['GET', 'POST'] },
-  { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}// Node-only Vite plugin. Never import this module from src/.
+import { lstatSync, readFileSync, realpathSync } from 'node:fs'
+import { resolve, relative, isAbsolute } from 'node:path'
+import { request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
+import type { Plugin } from 'vite'
+
+export const actors = ['anonymous', 'requester', 'decider', 'exporter'] as const
+const origin = 'http://127.0.0.1:5173'
+const uuid = '[0-9a-fA-F-]{36}'
+const paths = [
+  { pattern: /^\/applications$/, methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components$`), methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions$`), methods: ['GET', 'POST'] },
+), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}/revisions// Node-only Vite plugin. Never import this module from src/.
+import { lstatSync, readFileSync, realpathSync } from 'node:fs'
+import { resolve, relative, isAbsolute } from 'node:path'
+import { request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
+import type { Plugin } from 'vite'
+
+export const actors = ['anonymous', 'requester', 'decider', 'exporter'] as const
+const origin = 'http://127.0.0.1:5173'
+const uuid = '[0-9a-fA-F-]{36}'
+const paths = [
+  { pattern: /^\/applications$/, methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components$`), methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions$`), methods: ['GET', 'POST'] },
+), methods: ['POST'] },
   { pattern: /^\/deployments$/, methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/deployments/${uuid}$`), methods: ['GET'] },
   { pattern: /^\/resources$/, methods: ['GET', 'POST'] },
