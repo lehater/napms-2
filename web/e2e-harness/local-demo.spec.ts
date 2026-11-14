@@ -642,7 +642,7 @@ async function expectSummary(page: import('@playwright/test').Page, needId: stri
 
 test('confirmation summary contains the selected backend facts and resets with Revision',async ({page,harness})=>{
   const alternate = 'ffffffff-ffff-ffff-ffff-fffffffffff1'
-  harness.sql("INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',5353,5355 FROM interaction_revisions WHERE id=?",[alternate,demoInput.interactionRevisionId])
+  harness.sql("INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',5353,5355 FROM interaction_revisions WHERE id=?",[alternate,demoInput.interactionRevisionId])
   await openComposition(page)
   await page.getByLabel('Revision',{exact:true}).selectOption(alternate)
   await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
@@ -952,7 +952,7 @@ test('new policy proxy routes preserve method, origin and actor boundaries',asyn
 test('Rule collection paging and actor reset preserve readable current-policy scope',async ({page,request,harness})=>{
   for(let i=0;i<21;i++) {
     const revision='ffffffff-ffff-ffff-ffff-'+(100+i).toString(16).padStart(12,'0')
-    harness.sql('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions WHERE id=?',[revision,10000+i,10000+i,demoInput.interactionRevisionId])
+    harness.sql('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions WHERE id=?',[revision,10000+i,10000+i,demoInput.interactionRevisionId])
     const created=await request.post('/access-requests',{headers:actorHeaders('requester'),data:{...demoInput,interactionRevisionId:revision}})
     expect(created.status()).toBe(201)
     const decision=await request.post('/access-requests/'+(await created.json()).requestId+'/decision',{headers:actorHeaders('decider'),data:{outcome:'ALLOWED'}})
