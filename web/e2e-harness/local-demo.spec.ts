@@ -999,6 +999,7 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'NTP Server' })
   await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'NTP Server' })
   await page.getByRole('combobox', { name: 'Протокол', exact: true }).selectOption('UDP')
+  await page.getByLabel('Назначение взаимодействия').fill('Time synchronization')
   await page.getByLabel('Порт назначения от', { exact: true }).fill('123')
   await page.getByLabel('Порт назначения до', { exact: true }).fill('123')
   await page.getByRole('button', { name: 'Создать', exact: true }).click()
