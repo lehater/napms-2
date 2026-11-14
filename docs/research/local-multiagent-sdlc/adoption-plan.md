@@ -10,7 +10,7 @@
 2. Роли с отдельными входами/выходами, политиками моделей/инструментов и независимым контекстом; планы и решения фиксируются в существующем Git/OpenSpec.
 3. Детерминированная проверка, независимый read-only Reviewer, owner gates и воспроизводимый Draft PR.
 4. Использование нескольких реальных провайдеров при их доступности, fallback на Codex без потери проекта; модель не закреплена за ролью навсегда.
-5. **Режим A:** непрерывный переход между разрешёнными задачами в одной активной сессии. **Режим B (условный):** если нужен безопасный unattended restart — принятый DAG, checkpoint, owner gates, budget и reconcile без повторных side effects.
+5. **Режим A:** A1 — одна активная OpenCode-сессия (пилот #69); A2 — последовательные изолированные сессии одного логического run, сначала с ручным handoff и objective gates. **Режим B (условный):** только при потребности безопасного unattended restart — DAG, checkpoint, owner gates, budget и reconcile.
 6. Инструкция эксплуатации в WSL, safe handling credentials, troubleshooting и rollback. Никаких новых обязательных подписок.
 
 ## 2. Work packages (полный план)
@@ -20,7 +20,7 @@
 | A0 | Architecture | Принять ADR-001 (OpenCode mode A) и ADR-002 (A принято; B отложено) | **DONE (staged acceptance 14.11.2026)**; право на постоянную продуктивную миграцию не дано |
 | A1 | Environment | На WSL записать версии Codex/OpenCode/Ollama, доступность моделей/провайдеров; без публикации credential data | Протокол `available/unavailable`, IDs, возможности tools, без секретов |
 | A2 | Capability smoke | В **disposable worktree** проверить V2 синтаксис, `AGENTS.md`, `.agents/skills`, привязку модели к роли и право edit/shell/external_directory | Все критические запреты работают; нет влияния на продуктивные файлы |
-| A3 | Local Orchestrator (A) / Controller (B) | Сначала проверить **одну OpenCode-сессию** с последовательным выполнением и реальными gates. Если нужен unattended restart и возможности runtime недостаточны — отдельным решением реализовать минимальный **не-LLM Controller** (DAG, checkpoint, lock, budget, resume/reconcile) | A: один целевой run без новых промптов, safe stop и handoff; B: E1/E3/E6/E8/E11 из ADR-002 |
+| A3 | Execution mode A (A1/A2) / Controller B | A1 проверен в PR #69; A2 требует ручной segmented Sol-host → Qwen credential-free sandbox → deterministic Validator → independent Reviewer. Затем решить, нужна ли автоматизация очереди. Durable Controller B только при отдельном требовании restart | A: один логический run с immutable contract, actual exit/model/byte/tool evidence и safe stop; B: E1/E3/E6/E8/E11 из ADR-002 |
 | A4 | Roles | Реализовать локальные `orchestrator`/`architect`/`planner`/`reviewer` и использовать встроенных `explore`/`general` как фактические Explorer/Worker, если покрывают contract | Роли читают нужное и не имеют лишних tool rights; нет дубликатов |
 | A5 | Model policy | Настроить named profiles `quality`/`balanced`/`budget`; реальное распределение провайдер/модель/effort из доступного каталога | Переключается без редактирования принятой архитектуры; фактический model ID отмечен |
 | A6 | Source and Skills | Убедиться в корректной загрузке `AGENTS.md`, `openspec`, UI contract; общие ограничения в одном источнике | OpenSpec spec-first соблюдается, нет дублирования разнонаправленных инструкций |
@@ -58,7 +58,7 @@
 
 1. Владелец принимает границы, разрешённые операции и необходимость режима A или B. ADR-001 фиксирует OpenCode как кандидата, не как заранее принятый runtime; до окончательного выбора потребуется capability smoke.
 2. Исполнитель подготавливает OpenCode в disposable worktree; первый smoke подтверждает модель, роли и действительные запреты без изменений продукта. **Controller не создаётся, пока не подтверждён режим B**.
-3. Локальный Orchestrator получает **целый** принятый план A0–A10 и последовательно запускает разрешённые bounded tasks. В режиме B эту функцию выполняет Controller по DAG. Planner может уточнять шаги без расширения scope или permissions.
+3. В A1 локальный Orchestrator выполняет принятые bounded tasks в активной сессии. В A2 каждая стадия запускается в своей подтверждённой границе; последовательность фиксирует оператор или позже минимальный ephemeral dispatcher, если его необходимость подтверждена. В режиме B работу продолжает Controller по DAG. Planner может уточнять шаги без расширения scope или permissions.
 4. После каждого package фиксируются Git/OpenSpec/evidence и краткий handoff. В режиме B Controller дополнительно сохраняет checkpoint и при `resume` сверяет Git/PR/evidence перед любым повтором. В режиме A после аварии требуется явная сверка, без обещания unattended exactly-once.
 5. Orchestrator/Controller останавливается на owner gates, P0, неразрешённом P1, hard budget и неисправимом сбое; никакой агент не создаёт фиктивный approval. Действие владельца должно быть проверено по identity и конкретному plan/gate.
 6. Завершение возможно, когда A0–A10 доказательно DONE и принятый final package соответствует необходимым проверкам; автоматический merge запрещён.
@@ -71,7 +71,7 @@
 
 - **A0**: архитектурное согласование двух ADR — owner gate.
 - **A1 → A2**: **DONE для пилотного объёма** в PR #69: OpenCode v2.2.0, Ollama Qwen, skills, permissions и bwrap; ChatGPT успешный ручной вызов, но в flow не применялся. Для новой рабочей конфигурации выполнить отдельные acceptance probes.
-- **A3**: **DONE только для демонстрационного mode-A smoke** (Explorer → Planner → Worker → Validator → Reviewer) в PR #69. Для реального SDLC это всё ещё TBD. Режим B/Controller — **DEFERRED**.
+- **A3**: **A1 DONE только для демонстрационного локального smoke** (Explorer → Planner → Worker → Validator → Reviewer) в PR #69. **A2 APPROVED FOR MANUAL TEST, NOT RUN** по итогам BLOCKED PR #70; Sol host read-only PASS, credential-free Sol route отсутствует, Qwen A1 непостоянна. Режим B/Controller — **DEFERRED**.
 - **A4 → A7**: роли, профили моделей, Skills, проверки; зависимость последовательная для общего конфигурационного слоя.
 - **A8**: одна bounded E2E задача и проверки E2/E4/E5/E7/E9/E10/E12.
 - **A9 → A10**: сопоставление фактов, owner decision и runbook/rollback.
