@@ -276,6 +276,9 @@ class Service:
                     "SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number DESC,id DESC LIMIT 1",
                     (existing["interaction_id"],),
                 ).fetchone()
+                if purpose:
+                    raise Problem(409, "INTERACTION_PURPOSE_EXISTS",
+                                  "Interaction with these participants and purpose already exists; publish a revision")
                 if latest and canonical_clauses(_plain_clauses(latest)) == clauses:
                     raise Problem(409, "DUPLICATE_INTERACTION", "Identical Interaction already exists")
             interaction_id = uid()
