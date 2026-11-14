@@ -30,6 +30,19 @@ def canonical_clauses(values):
         signature = (item["ipProtocol"], src_start, src_end, dst_start, dst_end)
         if signature in signatures:
             raise Problem(409, "DUPLICATE_TRAFFIC_CLAUSE", "Duplicate clause in the same revision")
+        for previous in result:
+            if previous["ipProtocol"] != item["ipProtocol"]:
+                continue
+            # Clauses are rectangles in (source port, destination port) space.
+            # ANY participates in overlap checks without being rewritten in storage.
+            old_source = (previous["sourcePortStart"] or 1, previous["sourcePortEnd"] or 65535)
+            new_source = (src_start or 1, src_end or 65535)
+            old_dest = (previous["destinationPortStart"], previous["destinationPortEnd"])
+            new_dest = (dst_start, dst_end)
+            def overlaps(left, right):
+                return left[0] <= right[1] and right[0] <= left[1]
+            if overlaps(old_source, new_source) and overlaps(old_dest, new_dest):
+                raise Problem(409, "OVERLAPPING_TRAFFIC_CLAUSE", "Clauses cannot overlap in one revision")
         signatures.add(signature)
         result.append(dict(item))
     result.sort(key=lambda item: (
