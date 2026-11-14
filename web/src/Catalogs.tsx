@@ -170,7 +170,7 @@ function InteractionsTab({ client, application, reloadKey }: {
   }
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><h2>Взаимодействия</h2><p className="ux-note">Каждая запись описывает отдельное назначение связи. Ревизии и условия трафика доступны из карточки взаимодействия.</p></div>
+      <div><h2>Взаимодействия</h2><p className="ux-note">Для каждого направленного сочетания компонентов создаётся одно взаимодействие. Протоколы и порты задаются в его ревизиях.</p></div>
       <Button asChild><Link to={`/applications/${application.applicationId}/interactions/new`}>Создать</Link></Button>
     </div>
     <ErrorNotice text={error}/>
