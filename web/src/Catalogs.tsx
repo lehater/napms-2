@@ -242,7 +242,7 @@ function InteractionDetail({ client }: { client: Client }) {
       {key:'number',title:'Ревизия',render:revision=>`#${revision.revisionNumber}`},
       {key:'clauses',title:'TrafficClause (неизменяемые)',render:revision=>
         <div className="flex flex-col gap-1">{revision.trafficClauses.map(clause=>
-          <span key={clause.clauseIndex}>`#${clause.clauseIndex}` · {clause.ipProtocol} · {portRange(clause.sourcePortStart,clause.sourcePortEnd)} → {portRange(clause.destinationPortStart,clause.destinationPortEnd)}</span>)}</div>},
+          <span key={clause.clauseIndex}>{`#${clause.clauseIndex}`} · {clause.ipProtocol} · {portRange(clause.sourcePortStart,clause.sourcePortEnd)} → {portRange(clause.destinationPortStart,clause.destinationPortEnd)}</span>)}</div>},
       {key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>},
     ]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
     <RevisionPublisher key={`${interactionId}:${item.revisions.at(-1)?.revisionNumber}`}
