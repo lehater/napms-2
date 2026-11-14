@@ -2,7 +2,7 @@
 import sqlite3
 from uuid import uuid4
 
-from .labels import REDACTED, MISSING, deployment_view, interaction_label, revision_view, subject_label, subject_list_projection
+from .labels import REDACTED, MISSING, deployment_view, interaction_label, name as catalog_name, revision_view, subject_label, subject_list_projection
 from .domain import Problem, effective, now, validate_subject, validate_process_name
 
 
@@ -90,9 +90,207 @@ def need_view(c, r):
     return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
 
 
+def application_view(c, row):
+    return dict(applicationId=row["id"], name=catalog_name(c, "application", row["id"]))
+
+
+def component_view(c, row):
+    return dict(componentId=row["id"], applicationId=row["application_id"],
+                applicationName=catalog_name(c, "application", row["application_id"]),
+                name=catalog_name(c, "component", row["id"]))
+
+
+def interaction_view(c, interaction_id, application_id):
+    revisions = c.execute(
+        "SELECT * FROM interaction_revisions WHERE interaction_id=? AND application_id=? ORDER BY id",
+        (interaction_id, application_id),
+    ).fetchall()
+    if not revisions:
+        raise Problem(404, "NOT_FOUND", "Entity not found")
+    first = revisions[0]
+    return dict(
+        interactionId=interaction_id, applicationId=application_id,
+        applicationName=catalog_name(c, "application", application_id),
+        sourceComponentId=first["source_component_id"],
+        sourceComponentName=catalog_name(c, "component", first["source_component_id"]),
+        destinationComponentId=first["destination_component_id"],
+        destinationComponentName=catalog_name(c, "component", first["destination_component_id"]),
+        revisions=[dict(interactionRevisionId=r["id"], ipProtocol=r["protocol"],
+                        destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"],
+                        trafficLabel=revision_view(c, r)["trafficLabel"]) for r in revisions],
+    )
+
+
+def resource_view(c, row):
+    return dict(resourceId=row["id"], name=catalog_name(c, "resource", row["id"]))
+
+
+def catalog_deployment_view(c, row):
+    component = find(c, "components", row["component_id"])
+    return dict(
+        deploymentId=row["id"], componentId=component["id"],
+        componentName=catalog_name(c, "component", component["id"]),
+        applicationId=component["application_id"],
+        applicationName=catalog_name(c, "application", component["application_id"]),
+        resourceId=row["resource_id"], resourceName=catalog_name(c, "resource", row["resource_id"]),
+    )
+
+
 class Service:
     def __init__(self, db, clock=now, shared_read=False):
         self.db, self.clock, self.shared_read = db, clock, shared_read
+
+    def _catalog_read(self, c, actor):
+        c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+        if not self.shared_read:
+            grant(c, actor, "catalog.read", "demo-catalog", self.clock())
+
+    def _catalog_create(self, c, actor):
+        c.execute("SELECT id FROM actors LIMIT 1").fetchone()
+        grant(c, actor, "catalog.create", "demo-catalog", self.clock())
+
+    @staticmethod
+    def _catalog_name(value):
+        if not isinstance(value, str) or not value.strip() or len(value) > 300:
+            raise Problem(422, "INVALID_INPUT", "Name must contain 1 to 300 characters")
+        return value.strip()
+
+    def create_application(self, actor, value):
+        with self.db.transaction(write=True) as c:
+            self._catalog_create(c, actor)
+            label, identifier = self._catalog_name(value), uid()
+            c.execute("INSERT INTO applications(id) VALUES (?)", (identifier,))
+            c.execute("INSERT INTO application_names(application_id,name) VALUES (?,?)", (identifier, label))
+            return application_view(c, find(c, "applications", identifier))
+
+    def applications(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            rows = c.execute(
+                "SELECT a.* FROM applications a LEFT JOIN application_names n ON n.application_id=a.id ORDER BY n.name,a.id LIMIT ? OFFSET ?",
+                (limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            return dict(items=[application_view(c, row) for row in rows[:limit]], limit=limit,
+                        offset=offset, hasMore=len(rows) > limit)
+
+    def application(self, actor, application_id):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            return application_view(c, find(c, "applications", application_id))
+
+    def create_component(self, actor, application_id, value):
+        with self.db.transaction(write=True) as c:
+            self._catalog_create(c, actor)
+            find(c, "applications", application_id)
+            label, identifier = self._catalog_name(value), uid()
+            c.execute("INSERT INTO components(id,application_id) VALUES (?,?)", (identifier, application_id))
+            try:
+                c.execute("INSERT INTO component_names(component_id,name) VALUES (?,?)", (identifier, label))
+            except sqlite3.IntegrityError as error:
+                if "duplicate component name in application" in str(error):
+                    raise Problem(409, "DUPLICATE_COMPONENT_NAME", "Component name already exists in Application") from error
+                raise
+            return component_view(c, find(c, "components", identifier))
+
+    def components(self, actor, application_id, limit, offset):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            find(c, "applications", application_id)
+            rows = c.execute(
+                "SELECT c.* FROM components c LEFT JOIN component_names n ON n.component_id=c.id WHERE c.application_id=? ORDER BY n.name,c.id LIMIT ? OFFSET ?",
+                (application_id, limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            return dict(items=[component_view(c, row) for row in rows[:limit]], limit=limit,
+                        offset=offset, hasMore=len(rows) > limit)
+
+    def component(self, actor, application_id, component_id):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            row = find(c, "components", component_id)
+            if row["application_id"] != application_id:
+                raise Problem(404, "NOT_FOUND", "Entity not found")
+            return component_view(c, row)
+
+    def create_interaction(self, actor, application_id, data):
+        with self.db.transaction(write=True) as c:
+            self._catalog_create(c, actor)
+            find(c, "applications", application_id)
+            source = find(c, "components", data["sourceComponentId"])
+            destination = find(c, "components", data["destinationComponentId"])
+            start, end = data["destinationPortStart"], data["destinationPortEnd"]
+            if (source["application_id"] != application_id or destination["application_id"] != application_id
+                    or source["id"] == destination["id"] or data["ipProtocol"] not in ("TCP", "UDP")
+                    or not 1 <= start <= end <= 65535):
+                raise Problem(400, "INVALID_COMMUNICATION", "Invalid directed communication")
+            interaction_id, revision_id = uid(), uid()
+            c.execute(
+                "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) VALUES (?,?,?,?,?,?,?,?)",
+                (revision_id, interaction_id, application_id, source["id"], destination["id"], data["ipProtocol"], start, end),
+            )
+            return interaction_view(c, interaction_id, application_id)
+
+    def interactions(self, actor, application_id, limit, offset):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            find(c, "applications", application_id)
+            rows = c.execute(
+                "SELECT interaction_id FROM interaction_revisions WHERE application_id=? GROUP BY interaction_id ORDER BY interaction_id LIMIT ? OFFSET ?",
+                (application_id, limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            items = [interaction_view(c, row["interaction_id"], application_id) for row in rows[:limit]]
+            return dict(items=items, limit=limit, offset=offset, hasMore=len(rows) > limit)
+
+    def interaction(self, actor, application_id, interaction_id):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            find(c, "applications", application_id)
+            return interaction_view(c, interaction_id, application_id)
+
+    def create_deployment(self, actor, component_id, resource_id):
+        with self.db.transaction(write=True) as c:
+            self._catalog_create(c, actor)
+            component = find(c, "components", component_id)
+            find(c, "applications", component["application_id"])
+            find(c, "resources", resource_id)
+            identifier = uid()
+            c.execute("INSERT INTO deployments(id,component_id,resource_id) VALUES (?,?,?)",
+                      (identifier, component_id, resource_id))
+            return catalog_deployment_view(c, find(c, "deployments", identifier))
+
+    def deployments(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            rows = c.execute(
+                "SELECT d.* FROM deployments d JOIN components c ON c.id=d.component_id "
+                "LEFT JOIN application_names a ON a.application_id=c.application_id "
+                "LEFT JOIN component_names n ON n.component_id=c.id "
+                "LEFT JOIN resource_names r ON r.resource_id=d.resource_id "
+                "ORDER BY a.name,n.name,r.name,d.id LIMIT ? OFFSET ?",
+                (limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            return dict(items=[catalog_deployment_view(c, row) for row in rows[:limit]], limit=limit,
+                        offset=offset, hasMore=len(rows) > limit)
+
+    def deployment(self, actor, deployment_id):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            return catalog_deployment_view(c, find(c, "deployments", deployment_id))
+
+    def resources(self, actor, limit, offset):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            rows = c.execute(
+                "SELECT r.* FROM resources r LEFT JOIN resource_names n ON n.resource_id=r.id "
+                "ORDER BY n.name,r.id LIMIT ? OFFSET ?",
+                (limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            return dict(items=[resource_view(c, row) for row in rows[:limit]], limit=limit,
+                        offset=offset, hasMore=len(rows) > limit)
+
+    def resource(self, actor, resource_id):
+        with self.db.transaction() as c:
+            self._catalog_read(c, actor)
+            return resource_view(c, find(c, "resources", resource_id))
 
     def create_process(self, actor, data):
         with self.db.transaction(write=True) as c:

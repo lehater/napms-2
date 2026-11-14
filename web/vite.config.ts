@@ -28,6 +28,9 @@ export default defineConfig(({ command, mode, isPreview }) => {
       cors: demo ? false : undefined,
       fs: { strict: true, allow: [fileURLToPath(new URL('.', import.meta.url))] },
       proxy: {
+        '/applications': { target: 'http://127.0.0.1:8000', bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' } },
+        '/deployments': { target: 'http://127.0.0.1:8000', bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' } },
+        '/resources': { target: 'http://127.0.0.1:8000', bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' } },
         '/business-processes': {
           target: 'http://127.0.0.1:8000',
           bypass(req) { if (req.headers.accept?.includes('text/html')) return '/index.html' },

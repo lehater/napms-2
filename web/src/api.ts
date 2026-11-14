@@ -9,6 +9,13 @@ export type NeedPage<T> = { items: T[]; limit: number; offset: number; hasMore: 
 export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null }
 export type ProcessInput = { name: string; description: string | null; responsibleOrganization: string | null }
 export type ProcessCollection = { items: BusinessProcess[]; limit: number; offset: number; hasMore: boolean }
+export type Application = { applicationId: string; name: string }
+export type Component = { componentId: string; applicationId: string; applicationName: string; name: string }
+export type InteractionRevision = { interactionRevisionId: string; ipProtocol: 'TCP' | 'UDP'; destinationPortStart: number; destinationPortEnd: number; trafficLabel: string }
+export type Interaction = { interactionId: string; applicationId: string; applicationName: string; sourceComponentId: string; sourceComponentName: string; destinationComponentId: string; destinationComponentName: string; revisions: InteractionRevision[] }
+export type ComponentDeployment = { deploymentId: string; componentId: string; componentName: string; applicationId: string; applicationName: string; resourceId: string; resourceName: string }
+export type Resource = { resourceId: string; name: string }
+export type CatalogPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
 export type Outcome = 'ALLOWED' | 'DENIED'
 export type AccessInput = {
   sourceDeploymentId: string
@@ -75,6 +82,20 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     processes: (offset = 0) => call<ProcessCollection>(`/business-processes?limit=20&offset=${offset}`),
     process: (id: string) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`),
     createProcess: (data: ProcessInput) => call<BusinessProcess>('/business-processes', 'POST', data),
+    applications: (offset = 0, limit = 20) => call<CatalogPage<Application>>(`/applications?limit=${limit}&offset=${offset}`),
+    application: (id: string) => call<Application>(`/applications/${encodeURIComponent(id)}`),
+    createApplication: (name: string) => call<Application>('/applications', 'POST', { name }),
+    components: (applicationId: string, offset = 0, limit = 20) => call<CatalogPage<Component>>(`/applications/${encodeURIComponent(applicationId)}/components?limit=${limit}&offset=${offset}`),
+    component: (applicationId: string, id: string) => call<Component>(`/applications/${encodeURIComponent(applicationId)}/components/${encodeURIComponent(id)}`),
+    createComponent: (applicationId: string, name: string) => call<Component>(`/applications/${encodeURIComponent(applicationId)}/components`, 'POST', { name }),
+    interactions: (applicationId: string, offset = 0, limit = 20) => call<CatalogPage<Interaction>>(`/applications/${encodeURIComponent(applicationId)}/interactions?limit=${limit}&offset=${offset}`),
+    interaction: (applicationId: string, id: string) => call<Interaction>(`/applications/${encodeURIComponent(applicationId)}/interactions/${encodeURIComponent(id)}`),
+    createInteraction: (applicationId: string, data: { sourceComponentId: string; destinationComponentId: string; ipProtocol: 'TCP' | 'UDP'; destinationPortStart: number; destinationPortEnd: number }) => call<Interaction>(`/applications/${encodeURIComponent(applicationId)}/interactions`, 'POST', data),
+    deployments: (offset = 0, limit = 20) => call<CatalogPage<ComponentDeployment>>(`/deployments?limit=${limit}&offset=${offset}`),
+    deployment: (id: string) => call<ComponentDeployment>(`/deployments/${encodeURIComponent(id)}`),
+    createDeployment: (componentId: string, resourceId: string) => call<ComponentDeployment>('/deployments', 'POST', { componentId, resourceId }),
+    resources: (offset = 0, limit = 20) => call<CatalogPage<Resource>>(`/resources?limit=${limit}&offset=${offset}`),
+    resource: (id: string) => call<Resource>(`/resources/${encodeURIComponent(id)}`),
     list: (offset = 0) => call<Collection>(`/access-requests?limit=20&offset=${offset}`),
     request: (id: string) => call<AccessRequest>(`/access-requests/${encodeURIComponent(id)}`),
     create: (data: AccessInput) => call<AccessRequest>('/access-requests', 'POST', data),

@@ -8,6 +8,16 @@ export const actors = ['anonymous', 'requester', 'decider', 'exporter'] as const
 const origin = 'http://127.0.0.1:5173'
 const uuid = '[0-9a-fA-F-]{36}'
 const paths = [
+  { pattern: /^\/applications$/, methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components$`), methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}/components/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions$`), methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}$`), methods: ['GET'] },
+  { pattern: /^\/deployments$/, methods: ['GET', 'POST'] },
+  { pattern: new RegExp(`^/deployments/${uuid}$`), methods: ['GET'] },
+  { pattern: /^\/resources$/, methods: ['GET'] },
+  { pattern: new RegExp(`^/resources/${uuid}$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}/access-request-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/need-options$`), methods: ['GET'] },
@@ -58,7 +68,7 @@ export function localDemoPlugin(): Plugin {
       server.middlewares.use((req, res, next) => {
         const path = (req.url ?? '').split('?')[0]
         const devPath = path.startsWith('/__napms_dev')
-        const apiPath = /^\/(business-processes|access-requests|policy-rules|policy)(\/|$)/.test(path)
+        const apiPath = /^\/(business-processes|applications|deployments|resources|access-requests|policy-rules|policy)(\/|$)/.test(path)
         if (!devPath && !apiPath) return next()
         // SPA documents are never credential-substituted.
         if (!devPath && req.method === 'GET' && req.headers.accept?.includes('text/html')) return next()
