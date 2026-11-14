@@ -66,6 +66,10 @@ test('reset leaves only SQLite schema; REAL UI has no synthetic fallback data', 
       ['Правила политики', 'Нет доступных вам правил'],
     ]) {
       await nav.getByRole('link', { name: label, exact: true }).click()
+      // Manual credentials are scoped to each screen; do not persist tokens.
+      try { await page.getByLabel('Bearer token', { exact: true }).fill(tokens.requester.token) }
+      catch { throw new Error('Cannot enter temporary private credential') }
+      await page.getByRole('button', { name: 'Применить token', exact: true }).click()
       await expect(page.getByText(emptyText, { exact: false })).toBeVisible()
     }
     for (const url of ['/business-processes', '/resources', '/applications', '/deployments',
