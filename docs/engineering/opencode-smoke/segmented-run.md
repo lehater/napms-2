@@ -40,7 +40,7 @@ python3 docs/engineering/opencode-smoke/run.py segment-worker
 python3 docs/engineering/opencode-smoke/run.py segment-validate
 ```
 
-Команда запускает тот же `/tmp/fixture/check_smoke.py`, проверяющий точные байты и два отрицательных сценария. Результат должен быть exit 0, `Ran 3 tests`, `OK`. При exit 1 не добавлять LF внешней командой и не исправлять `role-smoke.txt` вручную.
+Команда запускает тот же `/tmp/fixture/check_smoke.py`, проверяющий точные байты и четыре отрицательных сценария (вторая строка, лишние данные, нет final LF, CRLF). Результат должен быть exit 0, `Ran 5 tests`, `OK`. При exit 1 не добавлять LF внешней командой и не исправлять `role-smoke.txt` вручную.
 
 **4. Независимый Reviewer (host read-only, новая Sol session).**
 
@@ -48,10 +48,10 @@ python3 docs/engineering/opencode-smoke/run.py segment-validate
 NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
   opencode --standalone run --agent reviewer \
   --model openai/gpt-6.1-sol --format json \
-  'PR70-SEGMENT independent REVIEW, read-only. Read role-smoke.txt yourself. Compare content to expected_lines ["# Role smoke","","Bounded Worker write."] and expected_final_newline=true. The byte-level Validator exit 0 must be independently supplied as evidence by the coordinator; if absent, mark NOT VERIFIED. Identify P0–P3 findings; do not use edit, shell, execute or call another agent. No auto-approval or merge.'
+  'PR70-SEGMENT independent REVIEW, read-only. Read role-smoke.txt yourself. Compare content to expected_lines ["# Role smoke","","Bounded Worker write."] and expected_final_newline=true. The coordinator reports that the separate deterministic Validator completed with exit 0 (this is REPORTED evidence, not independently observed by Reviewer). If no Validator result is supplied, mark NOT VERIFIED. Identify P0–P3 findings; do not use edit, shell, execute or call another agent. No auto-approval or merge.'
 ```
 
-Сохранить actual read/tool events, actual model, независимый вердикт. Валидатор exit 0 остаётся источником истинности точного LF; reviewer не должен заявлять, что прочёл байты без соответствующего инструмента.
+Сохранить actual read/tool events, actual model, независимый вердикт. Результат Validator передаётся Reviewer как внешнее **reported evidence**, не как самостоятельно выполненный им тест. Валидатор exit 0 остаётся источником истинности точного LF; reviewer не должен заявлять, что прочёл байты без соответствующего инструмента.
 
 ## Итоговая проверка одного логического запуска
 
