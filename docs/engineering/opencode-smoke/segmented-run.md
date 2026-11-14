@@ -1,6 +1,6 @@
 # PR #70 — A2 manual segmented E2E (owner-approved diagnostic)
 
-**Статус:** NOT RUN. Разрешён ручной эксперимент после [архитектурного решения по PR #70](https://github.com/lehater/napms-2/pull/70#issuecomment-6873654170). Это **один логический run** через отдельные процессы/сессии, а **не** один OpenCode root session. Durable Controller, auto-dispatch, credential forwarding или API proxy не реализуются.
+**Статус:** первый запуск на `92ffa74` — **BLOCKED** на независимом Reviewer; второй **NOT RUN**. [Evidence и причина](../opencode-a2-evidence-2026-11-14.md). Разрешён ручной эксперимент после [архитектурного решения по PR #70](https://github.com/lehater/napms-2/pull/70#issuecomment-6873654170). Это **один логический run** через отдельные процессы/сессии, а **не** один OpenCode root session. Durable Controller, auto-dispatch, credential forwarding или API proxy не реализуются.
 
 ## Контракт и границы
 
@@ -44,14 +44,18 @@ python3 docs/engineering/opencode-smoke/run.py segment-validate
 
 **4. Независимый Reviewer (host read-only, новая Sol session).**
 
+Перед вызовом оператор готовит проверяемый handoff: исходный и текущий SHA, фактический diff/список изменённых путей, session/model IDs и завершённый `edit` Worker, OS mounts (checkout read-only, writable только допустимый файл), команду/exit/результат Validator и checksum/точные байты. Эти факты передаются Reviewer явно как **reported evidence**. Не выдавать план или заявление Worker за проверку. Отсутствующий либо противоречивый факт означает NOT VERIFIED/BLOCKED. В примере ниже `OPERATOR_EVIDENCE` необходимо заменить фактическими наблюдениями этого запуска; с placeholder запускать нельзя.
+
 ```bash
 NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
   opencode --standalone run --agent reviewer \
   --model openai/gpt-6.1-sol --format json \
-  'PR70-SEGMENT independent REVIEW, read-only. Read role-smoke.txt yourself. Compare content to expected_lines ["# Role smoke","","Bounded Worker write."] and expected_final_newline=true. The coordinator reports that the separate deterministic Validator completed with exit 0 (this is REPORTED evidence, not independently observed by Reviewer). If no Validator result is supplied, mark NOT VERIFIED. Identify P0–P3 findings; do not use edit, shell, execute or call another agent. No auto-approval or merge.'
+  'PR70-SEGMENT independent REVIEW, read-only. Immutable contract: {"task_id":"PR70-SEGMENT","allowed_paths":["role-smoke.txt"],"expected_lines":["# Role smoke","","Bounded Worker write."],"expected_final_newline":true}. Read role-smoke.txt yourself and compare visible lines independently. Coordinator REPORTED evidence: OPERATOR_EVIDENCE. A supplied successful deterministic byte Validator is the source of truth for exact bytes/final LF; label that evidence reported, not independently executed or byte-read by you. Assess baseline/path/write-boundary evidence too. If any required evidence is absent, contradictory, or failed, return NOT VERIFIED/BLOCKED. Identify P0–P3 findings and return an explicit complete or incomplete review verdict. Do not use edit, shell, execute or call another agent. No auto-approval or merge.'
 ```
 
 Сохранить actual read/tool events, actual model, независимый вердикт. Результат Validator передаётся Reviewer как внешнее **reported evidence**, не как самостоятельно выполненный им тест. Валидатор exit 0 остаётся источником истинности точного LF; reviewer не должен заявлять, что прочёл байты без соответствующего инструмента.
+
+Это уточнение handoff действует для будущего отдельно разрешённого запуска. Оно не меняет вердикт уже выполненного Reviewer и не разрешает повторять review ради PASS. Incomplete/NOT VERIFIED останавливает текущий run; второй E2E после него не выполняется.
 
 ## Итоговая проверка одного логического запуска
 
