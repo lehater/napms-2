@@ -80,7 +80,8 @@ section[aria-label="Потребности REAL"] td { overflow-wrap: anywhere; 
 @media(max-width:650px){.ux-real .process-form.interaction-form{grid-template-columns:minmax(0,1fr)}}
 
 /* An Interaction holds stable identity; clauses are edited only in an unpublished draft. */
-.interaction-form .interaction-purpose,.interaction-form .interaction-extra{grid-column:1/-1}
+.interaction-form .interaction-purpose,.interaction-form .interaction-extra,.interaction-form .interaction-initial-label{grid-column:1/-1}
+.interaction-initial-label{font-weight:600;font-size:12px;margin:0}
 .interaction-purpose{display:grid;gap:5px;max-width:620px}
 .interaction-purpose input{height:38px;min-width:0}
 .interaction-clause-draft{display:flex;flex-wrap:wrap;align-items:end;gap:10px;border:1px solid var(--border,#c9d2dd);border-radius:6px;padding:10px;margin:8px 0;min-width:0}
