@@ -1,0 +1,334 @@
+{
+  "tested_head": "0647ef172266251b24d275645bb991f463e74380",
+  "opencode_version": "2.2.0",
+  "config_sha256": "71e78bda75890fc7b7548f11bda588415302620ffd4c8597a86f37e6d03ef92b",
+  "read_only_verdict": "PASS",
+  "sessions": [
+    {
+      "id": "ses_e272629f7ffeaoqaipX9Comz2M",
+      "parent_id": null,
+      "agent": "orchestrator",
+      "model": {
+        "id": "gpt-6.1-sol",
+        "providerID": "openai"
+      },
+      "idle_outcome": "succeeded",
+      "time_created": 1794639517694,
+      "time_idle": 1794639652305,
+      "tokens_input": 6866,
+      "tokens_output": 1213,
+      "tokens_reasoning": 0,
+      "tokens_cache_read": 3968,
+      "tokens_cache_write": 0,
+      "cost": 0.0,
+      "duration_ms": 134611
+    },
+    {
+      "id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "parent_id": "ses_e272629f7ffeaoqaipX9Comz2M",
+      "agent": "explore",
+      "model": {
+        "id": "gpt-6.1-sol",
+        "providerID": "openai",
+        "variant": "default"
+      },
+      "idle_outcome": "succeeded",
+      "time_created": 1794639531487,
+      "time_idle": 1794639604029,
+      "tokens_input": 22928,
+      "tokens_output": 1243,
+      "tokens_reasoning": 42,
+      "tokens_cache_read": 30592,
+      "tokens_cache_write": 0,
+      "cost": 0.0,
+      "duration_ms": 72542
+    },
+    {
+      "id": "ses_e27248568ffekcLjPeMxO8shwG",
+      "parent_id": "ses_e272629f7ffeaoqaipX9Comz2M",
+      "agent": "planner",
+      "model": {
+        "id": "gpt-6.1-sol",
+        "providerID": "openai",
+        "variant": "default"
+      },
+      "idle_outcome": "succeeded",
+      "time_created": 1794639624858,
+      "time_idle": 1794639644683,
+      "tokens_input": 2719,
+      "tokens_output": 458,
+      "tokens_reasoning": 0,
+      "tokens_cache_read": 0,
+      "tokens_cache_write": 0,
+      "cost": 0.0,
+      "duration_ms": 19825
+    }
+  ],
+  "events": [
+    {
+      "session_id": "ses_e272629f7ffeaoqaipX9Comz2M",
+      "tool": "subagent",
+      "status": "completed",
+      "input": {
+        "agent": "explore"
+      },
+      "time": {
+        "created": 1794639523150,
+        "ran": 1794639531479,
+        "completed": 1794639604033
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e272629f7ffeaoqaipX9Comz2M",
+      "tool": "subagent",
+      "status": "completed",
+      "input": {
+        "agent": "planner"
+      },
+      "time": {
+        "created": 1794639609537,
+        "ran": 1794639624853,
+        "completed": 1794639644686
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/AGENTS.md"
+      },
+      "time": {
+        "created": 1794639536917,
+        "ran": 1794639537289,
+        "completed": 1794639537295
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "skill",
+      "status": "completed",
+      "input": {
+        "id": "openspec-explore"
+      },
+      "time": {
+        "created": 1794639556475,
+        "ran": 1794639556505,
+        "completed": 1794639556510
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/.git"
+      },
+      "time": {
+        "created": 1794639562087,
+        "ran": 1794639562091,
+        "completed": 1794639562098
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec"
+      },
+      "time": {
+        "created": 1794639562095,
+        "ran": 1794639562106,
+        "completed": 1794639562110
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "glob",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec"
+      },
+      "time": {
+        "created": 1794639562129,
+        "ran": 1794639562133,
+        "completed": 1794639562161
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/config.yaml"
+      },
+      "time": {
+        "created": 1794639562137,
+        "ran": 1794639562157,
+        "completed": 1794639562165
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "error",
+      "input": {
+        "path": "/home/alex/projects/napms-2/.git/worktrees/napms-pr70"
+      },
+      "time": {
+        "created": 1794639566983,
+        "ran": 1794639566987,
+        "completed": 1794639567002
+      },
+      "error": {
+        "type": "permission.rejected",
+        "message": "Permission denied: external_directory"
+      }
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/specs"
+      },
+      "time": {
+        "created": 1794639566988,
+        "ran": 1794639566992,
+        "completed": 1794639567006
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/changes"
+      },
+      "time": {
+        "created": 1794639566993,
+        "ran": 1794639566996,
+        "completed": 1794639567004
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "glob",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/specs"
+      },
+      "time": {
+        "created": 1794639574784,
+        "ran": 1794639574788,
+        "completed": 1794639574811
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "grep",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec"
+      },
+      "time": {
+        "created": 1794639574791,
+        "ran": 1794639574795,
+        "completed": 1794639574820
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "glob",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/changes"
+      },
+      "time": {
+        "created": 1794639574797,
+        "ran": 1794639574801,
+        "completed": 1794639574816
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "grep",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/specs"
+      },
+      "time": {
+        "created": 1794639582019,
+        "ran": 1794639582024,
+        "completed": 1794639582054
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/specs/local-dev-runtime/spec.md"
+      },
+      "time": {
+        "created": 1794639582029,
+        "ran": 1794639582034,
+        "completed": 1794639582060
+      },
+      "error": null
+    },
+    {
+      "session_id": "ses_e2725f223ffecnbb5uvg33sPmN",
+      "tool": "read",
+      "status": "completed",
+      "input": {
+        "path": "/tmp/napms-pr70/openspec/specs/access-decisions/spec.md"
+      },
+      "time": {
+        "created": 1794639582036,
+        "ran": 1794639582040,
+        "completed": 1794639582063
+      },
+      "error": null
+    }
+  ],
+  "usage_note": "OpenCode recorded cost=0; billing, subscription debit and monetary cost are unknown. Session counters are reported separately, not inferred billing.",
+  "isolated_probe": {
+    "session_id": "ses_e2721dd52ffeUEUd1kPYiLS5Vc",
+    "model_requested": "openai/gpt-6.1-sol",
+    "verdict": "BLOCKED",
+    "error_type": "provider.no-route",
+    "message": "Model unavailable: openai/gpt-6.1-sol",
+    "cli_exit": 1,
+    "credentials_exported": false,
+    "time_created": 1794639799292,
+    "time_idle": 1794639799409,
+    "duration_ms": 117,
+    "tokens_input": 0,
+    "tokens_output": 0,
+    "recorded_cost": 0.0
+  },
+  "full_mixed_route": "NOT RUN: provider/auth boundary unavailable in unchanged credential-free bwrap",
+  "two_independent_successful_runs": "NOT RUN: prerequisite blocked",
+  "bootstrap_attempt": {
+    "error": "UnexpectedStatus: 503",
+    "session_created": false,
+    "upstream_cause": "unestablished",
+    "diagnostic_retry": "bypass proxy only for localhost; read-only route then completed"
+  }
+}

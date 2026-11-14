@@ -1,0 +1,489 @@
+{
+  "tested_head": "92ffa74f02fe401649256f7a0bef45d29f4278ac",
+  "opencode_version": "2.2.0",
+  "task_id": "PR70-SEGMENT",
+  "immutable_contract": {
+    "task_id": "PR70-SEGMENT",
+    "allowed_paths": [
+      "role-smoke.txt"
+    ],
+    "expected_lines": [
+      "# Role smoke",
+      "",
+      "Bounded Worker write."
+    ],
+    "expected_final_newline": true
+  },
+  "verdict": "BLOCKED",
+  "second_run": "NOT RUN: first Reviewer returned incomplete / PASS not established",
+  "config_sha256": "71e78bda75890fc7b7548f11bda588415302620ffd4c8597a86f37e6d03ef92b",
+  "stages": [
+    {
+      "ordinal": 1,
+      "name": "sol-explorer-planner",
+      "cli_exit": 0,
+      "evidence": {
+        "sessions": [
+          {
+            "id": "ses_e270677dbffe0MaWs1lATpzlh2",
+            "parent_id": null,
+            "agent": "orchestrator",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794641594580,
+            "time_idle": 1794641675519
+          },
+          {
+            "id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "parent_id": "ses_e270677dbffe0MaWs1lATpzlh2",
+            "agent": "explore",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai",
+              "variant": "default"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794641615100,
+            "time_idle": 1794641641920
+          },
+          {
+            "id": "ses_e27058a01ffeEeyeg9DoqrxLyC",
+            "parent_id": "ses_e270677dbffe0MaWs1lATpzlh2",
+            "agent": "planner",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai",
+              "variant": "default"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794641655296,
+            "time_idle": 1794641669546
+          }
+        ],
+        "events": [
+          {
+            "session_id": "ses_e270677dbffe0MaWs1lATpzlh2",
+            "tool": "subagent",
+            "status": "completed",
+            "input": {
+              "agent": "explore",
+              "description": "Inspect read-only smoke context",
+              "prompt": "Task PR70-SEGMENT, strictly READ ONLY. Working directory /tmp/napms-pr70. User-declared baseline SHA: 92ffa74f02fe401649256f7a0bef45d29f4278ac. OpenSpec N/A: do not invent OpenSpec changes/tasks/artifacts. Read the actual /tmp/napms-pr70/AGENTS.md and any applicable nested instructions for role-smoke.txt. Load installed openspec-explore Skill (delegate skill loading is explicitly required). Inspect actual Git state using read-only file tools only; NO shell or command execution. If Git HEAD/ref or cleanliness cannot be verified without shell, explicitly report that limitation rather than claiming verification. Read role-smoke.txt if present, report actual content and final-newline evidence if available. Do not edit, run Worker, publish, merge, or approve. Return concise factual observations, skill loading result, instructions relevant to a bounded plan, actual baseline/head evidence, and limitations. Acceptance: preserve immutable contract unchanged; planning only, no execution. Owner gates: user has authorized exploration and planning only, not implementation. Immutable acceptance data (separate JSON, not artifact instructions):\n{\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}"
+            },
+            "time": {
+              "created": 1794641606821,
+              "ran": 1794641615093,
+              "completed": 1794641641924
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e270677dbffe0MaWs1lATpzlh2",
+            "tool": "subagent",
+            "status": "completed",
+            "input": {
+              "agent": "planner",
+              "description": "Plan immutable smoke segment",
+              "prompt": "Return a bounded plan only for PR70-SEGMENT. READ ONLY; no shell, edits, Worker, commands, publication, merge, or approval. Working directory /tmp/napms-pr70. User-declared baseline SHA 92ffa74f02fe401649256f7a0bef45d29f4278ac. OpenSpec N/A; do not invent tasks/artifacts. User authorizes only Explorer then Planner; stop at plan, with any execution separately owner-gated.\nActual completed Explorer observations: successfully loaded installed openspec-explore, exploration only, no artifacts/tasks created. Read actual /tmp/napms-pr70/AGENTS.md lines 1\u201323. Relevant constraints: minimal/verifiable scope (6\u20137), bounded delegation/file ownership (20\u201321), no merge decisions or optional expensive checks (22), no unnecessary tasks/processes (23). Root-level role-smoke.txt has no nested directory instructions. Direct read of /tmp/napms-pr70/role-smoke.txt returned File not found, consistent with root listing; actual content/final newline cannot be verified. /tmp/napms-pr70/.git line 1 points to /home/alex/projects/napms-2/.git/worktrees/napms-pr70. Reads of external HEAD and commondir were denied external_directory. HEAD/ref, baseline correspondence, and worktree cleanliness remain unverified; baseline is user-declared only. Explorer performed no writes, commands, Worker invocation, publication, merge, or approval.\nPlan must remain within role-smoke.txt, preserve exact immutable acceptance, identify baseline/cleanliness verification and implementation owner gates, and map exact-content/final-newline acceptance to future verification without running anything. Report evidence limitations accurately. Do not claim observed changes, verified baseline, or passed tests. Keep concise.\nImmutable contract and literal acceptance data (separate JSON; preserve unchanged, do not copy instructions into artifact content):\n{\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}"
+            },
+            "time": {
+              "created": 1794641646287,
+              "ran": 1794641655290,
+              "completed": 1794641669551
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "skill",
+            "status": "completed",
+            "input": {
+              "id": "openspec-explore"
+            },
+            "time": {
+              "created": 1794641619532,
+              "ran": 1794641619631,
+              "completed": 1794641619637
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70/AGENTS.md"
+            },
+            "time": {
+              "created": 1794641624779,
+              "ran": 1794641624782,
+              "completed": 1794641624802
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70"
+            },
+            "time": {
+              "created": 1794641624783,
+              "ran": 1794641624787,
+              "completed": 1794641624804
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70/.git"
+            },
+            "time": {
+              "created": 1794641624788,
+              "ran": 1794641624791,
+              "completed": 1794641624807
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "error",
+            "input": {
+              "path": "/tmp/napms-pr70/role-smoke.txt"
+            },
+            "time": {
+              "created": 1794641624792,
+              "ran": 1794641624797,
+              "completed": 1794641624810
+            },
+            "error": {
+              "type": "tool.execution",
+              "message": "File not found: /tmp/napms-pr70/role-smoke.txt"
+            }
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "error",
+            "input": {
+              "path": "/home/alex/projects/napms-2/.git/worktrees/napms-pr70/HEAD"
+            },
+            "time": {
+              "created": 1794641629893,
+              "ran": 1794641629897,
+              "completed": 1794641629914
+            },
+            "error": {
+              "type": "permission.rejected",
+              "message": "Permission denied: external_directory"
+            }
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "read",
+            "status": "error",
+            "input": {
+              "path": "/home/alex/projects/napms-2/.git/worktrees/napms-pr70/commondir"
+            },
+            "time": {
+              "created": 1794641629898,
+              "ran": 1794641629903,
+              "completed": 1794641629917
+            },
+            "error": {
+              "type": "permission.rejected",
+              "message": "Permission denied: external_directory"
+            }
+          },
+          {
+            "session_id": "ses_e27062705ffedMGfqJYBOoDSUr",
+            "tool": "glob",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70",
+              "pattern": "AGENTS*",
+              "hidden": true
+            },
+            "time": {
+              "created": 1794641629905,
+              "ran": 1794641629908,
+              "completed": 1794641629920
+            },
+            "error": null
+          }
+        ],
+        "texts": {
+          "ses_e270677dbffe0MaWs1lATpzlh2": [
+            "Declared baseline: `92ffa74f02fe401649256f7a0bef45d29f4278ac` (not yet verified). Scope: read-only exploration, then a bounded plan; only `role-smoke.txt` is allowed by the contract. Acceptance is the exact supplied lines and final newline. Explorer will read `AGENTS.md`, load `openspec-explore`, and inspect available Git evidence without shell use. OpenSpec tasks: N/A. No Worker, edits, publishing, or merge; execution remains owner-gated.",
+            "Completed read-only Explorer \u2192 Planner.\n\n- Explorer: `ses_e27062705ffedMGfqJYBOoDSUr` \u2014 read `AGENTS.md`, loaded `openspec-explore`; `role-smoke.txt` absent.\n- Planner: `ses_e27058a01ffeEeyeg9DoqrxLyC` \u2014 returned bounded plan preserving the immutable contract.\n\nBaseline/HEAD and cleanliness remain unverified: Git metadata access was denied. OpenSpec N/A. No Worker, shell, edits, checks, publication, or merge. Stopped after Planner."
+          ],
+          "ses_e27062705ffedMGfqJYBOoDSUr": [
+            "- **Skill:** Successfully loaded installed `openspec-explore`; exploration only. OpenSpec is N/A here; no artifacts/tasks created.\n- **Instructions:** Read actual `/tmp/napms-pr70/AGENTS.md:1\u201323`. Relevant constraints: minimal, verifiable scope (6\u20137), bounded delegation/file ownership (20\u201321), no merge decisions or optional expensive checks (22), no unnecessary tasks/processes (23). `role-smoke.txt` is root-level, so no nested directory instructions apply.\n- **Target:** `/tmp/napms-pr70/role-smoke.txt` is absent: direct read returned \u201cFile not found,\u201d consistent with the root directory listing. Actual content and final newline therefore cannot be verified.\n- **Git evidence:** `/tmp/napms-pr70/.git:1` points to `/home/alex/projects/napms-2/.git/worktrees/napms-pr70`. Reads of that location\u2019s `HEAD` and `commondir` were denied (`external_directory`). HEAD/ref, baseline correspondence, and worktree cleanliness remain **unverified**. `92ffa74f02fe401649256f7a0bef45d29f4278ac` is user-declared only.\n- **Bounded plan only:** Preserve the immutable contract unchanged: sole allowed path `role-smoke.txt`; expected lines `[\"# Role smoke\",\"\",\"Bounded Worker write.\"]`; final newline required. Any implementation requires separate owner authorization.\n- No writes, commands, Worker invocation, publication, merge, or approval performed."
+          ],
+          "ses_e27058a01ffeEeyeg9DoqrxLyC": [
+            "## PR70-SEGMENT \u2014 bounded plan\n\n- **OpenSpec:** N/A; no tasks or artifacts.\n- **Baseline SHA:** `92ffa74f02fe401649256f7a0bef45d29f4278ac` (user-declared; unverified).\n- **Goal:** Make only `role-smoke.txt` satisfy the immutable acceptance below.\n- **Actual inputs:** Supplied contract and completed Explorer observations: root instructions read; `role-smoke.txt` read returned \u201cFile not found\u201d; external Git metadata access denied. HEAD, baseline correspondence, cleanliness, file content, and final newline remain unverified.\n- **allowed_paths:** `[\"role-smoke.txt\"]`\n\n### Immutable acceptance\n```json\n{\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}\n```\n\n### Owner-gated future work\n1. **Verification gate:** Owner separately authorizes verification of HEAD against the declared baseline and worktree cleanliness. Stop on mismatch or conflicting changes.\n2. **Implementation gate:** Owner separately authorizes execution restricted to `role-smoke.txt`; create or update it to the exact accepted content. Do not copy instructions or contract metadata into it.\n3. **Focused verification:** Compare the file byte-for-byte with `# Role smoke\\n\\nBounded Worker write.\\n`; confirm exactly three lines, a final newline, no additional bytes, and no changes outside the allowed path.\n\n### Forbidden actions\nNo execution in this planning phase: shell, commands, writes, Worker invocation, publication, merge, or approval. No other file changes, OpenSpec artifacts, scope expansion, or unrelated cleanup.\n\n### Handoff format\nReturn task ID; declared baseline and verification evidence/status; exact resulting head SHA if applicable; changed paths; exact-content/final-newline verification results; remaining limitations; and required owner decisions. Report unperformed checks as **not run**. Stop at this plan; no implementation or verification is claimed."
+          ]
+        }
+      }
+    },
+    {
+      "ordinal": 2,
+      "name": "qwen-worker",
+      "command": "python3 docs/engineering/opencode-smoke/run.py segment-worker",
+      "cli_exit": 0,
+      "evidence": {
+        "sessions": [
+          {
+            "id": "ses_e27043505ffeWWlTjLdMmL4iY5",
+            "parent_id": null,
+            "agent": "worker",
+            "model": {
+              "id": "qwen3-coder:30b",
+              "providerID": "ollama"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794641742651,
+            "time_idle": 1794641836457
+          }
+        ],
+        "events": [
+          {
+            "session_id": "ses_e27043505ffeWWlTjLdMmL4iY5",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "role-smoke.txt"
+            },
+            "time": {
+              "created": 1794641834766,
+              "ran": 1794641834782,
+              "completed": 1794641834791
+            },
+            "error": null
+          },
+          {
+            "session_id": "ses_e27043505ffeWWlTjLdMmL4iY5",
+            "tool": "edit",
+            "status": "completed",
+            "input": {
+              "path": "role-smoke.txt",
+              "oldString": "PLACEHOLDER",
+              "newString": "# Role smoke\n\nBounded Worker write."
+            },
+            "time": {
+              "created": 1794641835777,
+              "ran": 1794641835789,
+              "completed": 1794641835796
+            },
+            "error": null
+          }
+        ],
+        "texts": {
+          "ses_e27043505ffeWWlTjLdMmL4iY5": [
+            "I need to read the current content of role-smoke.txt and then edit it to match the expected content.\n\nFirst, let me read the file:",
+            "Now I'll edit the file to match exactly what was requested - replacing the content with the three expected lines joined by newlines and ending with a newline:",
+            "I have completed the requested task. The role-smoke.txt file has been edited to contain exactly the three expected lines joined with newlines and ending with a final newline, as specified in the contract:\n\n# Role smoke\n\nBounded Worker write.\n```"
+          ]
+        }
+      },
+      "credential_table_count": 0,
+      "temporary_config_delta": [
+        {
+          "role": "worker",
+          "action": "edit",
+          "resource": "role-smoke.txt",
+          "effect": "allow"
+        }
+      ]
+    },
+    {
+      "ordinal": 3,
+      "name": "byte-validator",
+      "command": "python3 docs/engineering/opencode-smoke/run.py segment-validate",
+      "cli_exit": 0,
+      "test_count": 5,
+      "test_result": "OK",
+      "exact_bytes_hex": "2320526f6c6520736d6f6b650a0a426f756e64656420576f726b65722077726974652e0a",
+      "byte_count": 36,
+      "sha256": "d5a8dcb2e4882d7d3c0dc700e290e608d0ed5bc7edbd2915c47d307b57f46388",
+      "final_lf": true,
+      "artifact_unchanged_after_worker": true
+    },
+    {
+      "ordinal": 4,
+      "name": "independent-sol-reviewer",
+      "cli_exit": 0,
+      "evidence": {
+        "sessions": [
+          {
+            "id": "ses_e27021f7effeNahxxJctFNW2gm",
+            "parent_id": null,
+            "agent": "reviewer",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794641879405,
+            "time_idle": 1794641891798
+          }
+        ],
+        "events": [
+          {
+            "session_id": "ses_e27021f7effeNahxxJctFNW2gm",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70/role-smoke.txt"
+            },
+            "time": {
+              "created": 1794641882392,
+              "ran": 1794641882692,
+              "completed": 1794641882697
+            },
+            "error": null
+          }
+        ],
+        "texts": {
+          "ses_e27021f7effeNahxxJctFNW2gm": [
+            "**Review: incomplete; no approval.**\n\n- **Independently observed:** `role-smoke.txt:1\u20133` matches the contract\u2019s expected lines exactly.\n- **P0\u2013P3 findings:** None identified in the observed content.\n- **Reported only:** Validator exit 0 / 5 tests OK; exact bytes, 36-byte length, SHA256, and final newline.\n- **Missing independent checks:** Raw bytes/final newline and baseline diff against `92ffa74f02fe401649256f7a0bef45d29f4278ac`, including confirmation that only `role-smoke.txt` changed.\n\n**PASS not established.** No files modified, forbidden tools invoked, agents called, or merge performed."
+          ]
+        }
+      },
+      "reported_to_reviewer": [
+        "Validator command, exit 0, 5 tests OK",
+        "operator byte literal, length and SHA256"
+      ],
+      "not_supplied_to_reviewer": [
+        "operator baseline diff and mount observations",
+        "selected actual Worker/Explorer/Planner events"
+      ]
+    }
+  ],
+  "handoff_policy": "Operator allowed stages only after actual CLI completion and event checks. No transition after incomplete Reviewer; second E2E not started.",
+  "isolation": {
+    "probe_exit": 0,
+    "probe_output": "PASS: host home/tmp hidden and repository read-only",
+    "actual_worker_processes": [
+      {
+        "pid": "665695",
+        "argv": [
+          "/opt/opencode",
+          "--standalone",
+          "run",
+          "--agent",
+          "worker",
+          "--model",
+          "ollama/qwen3-coder:30b",
+          "--format",
+          "json",
+          "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. You are only the Worker stage, not the Orchestrator. The immutable one-file contract is {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read role-smoke.txt containing PLACEHOLDER plus newline. Use edit on role-smoke.txt ONLY to replace its content with exactly the three expected_lines joined with newline and one final newline. Do not append explanations, omit LF, delegate, run commands or write another file. This isolated run contains no cloud credentials. Report what was actually done."
+        ],
+        "env_keys": [
+          "HOME",
+          "OPENCODE_CONFIG",
+          "PATH",
+          "PWD",
+          "TMPDIR",
+          "XDG_CACHE_HOME",
+          "XDG_CONFIG_HOME",
+          "XDG_DATA_HOME",
+          "XDG_STATE_HOME"
+        ],
+        "mounts": [
+          "551 248 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "589 551 0:91 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "590 551 0:92 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "591 551 0:93 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "606 591 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "607 606 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+          "608 591 8:48 /tmp/pr70-smoke-qgwg414m /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "609 591 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "610 606 8:48 /tmp/pr70-smoke-qgwg414m/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "611 606 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+        ],
+        "home_entries": [],
+        "git_size": 0
+      },
+      {
+        "pid": "665706",
+        "argv": [
+          "/opt/opencode",
+          "serve",
+          "--stdio",
+          "--port",
+          "0"
+        ],
+        "env_keys": [
+          "HOME",
+          "OPENCODE_CONFIG",
+          "OPENCODE_PASSWORD",
+          "PATH",
+          "PWD",
+          "TMPDIR",
+          "XDG_CACHE_HOME",
+          "XDG_CONFIG_HOME",
+          "XDG_DATA_HOME",
+          "XDG_STATE_HOME"
+        ],
+        "mounts": [
+          "551 248 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "589 551 0:91 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "590 551 0:92 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "591 551 0:93 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+          "606 591 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "607 606 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+          "608 591 8:48 /tmp/pr70-smoke-qgwg414m /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "609 591 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "610 606 8:48 /tmp/pr70-smoke-qgwg414m/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+          "611 606 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+        ],
+        "home_entries": [],
+        "git_size": 0
+      }
+    ],
+    "host_OPENCODE_PASSWORD_present": false,
+    "standalone_server_password_note": "Not present in launcher env; OPENCODE_PASSWORD appeared only in standalone serve child. Its value was not read or published. This is not evidence of forwarded host/cloud credentials.",
+    "boundary_limit": "Write isolation; shared localhost network for Ollama, not a universal privacy/network sandbox."
+  },
+  "preexisting_artifact": {
+    "preserved_privately_before_run": true,
+    "bytes": "# Role smoke\n\nBounded Worker write.",
+    "final_lf": false,
+    "not_part_of_this_run": true
+  },
+  "local_checks": {
+    "py_compile_exit": 0,
+    "structural_unittest_count": 7,
+    "structural_unittest_exit": 0,
+    "selected_profile": "FULL",
+    "check_fast_exit": 0,
+    "pytest_passed": 249,
+    "pytest_subtests_passed": 4,
+    "web_browser_tests_passed": [
+      40,
+      18
+    ],
+    "openspec_strict_passed": 16,
+    "advisory": {
+      "ruff_extended_findings": 71,
+      "format_files": 21,
+      "pyright_errors": 34
+    },
+    "environment_failures": [
+      "OpenCode host log and git worktree metadata read-only under Codex sandbox: rerun with escalation",
+      "Initial check-fast lacked python/.venv/web dependencies; prepared environment",
+      "Sandbox pytest stalled without results; operator terminated own processes and reran identical profile outside Codex sandbox; blocking checks passed"
+    ]
+  },
+  "openspec_tasks": "N/A: no specification artifacts changed",
+  "billing": "Not measured; no cost or subscription claims."
+}
