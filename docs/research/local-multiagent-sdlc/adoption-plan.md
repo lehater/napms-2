@@ -1,6 +1,6 @@
 # План внедрения целевой локальной мультиагентной схемы
 
-**Статус:** proposed implementation plan, *реализация ещё не разрешена*.
+**Статус:** **Stage 1 (A4–A7) разрешён как отдельный Draft implementation PR**, по решению 14.11.2026. Gate на внедрение режима B/Controller, принятие продуктивного Harness и merge отдельных PR сохраняется.
 **Основа:** [полная архитектура](target-architecture.md), [ADR-001](research-and-decision.md) и [ADR-002 — контроллер непрерывного выполнения](execution-engine.md).
 **Принцип:** вся архитектура и вариант выбора описаны сейчас; внедрение — атомарными проверяемыми изменениями без нарушения действующего Codex/продуктовых веток.
 
@@ -17,7 +17,7 @@
 
 | ID | Область | Работа | Критерий приёмки |
 | --- | --- | --- | --- |
-| A0 | Architecture | Рассмотреть ADR-001 и ADR-002, выбор рантайма и режимов A/B | Владелец согласовал исходные constraints и нужный уровень непрерывности; финальный runtime после A1–A2 |
+| A0 | Architecture | Принять ADR-001 (OpenCode mode A) и ADR-002 (A принято; B отложено) | **DONE (staged acceptance 14.11.2026)**; право на постоянную продуктивную миграцию не дано |
 | A1 | Environment | На WSL записать версии Codex/OpenCode/Ollama, доступность моделей/провайдеров; без публикации credential data | Протокол `available/unavailable`, IDs, возможности tools, без секретов |
 | A2 | Capability smoke | В **disposable worktree** проверить V2 синтаксис, `AGENTS.md`, `.agents/skills`, привязку модели к роли и право edit/shell/external_directory | Все критические запреты работают; нет влияния на продуктивные файлы |
 | A3 | Local Orchestrator (A) / Controller (B) | Сначала проверить **одну OpenCode-сессию** с последовательным выполнением и реальными gates. Если нужен unattended restart и возможности runtime недостаточны — отдельным решением реализовать минимальный **не-LLM Controller** (DAG, checkpoint, lock, budget, resume/reconcile) | A: один целевой run без новых промптов, safe stop и handoff; B: E1/E3/E6/E8/E11 из ADR-002 |
@@ -29,9 +29,9 @@
 | A9 | Evaluation and decision | Сопоставить с известным Codex baseline: ошибки, переделки, elapsed time, токены если доступны, риск | Осмысленное `adopt` / `keep Codex` решение, не синтетический балл |
 | A10 | Operationalize | Нормативный runbook, модели и разрешения, диагностика, rollback; если принято — один основной локальный путь | Владелец самостоятельно запускает типовую работу из WSL |
 
-### Минимальный набор проектных конфигураций для кандидата OpenCode V2
+### Минимальный набор проектных конфигураций для выбранного Stage-1 OpenCode V2
 
-После проверки установленной версии и только в последующем implementation PR:
+Использовать уже проверенную V2 schema пилота в отдельном implementation PR, без blind copy его узких инструкций:
 - `opencode.jsonc` либо принятая V2 schema в проверяемой версии: модели, permissions, default primary-agent, явные запреты на `git push` и секреты; external-directory policy.
 - `.opencode/agents/orchestrator.md`, `architect.md`, `planner.md`, `reviewer.md` — точные пути/схему подтвердить локальным CLI. Предпочитать встроенные Explore/General, не плодить копии ради названий.
 - `.opencode/commands/` для явных операций `/design`, `/apply`, `/review` только если ручной интерфейс оправдался; **не писать LLM orchestration daemon**. Для режима A достаточно локальной сессии и сохранённых Git/OpenSpec артефактов. Для B, только при подтверждённом требовании restart, нужен ограниченный детерминированный Controller с проверенным CLI/SDK adapter (ADR-002).
@@ -70,8 +70,8 @@
 ### Детальный порядок bootstrap и последующей автоматизации
 
 - **A0**: архитектурное согласование двух ADR — owner gate.
-- **A1 → A2**: версии, auth capabilities, права и skills; если среда не поддерживается, fallback Codex и повторная приёмка.
-- **A3**: сначала проверить session-run (A); если нужен restart без оператора — отдельное согласование B, минимальный Controller с E1/E3/E6/E8/E11 до разрешения unattended A4–A10.
+- **A1 → A2**: **DONE для пилотного объёма** в PR #69: OpenCode v2.2.0, Ollama Qwen, skills, permissions и bwrap; ChatGPT успешный ручной вызов, но в flow не применялся. Для новой рабочей конфигурации выполнить отдельные acceptance probes.
+- **A3**: **DONE только для демонстрационного mode-A smoke** (Explorer → Planner → Worker → Validator → Reviewer) в PR #69. Для реального SDLC это всё ещё TBD. Режим B/Controller — **DEFERRED**.
 - **A4 → A7**: роли, профили моделей, Skills, проверки; зависимость последовательная для общего конфигурационного слоя.
 - **A8**: одна bounded E2E задача и проверки E2/E4/E5/E7/E9/E10/E12.
 - **A9 → A10**: сопоставление фактов, owner decision и runbook/rollback.
@@ -137,4 +137,4 @@ python3 scripts/check-fast.py --dry-run
 2. Подтвердить, что проектирование можно считать достаточным для *отдельного* implementation PR после локальной проверки среды.
 3. При выборе внешних free models отдельно принять границу допустимой отправки исходного кода внешним провайдерам.
 
-**Непосредственное следующее действие:** принять архитектурные границы и разрешённые действия, затем выполнить capability smoke OpenCode в disposable worktree **без нового Controller**. После smoke сравнить с Codex и начать один разрешённый session-run A4–A10. Если нужен unattended restart — отдельно внедрить Controller B по acceptance E1–E12.
+**Непосредственное следующее действие после merged PR #69:** реализовать **первую постоянную конфигурацию ролей OpenCode в отдельном Draft PR** (A4–A7), переиспользовав подтверждённую V2 schema и права; сначала read-only orchestration, затем ограниченный write/validate/review в sandbox. Не переносить pilot-specific `pilot/output.md` в production roles, не включать нового Controller, не выполнять auto merge. Проверять реальный маршрут с Codex baseline перед решением A9.
