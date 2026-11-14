@@ -9,6 +9,27 @@ NAPMS 1.0 используется только как источник знан
 **Дальнейший приоритет:** развитие SDLC/Harness и измеряемого качества разработки.
 [Roadmap и вход для нового чата](docs/engineering/sdlc-improvement-roadmap.md) · [SDLC-01 baseline](docs/engineering/quality-gates-baseline.md) · [Issue #7](https://github.com/lehater/napms-2/issues/7).
 
+## Основные команды разработчика (Make)
+
+Из корня репозитория в Ubuntu/WSL; нужен `make` (`sudo apt install make`, если отсутствует):
+
+```bash
+make help        # доступные команды
+make setup       # первичная установка .venv и web/node_modules
+make run         # FastAPI + React, профиль local-demo (Ctrl+C — остановить)
+make reset-db    # стереть учебные данные, восстановить схему и demo seed
+make test        # backend pytest
+make check       # существующий быстрый профиль проверки изменённых файлов
+make check-full  # полный набор проверок Harness (включая E2E/OpenSpec)
+```
+
+`make reset-db` требует остановить приложение и **ввести RESET** в терминале;
+без подтверждения ничего не удаляется. Сброс использует команду
+`napms-dev reset-demo --yes` и **сохраняет локальные demo credentials**.
+Для отдельной базы доступны `make run DB=var/other.sqlite3 CREDENTIALS=var/other.json`
+и те же переменные с `make reset-db`. Makefile только вызывает существующий CLI и
+`scripts/check-fast.py`, не дублирует их реализацию.
+
 ## Установка и запуск
 
 Для совместного запуска FastAPI/React и выбора demo actor без копирования токенов
