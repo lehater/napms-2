@@ -175,7 +175,7 @@ function InteractionsTab({ client, application, reloadKey }: {
     </div>
     <ErrorNotice text={error}/>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
-      {key:'purpose', title:'Назначение', render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.purpose || 'Без описания (историческая запись)'}</Link>},
+      {key:'purpose', title:'Назначение', render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.purpose || `Историческая связь · ${item.interactionId.slice(0,8)}`}</Link>},
       {key:'direction', title:'Направление', render:item=>`${item.sourceComponentName} → ${item.destinationComponentName}`},
       {key:'latest', title:'Последняя ревизия', render:item=>{
         const latest = item.revisions.at(-1)!
