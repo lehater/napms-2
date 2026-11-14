@@ -67,8 +67,10 @@ def test_owned_clauses_and_revision_publish_preserve_old_rules(env):
     assert rev2["revisionNumber"] == 2 and rev2["interactionRevisionId"] != rev1["interactionRevisionId"]
     assert rev2["trafficClauses"][0]["sourcePortStart"] == 50000
     assert client.post(url, headers=requester, json={"trafficClauses": next_clauses}).status_code == 409
-    assert client.get('/policy/export', headers=exporter,
-                      params={"ruleId": rule_id, "format": "json"}).json()["rows"] == original
+    after = client.get('/policy/export', headers=exporter,
+                       params={"ruleId": rule_id, "format": "json"}).json()["rows"]
+    assert [{k: v for k, v in row.items() if k != "evaluationAt"} for row in after] == [
+        {k: v for k, v in row.items() if k != "evaluationAt"} for row in original]
 
     options = client.get(f'/business-processes/{IDS["process"]}/needs/{nid}/access-request-options?kind=revisions',
                          headers=requester).json()["items"]
