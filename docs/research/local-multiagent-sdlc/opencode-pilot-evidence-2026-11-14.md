@@ -39,7 +39,7 @@ The temporary bwrap namespace mounted the worktree read-only and bound only `pil
 Observed probes:
 
 - OpenCode denied the Worker's file-tool attempt at `pilot/unauthorized.md`.
-- The Worker's shell tool was unavailable; the harmless dummy push command was not executed. No push or merge was attempted or performed.
+- The Worker's shell tool was unavailable; the harmless dummy push request was blocked before command execution. No push or merge command was executed, and no merge probe was sent.
 - With the Worker mount shape, direct `touch /mnt/pilot/worker-unauthorized.md` failed with `Read-only file system`; the permitted `pilot/output.md` edit succeeded.
 - The Reviewer returned PASS. Its extra write probe was interpreted as a read and therefore did not exercise OpenCode's write-deny rule. A direct `touch /mnt/pilot/reviewer-unauthorized.md` against the Reviewer read-only mount failed with `Read-only file system`. The configured OpenCode rule also denies `edit` for Reviewer.
 
