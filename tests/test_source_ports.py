@@ -2,6 +2,7 @@
 import csv
 import io
 import sqlite3
+from uuid import uuid4
 
 import pytest
 
@@ -29,6 +30,12 @@ def test_source_ports_any_and_explicit_end_to_end(env):
         (payload(50000, 51000, 123, 124), "udp(50000-51000→123-124)"),
         (payload(123, 123), "udp(123→123)"),
     ]:
+        component_id, deployment_id = str(uuid4()), str(uuid4())
+        with db.transaction(write=True) as c:
+            c.execute("INSERT INTO components VALUES (?,?)", (component_id, IDS["application"]))
+            c.execute("INSERT INTO deployments VALUES (?,?,?)",
+                      (deployment_id, component_id, IDS["sourceResource"]))
+        data = {**data, "sourceComponentId": component_id}
         response = client.post(url, headers=requester, json=data)
         assert response.status_code == 201, response.text
         interaction = response.json()
@@ -47,7 +54,8 @@ def test_source_ports_any_and_explicit_end_to_end(env):
                            headers=requester, json={"interactionRevisionId": revision["interactionRevisionId"]})
         assert need.status_code == 201, need.text
         request = client.post('/access-requests', headers=requester, json={
-            **DEMO_REQUEST, "interactionRevisionId": revision["interactionRevisionId"],
+            **DEMO_REQUEST, "sourceDeploymentId": deployment_id,
+            "interactionRevisionId": revision["interactionRevisionId"],
             "connectivityNeedId": need.json()["connectivityNeedId"]})
         assert request.status_code == 201, request.text
         assert expected in request.json()["displayLabel"]
@@ -115,7 +123,7 @@ def test_invalid_port_intervals_do_not_persist(env, invalid):
 
 
 def test_old_post_without_source_fields_means_any(env):
-    data = payload()
+    data = {**payload(), "destinationComponentId": IDS["sender"]}
     del data["sourcePortStart"], data["sourcePortEnd"]
     response = env[3].post(f'/applications/{IDS["application"]}/interactions',
                            headers=auth(env, "requester"), json=data)
@@ -140,7 +148,7 @@ def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     db.initialize()
     db.initialize()
     with db.connect() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 8
         row = c.execute("SELECT * FROM interaction_revisions WHERE id='old'").fetchone()
         assert row["source_port_start"] is row["source_port_end"] is None
         assert row["port_start"] == row["port_end"] == 123
