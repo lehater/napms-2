@@ -5,6 +5,7 @@
 - Draft PR: [#69](https://github.com/lehater/napms-2/pull/69); branch `experiment/opencode-multiagent-pilot-2026-11-14`.
 - Accepted `main` base: `e957bd4247d78847d70d7f92923e9cf1c1592f63`.
 - Feature branch HEAD before these P1 fixes: `29357ce5b2b0351d395ad086ab7307339a79abb9`.
+- P1 implementation commit: `60185ee1eb1f3c537657d867dd6c0b176564311a`; the final route and focused checks ran against the identical pilot code/config tree before this commit (only this evidence file was updated afterward).
 - This was a disposable worktree under `/tmp/napms-opencode-pilot`. The accepted checkout, `main`, product code, existing Codex Harness, OpenSpec changes, and PR #68 were not modified. No push or merge was attempted by the agents.
 
 ## Environment and model availability
@@ -75,6 +76,6 @@ The route's serialized OpenCode session stream and the temporary OpenCode databa
 - `python3 pilot/check_output.py`: passed for the Worker artifact.
 - Continuous mode-A route Explorer → Planner → Worker → Validator → Reviewer: passed in one OpenCode root session; child-level tool metadata independently confirms Worker edit, both validator exit codes, and Reviewer tool denial.
 - `python3 scripts/check-fast.py --dry-run`: selected FULL because the rename/delete and new pilot files are unknown scope. The local full profile was not repeated: a prior attempt on this same disposable worktree stalled at the first pytest temporary context for over five minutes and was interrupted with exit 130. The requested GitHub Verify FULL is the full-project check for this revision.
-- GitHub Verify FULL for the updated PR head: pending; run this exact command after commit and push, then record its run ID, head SHA, and outcome here.
+- GitHub Verify FULL for the updated PR head: pending; run this exact command after the evidence update is committed and pushed, then record its run ID, head SHA, and outcome here.
 
 The pilot does not implement a long-running Controller or establish a production-grade sandbox. The OpenAI 503 remains an external model connectivity issue for this run; local Ollama completed the bounded route.
