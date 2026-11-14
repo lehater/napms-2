@@ -923,7 +923,11 @@ test('late Rule collection and current-policy downloads discard stale actor resu
       await expect(ruleRow).toBeVisible()
     } finally {release();await page.unrouteAll({behavior:'wait'})}
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
-    await expect(page.locator('tbody tr')).toHaveCount(1)
+    const requesterPage = await request.get('/policy-rules?limit=20&offset=0', { headers: actorHeaders('requester') })
+    expect(requesterPage.status()).toBe(200)
+    const expectedRows = (await requesterPage.json() as { items: { ruleId: string }[] }).items
+    await expect(page.locator('tbody tr')).toHaveCount(expectedRows.length)
+    await expect(ruleRow).toHaveCount(1)
     await expect(ruleRow).toBeVisible()
     expect(downloads).toBe(0)
     page.off('download',onDownload)
@@ -980,6 +984,7 @@ test('Rule collection paging and actor reset preserve readable current-policy sc
 })
 
 test('local-demo requester creates a self-interaction and requester/exporter see its active rule', async ({ page, harness }) => {
+  const rulesBefore = harness.sql('SELECT count(*) FROM policy_rules')[0][0] as number
   await page.goto('/')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Профили приложений', exact: true }).click()
@@ -1088,5 +1093,6 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await expect(page.locator('.ux-collection')).toContainText('ACTIVE')
   await page.getByLabel('Demo actor', { exact: true }).selectOption('exporter')
   await expect(page.locator('.ux-collection')).toContainText('ACTIVE')
-  expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[1]])
+  // This journey creates exactly one new canonical rule; earlier worker tests may leave others.
+  expect(harness.sql('SELECT count(*) FROM policy_rules')).toEqual([[rulesBefore + 1]])
 })
