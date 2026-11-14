@@ -111,13 +111,28 @@ def loopback(host):
 
 def main():
     parser = argparse.ArgumentParser(description="NAPMS local development only")
-    parser.add_argument("command", choices=("init-demo", "serve", "run"))
+    parser.add_argument("command", choices=("init-demo", "reset-demo", "serve", "run"))
     parser.add_argument("--db", default="var/napms.sqlite3")
     parser.add_argument("--credentials", default="var/dev-credentials.json")
     parser.add_argument("--host", default="127.0.0.1", type=loopback)
     parser.add_argument("--port", default=8000, type=int)
     parser.add_argument("--profile", choices=("local-demo",))
+    parser.add_argument("--yes", action="store_true", help="Explicitly confirm deletion of local demo data with reset-demo")
     args = parser.parse_args()
+    if args.command == "reset-demo":
+        if not args.yes:
+            parser.error("reset-demo permanently clears all local demo data; repeat with --yes")
+        if args.profile is not None:
+            parser.error("reset-demo does not accept --profile")
+        from .dev_reset import reset_demo
+        try:
+            reset_demo(Database(args.db), args.credentials)
+        except RuntimeError as error:
+            parser.exit(1, f"Demo reset: {error}\n")
+        print("Demo reset complete: current schema and seed restored; private credentials preserved.")
+        return
+    if args.yes:
+        parser.error("--yes is supported only by reset-demo")
     if args.command == "run":
         if args.profile != "local-demo" or args.host != "127.0.0.1" or args.port != 8000:
             parser.error("run requires --profile local-demo and default loopback host/port")
