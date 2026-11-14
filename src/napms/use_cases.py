@@ -88,7 +88,7 @@ def process_view(row):
 
 def need_view(c, r):
     process = find(c, "processes", r["process_id"])
-    revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY id LIMIT 1", (r["interaction_id"],)).fetchone()
+    revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number,id LIMIT 1", (r["interaction_id"],)).fetchone()
     label = (process["name"] or MISSING) + " · " + (interaction_label(c, revision) if revision else MISSING)
     return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
 
@@ -469,7 +469,7 @@ class Service:
             self._need_access(c, actor, pid, "create" if options else "read", visibility_only=True)
             if options:
                 items = []
-                for r in c.execute("SELECT * FROM interaction_revisions ORDER BY interaction_id,id").fetchall():
+                for r in c.execute("SELECT * FROM interaction_revisions ORDER BY interaction_id,revision_number,id").fetchall():
                     try:
                         self._compatible(c, r)
                     except Problem:
@@ -521,7 +521,7 @@ class Service:
                 return items
             items = []
             selected = None
-            for r in c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? AND source_component_id=? ORDER BY id", (need["interaction_id"], need["component_id"])).fetchall():
+            for r in c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? AND source_component_id=? ORDER BY revision_number,id", (need["interaction_id"], need["component_id"])).fetchall():
                 try:
                     self._compatible(c, r)
                 except Problem:
