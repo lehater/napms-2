@@ -238,7 +238,7 @@ export function InteractionDetailScreen({client}: {client: Client}) {
       <EntityTable<InteractionRevision> rows={item.revisions} columns={[
         {key:'number',title:'Ревизия',render:r=><Link to={revisionPath(applicationId, interactionId, r.interactionRevisionId)}>{`#${r.revisionNumber}`}</Link>},
         {key:'count',title:'Условий',render:r=>r.trafficClauses.length},
-        {key:'summary',title:'Трафик',render:r=>r.trafficLabel},
+        {key:'summary',title:'Трафик',render:r=><span className="block max-w-64 truncate" title={r.trafficLabel}>{r.trafficLabel}</span>},
         {key:'status',title:'Состояние',render:r=>'Опубликована · неизменяема'},
       ]} getKey={r=>r.interactionRevisionId} emptyText="Ревизий нет." />
     </>}

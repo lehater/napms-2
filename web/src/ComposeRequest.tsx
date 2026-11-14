@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ApiError, message, type Client, type Need, type Options, type NeedOption, type DeploymentOption } from './api'
+import { ApiError, message, type Client, type Need, type Options, type NeedOption, type DeploymentOption, type TrafficClause } from './api'
 import { Button } from './components/ui/button'
 
 type Option = NeedOption | DeploymentOption
 const optionId = (option: Option) => 'interactionRevisionId' in option ? option.interactionRevisionId : option.deploymentId
 const deployment = (option: Option | null) => option && 'deploymentId' in option ? option : null
+const portRange = (start: number | null, end: number | null) => start === null || end === null ? 'ANY' : start === end ? String(start) : `${start}–${end}`
+
+function TrafficClauseSummary({ clauses }: { clauses: TrafficClause[] }) {
+  return <ol className="list-decimal pl-5">{clauses.map(clause => <li key={clause.clauseIndex}>
+    #{clause.clauseIndex} · {clause.ipProtocol} · {portRange(clause.sourcePortStart, clause.sourcePortEnd)} → {portRange(clause.destinationPortStart, clause.destinationPortEnd)}
+  </li>)}</ol>
+}
 
 function Selector({ client, need, kind, revision = '', value, choose }: { client: Client; need: Need; kind: Options['kind']; revision?: string; value: string; choose: (option: Option | null) => void }) {
   const [offset, setOffset] = useState(0), [reload, setReload] = useState(0)
@@ -51,14 +58,11 @@ export default function ComposeRequest({ client, need }: { client: Client; need:
           'Коммуникация': revision.displayLabel,
           'Источник': source.displayLabel,
           'Назначение': destination.displayLabel,
-          'Трафик': revision.trafficLabel,
+          'Условия трафика': <TrafficClauseSummary clauses={revision.trafficClauses} />,
           'Need': need.connectivityNeedId,
           'Interaction': need.interactionId,
           'Revision': revision.interactionRevisionId,
           'Направление Components': `${revision.sourceComponentId} → ${revision.destinationComponentId}`,
-          'Протокол': revision.ipProtocol,
-          'Порты источника': revision.sourcePortStart === null ? 'ANY' : `${revision.sourcePortStart}–${revision.sourcePortEnd}`,
-          'Порты назначения': `${revision.destinationPortStart}–${revision.destinationPortEnd}`,
           'Source Deployment': source.deploymentId,
           'Source Resource': source.resourceId,
           'Destination Deployment': destination.deploymentId,

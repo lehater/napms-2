@@ -179,7 +179,7 @@ function InteractionsTab({ client, application, reloadKey }: {
       {key:'direction', title:'Направление', render:item=>`${item.sourceComponentName} → ${item.destinationComponentName}`},
       {key:'latest', title:'Последняя ревизия', render:item=>{
         const latest = item.revisions.at(-1)!
-        return <><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}/revisions/${latest.interactionRevisionId}`}>{`#${latest.revisionNumber}`}</Link><small>{latest.trafficLabel}</small></>
+        return <><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}/revisions/${latest.interactionRevisionId}`}>{`#${latest.revisionNumber}`}</Link><small className="block max-w-64 truncate" title={latest.trafficLabel}>{latest.trafficLabel}</small></>
       }},
       {key:'count', title:'Условий', render:item=>item.revisions.at(-1)!.trafficClauses.length},
     ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы."

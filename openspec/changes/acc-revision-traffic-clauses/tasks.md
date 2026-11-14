@@ -7,6 +7,6 @@
 
 ## 2. Verification
 - [ ] 2.1 Backend/API/migration regression and duplicate tests
-- [ ] 2.2 REAL Playwright journey for multi-clause and revisions
+- [x] 2.2 REAL Playwright journey for multi-clause and revisions
 - [ ] 2.3 OpenSpec strict and full Verify on final HEAD
 - [ ] 2.4 Owner visual acceptance and independent review before merge
