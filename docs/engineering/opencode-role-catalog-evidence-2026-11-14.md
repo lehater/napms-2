@@ -42,3 +42,8 @@ Focused final tests, exact final head, Verify FULL run/jobs and remaining adviso
 Actual tool events, not an LLM's final PASS or CLI exit alone, establish denials and test results. Qwen sometimes attempts unavailable tools or redundant Skills; the permission engine rejected the observed forbidden calls. This smoke does not establish general task fidelity, model superiority, provider privacy outside the local sandbox, or production readiness. The temporary smoke config adds only one file edit allowance and one exact test-command allowance; permanent Worker remains `edit: ask`, shell/execute denied.
 
 ADR-001 staged OpenCode adoption and ADR-002 one active root session are respected. No mode-B Controller, new dependency, permanent daemon, automatic publisher or GitHub merge was added. Owner acceptance remains pending; PR #70 stays Draft. The final acceptance verdict is in PR #70 after checks on its final HEAD.
+
+
+## Literal-content handoff regression
+
+Final-head repeats on `a84af04` remained fail-closed but exposed model handoff limits: one Validator rewrote the exact allowlisted fixture path (check NOT RUN); another Worker copied surrounding plan instructions into the artifact (actual fixture exit 1). Neither run was accepted. The task handoff now separates literal `expected_lines` and `expected_final_newline` JSON fields from instructions, with corresponding reusable Orchestrator/Worker guidance. The fixture still checks exact bytes, including the final newline; no acceptance or permanent write permission was relaxed. Final-head rerun results are recorded in the PR.
