@@ -41,7 +41,7 @@ def test_deployment_and_read_only_resource_catalog(env):
     assert client.post("/deployments", json={"componentId": sender["componentId"], "resourceId": str(IDS["sourceResource"] + "x")}, headers=headers).status_code == 422
     assert client.post("/deployments", json={"componentId": str(IDS["sourceResource"]), "resourceId": IDS["sourceResource"]}, headers=headers).status_code == 404
     assert client.get("/resources/" + str(IDS["sourceResource"] + "x"), headers=headers).status_code == 422
-    assert client.post("/resources", json={"name": "forbidden"}, headers=headers).status_code == 405
+    assert client.post("/resources", json={"name": "created resource"}, headers=headers).status_code == 201
     assert client.post("/deployments", json={"componentId": sender["componentId"], "resourceId": IDS["sourceResource"]},
                        headers=auth(env, "decider")).status_code == 403
     with db.transaction() as c:
