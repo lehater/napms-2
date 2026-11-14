@@ -7,6 +7,9 @@ from .traffic_clauses import canonical_clauses, stored_clauses
 
 
 def canonical_interaction(c, interaction_id):
+    # Historical v1 fixtures invoke the service before any catalog migration.
+    if c.execute("PRAGMA user_version").fetchone()[0] < 8:
+        return interaction_id
     alias = c.execute(
         "SELECT canonical_id FROM interaction_aliases WHERE alias_id=?", (interaction_id,)
     ).fetchone()
