@@ -17,7 +17,7 @@ The SQLite v5 schema already has Applications, Components, InteractionRevisions,
 
 ## Decisions
 
-1. **Use the current records and derive Interaction identity from `interaction_id`.** Creating a directed Interaction inserts one generated interaction ID and its first revision row, after validating distinct Components in one Application and the protocol/port range. Component and Application display names stay in their existing name tables. This preserves the current schema and keeps revisions immutable; a separate Interaction table would duplicate identity without serving the acceptance flow.
+1. **Use the current records and derive Interaction identity from `interaction_id`.** Creating a directed Interaction inserts one generated interaction ID and its first revision row, after validating that both roles belong to one Application and validating the protocol/port range. The same logical Component may fill both roles; separate ComponentDeployments identify concrete placements later in request composition. Component and Application display names stay in their existing name tables. This preserves the current schema and keeps revisions immutable; a separate Interaction table would duplicate identity without serving the acceptance flow.
 
 2. **Add catalog-specific authorization through the existing grants table.** Mutating catalog routes require `catalog.create` on `demo-catalog`; the local demo seed grants this to its requester actor. Catalog reads use a separate `catalog.read` action outside shared-read local-demo mode. In local-demo shared-read mode, any authenticated actor can read catalogs, but that visibility does not grant catalog creation, `access.request`, or `access.decide`. This avoids borrowing submit/decide grants and adds no IAM schema.
 

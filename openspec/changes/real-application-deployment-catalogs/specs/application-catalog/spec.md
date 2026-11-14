@@ -37,14 +37,18 @@ The system SHALL allow an authorized catalog creator to create an Application by
 - **THEN** the API rejects the operation without persisting a record
 
 ### Requirement: Directed Interaction with initial immutable revision
-The system SHALL allow an authorized actor to create an Interaction between two distinct Components in one Application together with its first immutable TCP or UDP destination-port revision.
+The system SHALL allow an authorized actor to create a directed Interaction between Components in one Application together with its first immutable TCP or UDP destination-port revision. The source and destination MAY be the same logical Component; deployments identify the concrete placements used for each role.
 
 #### Scenario: Create directed communication
 - **WHEN** an authorized actor creates an Interaction for two Components in the same Application with a valid protocol and port or port range
 - **THEN** the system persists the directed Interaction and its initial revision and returns their identifiers and traffic details
 
+#### Scenario: Create a self-interaction
+- **WHEN** an authorized actor creates an Interaction whose source and destination are the same Component, with a valid protocol and port or port range
+- **THEN** the system persists both directed roles and the initial revision, leaving source and destination deployments to identify the concrete placements
+
 #### Scenario: Reject incompatible communication
-- **WHEN** an actor submits the same Component twice, Components from different Applications, an unsupported protocol, or an invalid port range
+- **WHEN** an actor submits Components from different Applications, an unsupported protocol, or an invalid port range
 - **THEN** the API rejects the operation without creating an Interaction or revision
 
 #### Scenario: Revision remains immutable
@@ -57,6 +61,14 @@ The REAL Application collection and detail SHALL use the shared collection and d
 #### Scenario: Open related component and interaction
 - **WHEN** an operator selects a Component or Interaction from an Application detail tab
 - **THEN** the REAL UI opens that related detail and provides a breadcrumb path back to the Application
+
+#### Scenario: Paginate Interaction collection
+- **WHEN** an Application has more Interactions than the current bounded page
+- **THEN** the Interactions tab provides previous/next navigation and retains its selected tab while changing pages
+
+#### Scenario: Route changes do not retain another detail
+- **WHEN** an operator navigates from one Component or Interaction detail to another, then opens an unknown identifier
+- **THEN** the UI shows only the current detail followed by its not-found error, never stale content from the previous route
 
 ### Requirement: New communication appears in need options
 After an Interaction and its initial revision are created, the existing business-process need-options flow SHALL expose that revision without requiring manual identifier entry.

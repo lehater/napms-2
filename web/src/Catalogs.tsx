@@ -139,8 +139,11 @@ function ComponentsTab({ client, application, reloadKey, refresh }: { client: Cl
 function InteractionsTab({ client, application, reloadKey, refresh }: { client: Client; application: Application; reloadKey: number; refresh: () => void }) {
   const [page, setPage] = useState<CatalogPage<Interaction> | null>(null), [components, setComponents] = useState<Component[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const [source, setSource] = useState(''), [destination, setDestination] = useState(''), [protocol, setProtocol] = useState<'TCP'|'UDP'>('TCP'), [start, setStart] = useState('443'), [end, setEnd] = useState('443')
-  useEffect(() => { let active=true; setPage(null); setError(''); Promise.all([client.interactions(application.applicationId), allPages((offset,limit)=>client.components(application.applicationId,offset,limit))]).then(([rows,values])=>{if(active){setPage(rows);setComponents(values)}}).catch(reason=>{if(active)setError(catalogError(reason))}); return ()=>{active=false} }, [client,application.applicationId,reloadKey])
+  const [params, setParams] = useSearchParams()
+  const offset = Math.max(0, Number(params.get('interactionOffset')) || 0)
+  useEffect(() => { let active=true; setPage(null); setError(''); Promise.all([client.interactions(application.applicationId,offset), allPages((pageOffset,limit)=>client.components(application.applicationId,pageOffset,limit))]).then(([rows,values])=>{if(active){setPage(rows);setComponents(values)}}).catch(reason=>{if(active)setError(catalogError(reason))}); return ()=>{active=false} }, [client,application.applicationId,offset,reloadKey])
   async function submit(event: FormEvent) { event.preventDefault(); setBusy(true); setError(''); try { await client.createInteraction(application.applicationId,{sourceComponentId:source,destinationComponentId:destination,ipProtocol:protocol,destinationPortStart:Number(start),destinationPortEnd:Number(end)}); refresh() } catch(reason) { setError(catalogError(reason)) } finally { setBusy(false) } }
+  function changePage(nextOffset: number) { setParams(current => { const next = new URLSearchParams(current); next.set('tab','interactions'); if (nextOffset > 0) next.set('interactionOffset',String(nextOffset)); else next.delete('interactionOffset'); return next }) }
   return <div className="space-y-4"><h2>Направленные взаимодействия</h2><ErrorNotice text={error} />
     <form className="process-form grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={submit}>
       <label>Источник<select required value={source} onChange={event=>setSource(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
@@ -154,13 +157,15 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
       {key:'interaction',title:'Направление',render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link>},
       {key:'revision',title:'Текущие ревизии',render:item=>item.revisions.map(revision=><span key={revision.interactionRevisionId}>{revision.ipProtocol} · {revision.destinationPortStart}{revision.destinationPortEnd!==revision.destinationPortStart?`–${revision.destinationPortEnd}`:''}</span>)},
     ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы." loading={!page && !error} error={error} />
+    <div className="ux-pagination"><Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit??20)))}>Назад</Button><span>Страница {Math.floor(offset/(page?.limit??20))+1}</span><Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit??20))}>Далее</Button></div>
   </div>
 }
 
 function ComponentDetail({ client }: { client: Client }) {
   const { applicationId='', componentId='' } = useParams()
-  const [item,setItem]=useState<Component|null>(null),[error,setError]=useState('')
-  useEffect(()=>{let active=true;client.component(applicationId,componentId).then(value=>{if(active)setItem(value)}).catch(reason=>{if(active)setError(catalogError(reason))});return()=>{active=false}},[client,applicationId,componentId])
+  const [loaded,setLoaded]=useState<{id:string;item:Component}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
+  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.component(applicationId,componentId).then(value=>{if(active)setLoaded({id:componentId,item:value})}).catch(reason=>{if(active)setFailure({id:componentId,text:catalogError(reason)})});return()=>{active=false}},[client,applicationId,componentId])
+  const item=loaded?.id===componentId?loaded.item:null,error=failure?.id===componentId?failure.text:''
   if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка компонента…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}`}>{item.applicationName}</Link><span>/</span><span aria-current="page">{item.name}</span></>}
     title={item.name} tabs={[{id:'overview',label:'Обзор',href:`/applications/${applicationId}/components/${componentId}`}]} activeTab="overview">
@@ -170,8 +175,9 @@ function ComponentDetail({ client }: { client: Client }) {
 
 function InteractionDetail({ client }: { client: Client }) {
   const { applicationId='', interactionId='' } = useParams()
-  const [item,setItem]=useState<Interaction|null>(null),[error,setError]=useState('')
-  useEffect(()=>{let active=true;client.interaction(applicationId,interactionId).then(value=>{if(active)setItem(value)}).catch(reason=>{if(active)setError(catalogError(reason))});return()=>{active=false}},[client,applicationId,interactionId])
+  const [loaded,setLoaded]=useState<{id:string;item:Interaction}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
+  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.interaction(applicationId,interactionId).then(value=>{if(active)setLoaded({id:interactionId,item:value})}).catch(reason=>{if(active)setFailure({id:interactionId,text:catalogError(reason)})});return()=>{active=false}},[client,applicationId,interactionId])
+  const item=loaded?.id===interactionId?loaded.item:null,error=failure?.id===interactionId?failure.text:''
   if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка взаимодействия…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}?tab=interactions`}>{item.applicationName}</Link><span>/</span><span aria-current="page">Взаимодействие</span></>}
     title={`${item.sourceComponentName} → ${item.destinationComponentName}`} subtitle={<Link to={`/applications/${applicationId}`}>{item.applicationName}</Link>}
@@ -213,8 +219,9 @@ function NewDeployment({ client }: { client: Client }) {
 }
 
 function DeploymentDetail({ client }: { client: Client }) {
-  const {deploymentId=''}=useParams(),[item,setItem]=useState<ComponentDeployment|null>(null),[error,setError]=useState('')
-  useEffect(()=>{let active=true;client.deployment(deploymentId).then(value=>{if(active)setItem(value)}).catch(reason=>{if(active)setError(catalogError(reason))});return()=>{active=false}},[client,deploymentId])
+  const {deploymentId=''}=useParams(),[loaded,setLoaded]=useState<{id:string;item:ComponentDeployment}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
+  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.deployment(deploymentId).then(value=>{if(active)setLoaded({id:deploymentId,item:value})}).catch(reason=>{if(active)setFailure({id:deploymentId,text:catalogError(reason)})});return()=>{active=false}},[client,deploymentId])
+  const item=loaded?.id===deploymentId?loaded.item:null,error=failure?.id===deploymentId?failure.text:''
   if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка развёртывания…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/deployments">Развёрнутые компоненты</Link><span>/</span><span aria-current="page">{item.componentName} · {item.resourceName}</span></>}
     title={item.componentName} subtitle={item.applicationName} tabs={[{id:'overview',label:'Обзор',href:`/deployments/${deploymentId}`}]} activeTab="overview">
@@ -227,8 +234,9 @@ export function ResourceDetail() {
 }
 
 function ResourceDetailView({client}:{client:Client}){
-  const {resourceId=''}=useParams(),[item,setItem]=useState<Resource|null>(null),[error,setError]=useState('')
-  useEffect(()=>{let active=true;client.resource(resourceId).then(value=>{if(active)setItem(value)}).catch(reason=>{if(active)setError(catalogError(reason))});return()=>{active=false}},[client,resourceId])
+  const {resourceId=''}=useParams(),[loaded,setLoaded]=useState<{id:string;item:Resource}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
+  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.resource(resourceId).then(value=>{if(active)setLoaded({id:resourceId,item:value})}).catch(reason=>{if(active)setFailure({id:resourceId,text:catalogError(reason)})});return()=>{active=false}},[client,resourceId])
+  const item=loaded?.id===resourceId?loaded.item:null,error=failure?.id===resourceId?failure.text:''
   if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка Resource…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/deployments">Развёрнутые компоненты</Link><span>/</span><span aria-current="page">{item.name}</span></>}
     title={item.name} tabs={[{id:'overview',label:'Обзор',href:`/resources/${resourceId}`}]} activeTab="overview">

@@ -68,6 +68,24 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await page.getByLabel('Название компонента', { exact: true }).fill('Receiver')
   await page.getByRole('button', { name: 'Добавить компонент', exact: true }).click()
   await expect(page.getByRole('table')).toContainText('Receiver')
+  await page.getByRole('link', { name: 'Sender', exact: true }).click()
+  const senderComponentId = page.url().split('/').pop()!
+  await expect(page.getByRole('heading', { name: 'Sender', exact: true })).toBeVisible()
+  await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Order', exact: true }).click()
+  await page.getByRole('link', { name: 'Компоненты', exact: true }).click()
+  await page.getByRole('link', { name: 'Receiver', exact: true }).click()
+  const receiverComponentId = page.url().split('/').pop()!
+  await expect(page.getByRole('heading', { name: 'Receiver', exact: true })).toBeVisible()
+  await page.evaluate(applicationId => {
+    const missingId = '00000000-0000-4000-8000-000000000000'
+    history.pushState({}, '', `/applications/${applicationId}/components/${missingId}`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }, applicationId)
+  await expect(page.getByRole('alert')).toContainText('Объект или связанный каталог не найден.')
+  await expect(page.getByRole('heading', { name: 'Receiver', exact: true })).toHaveCount(0)
+  await page.goBack()
+  await expect(page.getByRole('heading', { name: 'Receiver', exact: true })).toBeVisible()
+  await page.getByRole('navigation', { name: 'Breadcrumbs' }).getByRole('link', { name: 'Order', exact: true }).click()
   await page.getByRole('link', { name: 'Взаимодействия', exact: true }).click()
   await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'Sender' })
   await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'Receiver' })
@@ -80,7 +98,6 @@ test('REAL catalogs create an active policy from a new application profile', asy
   const revisionId = (await page.locator('tbody tr').first().innerText()).match(/[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}/i)?.[0]
   expect(revisionId).toBeTruthy()
   await page.screenshot({ path: '/tmp/napms-issue64-application-detail.png', fullPage: true })
-
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Развёрнутые компоненты', exact: true }).click()
   await login(page, credentials.requester.token)
   await page.locator('.ux-heading').getByRole('link', { name: 'Создать развёртывание', exact: true }).click()
@@ -172,6 +189,24 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await login(page, credentials.exporter.token)
   await expect(page.locator('.ux-heading').getByText('ACTIVE', { exact: true })).toBeVisible()
   await expect(page.locator('.ux-heading')).toContainText('Order')
+  for (let index = 0; index < 20; index++) {
+    const extra = await page.request.post(`/applications/${applicationId}/interactions`, { headers: requester, data: {
+      sourceComponentId: senderComponentId, destinationComponentId: receiverComponentId,
+      ipProtocol: 'TCP', destinationPortStart: 20000 + index, destinationPortEnd: 20000 + index,
+    } })
+    expect(extra.status()).toBe(201)
+  }
+  await page.goto(`/applications/${applicationId}?tab=interactions`)
+  await login(page, credentials.requester.token)
+  await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(20)
+  await page.getByRole('button', { name: 'Далее', exact: true }).scrollIntoViewIfNeeded()
+  await page.screenshot({ path: '/tmp/napms-issue64-interactions-page.png' })
+  await page.getByRole('button', { name: 'Далее', exact: true }).click()
+  await expect(page).toHaveURL(/tab=interactions&interactionOffset=20/)
+  await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Назад', exact: true }).click()
+  await expect(page).toHaveURL(/tab=interactions$/)
+  await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(20)
   expect(applicationId).toMatch(/^[0-9a-f-]{36}$/i)
   expect(interactionUrl).toContain(applicationId)
 })

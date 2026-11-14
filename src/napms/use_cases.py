@@ -219,7 +219,7 @@ class Service:
             destination = find(c, "components", data["destinationComponentId"])
             start, end = data["destinationPortStart"], data["destinationPortEnd"]
             if (source["application_id"] != application_id or destination["application_id"] != application_id
-                    or source["id"] == destination["id"] or data["ipProtocol"] not in ("TCP", "UDP")
+                    or data["ipProtocol"] not in ("TCP", "UDP")
                     or not 1 <= start <= end <= 65535):
                 raise Problem(400, "INVALID_COMMUNICATION", "Invalid directed communication")
             interaction_id, revision_id = uid(), uid()

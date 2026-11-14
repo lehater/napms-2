@@ -43,6 +43,10 @@ The REAL deployment collection and detail SHALL use shared collection, table, an
 - **WHEN** an operator selects a related Component, Application, or Resource from deployment detail
 - **THEN** the UI opens the corresponding REAL detail or the established return path with working breadcrumbs
 
+#### Scenario: Route changes do not retain another detail
+- **WHEN** an operator navigates from one Deployment or Resource detail to another, then opens an unknown identifier
+- **THEN** the UI shows only the current detail followed by its not-found error, never stale content from the previous route
+
 ### Requirement: New deployments appear in request options
 After a ComponentDeployment is created, existing need-options and access-request-options flows SHALL expose compatible placements without manual identifier entry.
 

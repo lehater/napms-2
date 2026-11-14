@@ -54,7 +54,7 @@ def test_application_component_interaction_catalog_and_need_options(env):
     assert interaction["revisions"][0]["interactionRevisionId"] in [item["interactionRevisionId"] for item in options["items"]]
 
 
-def test_application_catalog_rejects_invalid_and_cross_application_links(env):
+def test_application_catalog_allows_self_interaction_and_rejects_invalid_cross_application_links(env):
     client, headers = env[3], auth(env, "requester")
     app_a = client.post("/applications", json={"name": "A"}, headers=headers).json()
     app_b = client.post("/applications", json={"name": "B"}, headers=headers).json()
@@ -64,13 +64,17 @@ def test_application_catalog_rejects_invalid_and_cross_application_links(env):
     base = {"sourceComponentId": a["componentId"], "destinationComponentId": b["componentId"],
             "ipProtocol": "TCP", "destinationPortStart": 443, "destinationPortEnd": 443}
     assert client.post(f"/applications/{app_a['applicationId']}/interactions", json=base, headers=headers).status_code == 400
-    same = {**base, "destinationComponentId": a["componentId"]}
-    assert client.post(f"/applications/{app_a['applicationId']}/interactions", json=same, headers=headers).status_code == 400
-    reversed_ports = {**base, "destinationComponentId": a["componentId"], "destinationPortStart": 444, "destinationPortEnd": 443}
+    same = {**base, "destinationComponentId": a["componentId"], "ipProtocol": "UDP",
+            "destinationPortStart": 123, "destinationPortEnd": 123}
+    self_interaction = client.post(f"/applications/{app_a['applicationId']}/interactions", json=same, headers=headers)
+    assert self_interaction.status_code == 201
+    assert self_interaction.json()["sourceComponentId"] == self_interaction.json()["destinationComponentId"] == a["componentId"]
+    assert self_interaction.json()["revisions"][0]["trafficLabel"] == "udp(123)"
+    reversed_ports = {**base, "destinationPortStart": 444, "destinationPortEnd": 443}
     assert client.post(f"/applications/{app_a['applicationId']}/interactions", json=reversed_ports, headers=headers).status_code == 422
     assert client.post(f"/applications/{app_a['applicationId']}/components", json={"name": ""}, headers=headers).status_code == 422
     assert client.get(f"/applications/{app_a['applicationId']}/components/{b['componentId']}", headers=headers).status_code == 404
-    assert env[0].connect().execute("SELECT count(*) FROM interaction_revisions").fetchone()[0] == before
+    assert env[0].connect().execute("SELECT count(*) FROM interaction_revisions").fetchone()[0] == before + 1
 
 
 def test_catalog_grants_are_separate_from_shared_read(env):

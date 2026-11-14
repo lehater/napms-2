@@ -23,5 +23,12 @@
 
 ## 5. End-to-End Acceptance
 
-- [x] 5.1 Add and run one focused Playwright local-demo scenario on a fresh initialized SQLite database: create Order/Sender/Receiver, TCP/443 Interaction, and deployments on two seeded Resources; create a BusinessProcess and Need; submit as requester; decide ALLOWED as decider; verify one ACTIVE PolicyRule links the created deployment/revision and decision, existing demo objects remain visible, and incompatible links fail.
+- [x] 5.1 Add and run one focused Playwright scenario on a fresh initialized SQLite database: create Order/Sender/Receiver, TCP/443 Interaction, and deployments on two seeded Resources; create a BusinessProcess and Need; submit as requester; decide ALLOWED as decider; verify one ACTIVE PolicyRule links the created deployment/revision and decision, existing demo objects remain visible, and incompatible links fail.
 - [x] 5.2 Inspect an actual desktop render of the new REAL screens against `docs/ux/real-ui-conformance.md`, and run `openspec validate --all --strict` on the final files; record the shared components and any remaining limitations for handoff.
+
+## Review follow-up
+
+- [x] 1.4 Allow a directed Interaction whose source and destination are the same logical Component; verify UDP/123 and separate deployment identities remain valid through request composition.
+- [x] 3.3 Scope Component, Interaction, Deployment, and Resource detail results/errors to the current route ID and ignore stale asynchronous responses; verify A → B → unknown ID shows B then 404.
+- [x] 3.4 Paginate Interactions using bounded `limit`/`offset` and preserve the Application tab; verify 21 rows, next page, and return to the first page.
+- [x] 5.3 Run a focused smoke through `napms-dev run --profile local-demo`: requester creates a self-interaction and two placements, submits; decider allows; requester and exporter see the one ACTIVE PolicyRule.
