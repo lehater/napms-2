@@ -170,6 +170,8 @@ def main():
     parser.add_argument("--yes", action="store_true", help="Explicitly confirm deletion of local demo data with reset-demo")
     parser.add_argument("--resource-id", help="Existing Resource UUID for local grants")
     args = parser.parse_args()
+    if args.yes and args.command != "reset-demo":
+        parser.error("--yes is supported only by reset-demo")
     if args.command == "grant-demo-resource":
         if not args.resource_id:
             parser.error("grant-demo-resource requires --resource-id")
@@ -194,8 +196,6 @@ def main():
             parser.exit(1, f"Demo reset: {error}\n")
         print("SQLite schema restored with zero rows; private credentials file preserved.")
         return
-    if args.yes:
-        parser.error("--yes is supported only by reset-demo")
     if args.command == "run":
         if args.profile != "local-demo" or args.host != "127.0.0.1" or args.port != 8000:
             parser.error("run requires --profile local-demo and default loopback host/port")
