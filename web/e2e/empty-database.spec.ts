@@ -8,7 +8,7 @@ import { once } from 'node:events'
 const root = resolve(import.meta.dirname, '../..')
 const python = process.env.NAPMS_PYTHON || join(root, '.venv/bin/python')
 
-test('reset leaves only SQLite schema; REAL UI has no synthetic fallback data', async ({ page }) => {
+test('empty schema-only SQLite renders only real API data, without synthetic fallback', async ({ page }) => {
   const dir = await mkdtemp(join(tmpdir(), 'napms-empty-'))
   const db = join(dir, 'empty.sqlite3'), credentials = join(dir, 'credentials.json')
   const args = ['--db', db, '--credentials', credentials]
@@ -27,9 +27,13 @@ test('reset leaves only SQLite schema; REAL UI has no synthetic fallback data', 
   }
 
   try {
-    command('init-demo') // Explicit isolated fixture, not runtime behavior.
-    expect(Object.values(counts()).some(n => n > 0)).toBe(true)
-    command('reset-demo', ['--yes'])
+    // Playwright owns port 5173; reset-demo correctly refuses to run with NAPMS
+    // active. The destructive reset is covered by backend tests with stopped ports.
+    // This browser test begins with a fresh schema-only SQLite instead.
+    const schema = spawnSync(python, ['-c',
+      'import sys; from napms.storage import Database; Database(sys.argv[1]).initialize()', db],
+      { cwd: root, encoding: 'utf8' })
+    expect(schema.status, 'schema initialization must succeed').toBe(0)
     expect(Object.values(counts()).every(n => n === 0)).toBe(true)
     command('init-auth')
     const afterAuth = counts()
