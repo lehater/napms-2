@@ -9,33 +9,41 @@ from napms.dev_reset import reset_demo
 from napms.storage import Database
 
 
-def test_reset_demo_rebuilds_latest_schema_and_seed_without_rotating_tokens(env):
-    db, credentials, _, client, _ = env
+def test_reset_demo_keeps_only_schema_and_private_credentials(env):
+    db, credentials, _, _, _ = env
     original_tokens = credentials.read_bytes()
     with db.transaction(write=True) as c:
         c.execute("INSERT INTO processes(id,name) VALUES (?,?)",
-                  ("disposable-process", "Temporary training data"))
-        c.execute("INSERT INTO resources(id) VALUES (?)", ("disposable-resource",))
-        c.execute("""INSERT INTO applications(id) VALUES (?)""", ("disposable-app",))
-        c.execute("""INSERT INTO components(id,application_id) VALUES (?,?)""",
-                  ("disposable-component", "disposable-app"))
-
+                  ("disposable-process", "Training"))
     reset_demo(db, credentials)
-    reset_demo(db, credentials)  # Subsequent resets are deterministic and safe.
+    reset_demo(db, credentials)
     assert credentials.read_bytes() == original_tokens
     with db.transaction() as c:
         assert c.execute("PRAGMA user_version").fetchone()[0] == 8
         assert c.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
-        assert c.execute("SELECT count(*) FROM processes").fetchone()[0] == 1
-        assert c.execute("SELECT count(*) FROM interaction_revisions").fetchone()[0] == 1
-        assert c.execute("SELECT count(*) FROM needs").fetchone()[0] == 1
-        assert c.execute("SELECT count(*) FROM policy_rules").fetchone()[0] == 0
-        assert c.execute("SELECT count(*) FROM interaction_aliases").fetchone()[0] == 0
-        assert c.execute("SELECT 1 FROM processes WHERE id='disposable-process'").fetchone() is None
-        assert c.execute("SELECT 1 FROM applications WHERE id='disposable-app'").fetchone() is None
-        assert c.execute("SELECT id FROM interaction_revisions").fetchone()[0] == IDS["revision"]
+        tables = [r["name"] for r in c.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+        assert tables
+        for table in tables:
+            assert c.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0] == 0, table
         assert c.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name='unique_interaction_pair'").fetchone()
+
+
+def test_explicit_auth_bootstrap_does_not_create_domain_data(env):
+    from napms.dev import init_auth
+    db, credentials, _, _, _ = env
+    reset_demo(db, credentials)
+    init_auth(db, credentials)
+    with db.transaction() as c:
+        assert c.execute("SELECT COUNT(*) FROM actors").fetchone()[0] == 3
+        for table in ("applications", "components", "resources", "interaction_revisions",
+                      "processes", "needs", "access_requests", "policy_rules"):
+            assert c.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] == 0
+    reset_demo(db, credentials)
+    with db.transaction() as c:
+        assert c.execute("SELECT COUNT(*) FROM actors").fetchone()[0] == 0
+        assert c.execute("SELECT COUNT(*) FROM grants").fetchone()[0] == 0
 
 
 def test_cli_reset_requires_explicit_yes_and_does_not_modify_db(env, monkeypatch):
