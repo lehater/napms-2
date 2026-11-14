@@ -30,6 +30,13 @@ def traffic(protocol: Literal["TCP", "UDP"], start: int, end: int,
     return f"{protocol.lower()}({source}→{destination})"
 
 
+def source_interval(revision):
+    """Pre-migration fixture revisions have no source columns; those mean ANY."""
+    if "source_port_start" not in revision.keys():
+        return None, None
+    return revision["source_port_start"], revision["source_port_end"]
+
+
 def name(
     c, kind: Literal["resource", "application", "component"], identifier: str
 ) -> str:
@@ -50,7 +57,7 @@ def interaction_label(c, revision):
 
 
 def revision_view(c, r):
-    expression = traffic(r["protocol"], r["port_start"], r["port_end"], r["source_port_start"], r["source_port_end"])
+    expression = traffic(r["protocol"], r["port_start"], r["port_end"], *source_interval(r))
     return {
         "interactionRevisionId": r["id"],
         "interactionId": r["interaction_id"],
@@ -58,8 +65,8 @@ def revision_view(c, r):
         "sourceComponentId": r["source_component_id"],
         "destinationComponentId": r["destination_component_id"],
         "ipProtocol": r["protocol"],
-        "sourcePortStart": r["source_port_start"],
-        "sourcePortEnd": r["source_port_end"],
+        "sourcePortStart": source_interval(r)[0],
+        "sourcePortEnd": source_interval(r)[1],
         "destinationPortStart": r["port_start"],
         "destinationPortEnd": r["port_end"],
         "displayLabel": interaction_label(c, r) + " · " + expression,
@@ -94,7 +101,7 @@ def subject_label(c, subject):
         "SELECT * FROM interaction_revisions WHERE id=?",
         (subject["interaction_revision_id"],),
     ).fetchone()
-    return f"{deployment_label(c, src)} → {deployment_label(c, dst)} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'], rev['source_port_start'], rev['source_port_end'])}"
+    return f"{deployment_label(c, src)} → {deployment_label(c, dst)} · {traffic(rev['protocol'], rev['port_start'], rev['port_end'], *source_interval(rev))}"
 
 
 def subject_list_projection(c, subject) -> SubjectListProjection:
@@ -107,7 +114,7 @@ def subject_list_projection(c, subject) -> SubjectListProjection:
     source_resource = name(c, "resource", src["resource_id"])
     destination_resource = name(c, "resource", dst["resource_id"])
     participants = f"{source_component} → {destination_component}"
-    expression = traffic(rev["protocol"], rev["port_start"], rev["port_end"], rev["source_port_start"], rev["source_port_end"])
+    expression = traffic(rev["protocol"], rev["port_start"], rev["port_end"], *source_interval(rev))
     return {
         "listLabel": f"{participants} · {expression}",
         "listContext": f"{application} · {source_resource} → {destination_resource}",
