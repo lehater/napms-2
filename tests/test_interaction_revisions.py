@@ -105,6 +105,40 @@ def test_duplicate_and_partial_clause_commands_leave_no_records(env):
         assert c.execute("SELECT count(*) FROM interaction_revisions").fetchone()[0] == before
 
 
+def test_same_purpose_requires_new_revision_and_legacy_exact_duplicates_blocked(env):
+    _, _, _, client, _ = env
+    requester = auth(env, "requester")
+    first = create(client, requester, purpose="Business purpose A", clauses=[clause(destination=10123)])
+    assert first.status_code == 201, first.text
+    changed = create(client, requester, purpose="Business purpose A", clauses=[clause(destination=10124)])
+    assert changed.status_code == 409
+    assert changed.json()["error"]["code"] == "INTERACTION_PURPOSE_EXISTS"
+    legacy = {"sourceComponentId": IDS["sender"], "destinationComponentId": IDS["receiver"],
+              "ipProtocol": "UDP", "destinationPortStart": 9999, "destinationPortEnd": 9999}
+    base = f'/applications/{IDS["application"]}/interactions'
+    assert client.post(base, headers=requester, json=legacy).status_code == 201
+    duplicate = client.post(base, headers=requester, json=legacy)
+    assert duplicate.status_code == 409
+    assert duplicate.json()["error"]["code"] == "DUPLICATE_INTERACTION"
+    assert client.post(base, headers=requester,
+                       json={**legacy, "destinationPortStart": 9998, "destinationPortEnd": 9998}).status_code == 201
+
+
+def test_overlapping_clauses_are_rejected(env):
+    _, _, _, client, _ = env
+    requester = auth(env, "requester")
+    base = f'/applications/{IDS["application"]}/interactions'
+    response = client.post(base, headers=requester, json={
+        "sourceComponentId": IDS["sender"], "destinationComponentId": IDS["receiver"],
+        "purpose": "overlap attempt", "trafficClauses": [
+            clause("TCP", destination=443),
+            clause("TCP", source_start=10000, source_end=10000, destination=443),
+        ],
+    })
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "OVERLAPPING_TRAFFIC_CLAUSE"
+
+
 def test_legacy_single_clause_and_migration_contract(env):
     db, _, _, client, _ = env
     with db.transaction() as c:
