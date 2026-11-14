@@ -1,7 +1,7 @@
 # Исследование и выбор локальной мультиагентной среды
 
 **Статус:** Proposed ADR; архитектурные выводы требуют согласования владельца.
-**Срез репозитория:** \`main\` = \`688cbce\` на 2026-11-14. Внешние сведения — документация поставщиков, проверенная 2026-11-14.
+**Срез репозитория:** `main` = `688cbce` на 2026-11-14. Внешние сведения — документация поставщиков, проверенная 2026-11-14.
 **Принцип достоверности:** различать *подтверждено в репозитории*, *задокументировано поставщиком*, *проектное предположение* и *непроверено на машине владельца*.
 
 ## 1. Постановка задачи
@@ -23,16 +23,16 @@
 
 ## 2. Подтверждённый текущий Harness NAPMS
 
-Источник — \`AGENTS.md\`, \`.codex/config.toml\`, \`.codex/agents/reviewer.toml\`, \`openspec/config.yaml\`, \`scripts/check-fast.py\`, \`.github/workflows/verify.yml\`, PR #60.
+Источник — `AGENTS.md`, `.codex/config.toml`, `.codex/agents/reviewer.toml`, `openspec/config.yaml`, `scripts/check-fast.py`, `.github/workflows/verify.yml`, PR #60.
 
-- Codex CLI; включённое делегирование; максимум три дочерних потока; модель по умолчанию \`gpt-6-luna\`, усилие \`high\`.
-- Встроенные \`explorer\` и \`worker\`, проектный \`reviewer\`. Пользовательская настройка main-agent не закрепляется в проектном TOML.
-- \`AGENTS.md\` задаёт GitHub-only merge через PR, границы подзадач, одного владельца изменения файла, запрет автономного архитектурного/merge-решения.
-- \`.agents/skills/openspec-*\` и OpenSpec обеспечивают контракт спецификация → задачи → проверка.
-- Локальный \`check-fast.py\` и Python/Web тесты уже существуют.
-- **Дрейф документации:** раздел 7 \`docs/engineering/quality-gates-baseline.md\` всё ещё описывает автоматические FAST Draft/FULL Ready/post-merge проверки. Фактический \`verify.yml\` после PR #63 запускается *только вручную* по \`workflow_dispatch\`; P1 — не доверять устаревшему описанию как gate.
-- Smoke PR #60 подтвердил запуск \`explorer\` и \`reviewer\` в trusted interactive CLI; модель/effort explorer подтверждены, для reviewer эффективная модель не была отдельно снята с UI. Это не подтверждение динамической мультипровайдерной работы.
-- Модель \`reviewer\` жёстко задана в TOML. Для гибкой маршрутизации роль должна быть отвязана от конкретного ID модели.
+- Codex CLI; включённое делегирование; максимум три дочерних потока; модель по умолчанию `gpt-6-luna`, усилие `high`.
+- Встроенные `explorer` и `worker`, проектный `reviewer`. Пользовательская настройка main-agent не закрепляется в проектном TOML.
+- `AGENTS.md` задаёт GitHub-only merge через PR, границы подзадач, одного владельца изменения файла, запрет автономного архитектурного/merge-решения.
+- `.agents/skills/openspec-*` и OpenSpec обеспечивают контракт спецификация → задачи → проверка.
+- Локальный `check-fast.py` и Python/Web тесты уже существуют.
+- **Дрейф документации:** раздел 7 `docs/engineering/quality-gates-baseline.md` всё ещё описывает автоматические FAST Draft/FULL Ready/post-merge проверки. Фактический `verify.yml` после PR #63 запускается *только вручную* по `workflow_dispatch`; P1 — не доверять устаревшему описанию как gate.
+- Smoke PR #60 подтвердил запуск `explorer` и `reviewer` в trusted interactive CLI; модель/effort explorer подтверждены, для reviewer эффективная модель не была отдельно снята с UI. Это не подтверждение динамической мультипровайдерной работы.
+- Модель `reviewer` жёстко задана в TOML. Для гибкой маршрутизации роль должна быть отвязана от конкретного ID модели.
 
 Дельта до цели: управление требованиями/архитектурой/планом остаётся снаружи; отсутствует контракт локального оркестратора и проверенный мультипровайдерный роутинг, технически обособленные разрешения reviewer, прозрачный учёт бюджетных переключений и зафиксированное состояние gate ручного Verify.
 
@@ -41,7 +41,7 @@
 | Среда | Сильные стороны | Существенные ограничения для NAPMS | Вердикт |
 | --- | --- | --- | --- |
 | **Codex CLI** | Уже установлен и опробован; проектные TOML-роли; параллельное делегирование; встроенные code tools; совместим с текущим Harness | Дочерние агенты наследуют родительский provider и sandbox; ролевое «не редактировать» не изолирует запись; сквозной мультипровайдерный выбор не является нативной возможностью project role | Надёжный baseline / fallback |
-| **OpenCode V2** | Первичные агенты и субагенты; независимая модель \`provider/model\` и permissions для каждой роли; локальное исполнение; подключение ChatGPT, Copilot при наличии *отдельного* entitlement, Ollama и внешних провайдеров; читает \`AGENTS.md\` и \`.agents/skills/\` | V2 имеет несовместимую с V1 схему конфигурации; требуется локальная установка, вход в провайдеры и проверка эффективных прав/квот; внешние бесплатные модели могут иметь ограничения/политику данных | **Основной кандидат для целевой схемы** |
+| **OpenCode V2** | Первичные агенты и субагенты; независимая модель `provider/model` и permissions для каждой роли; локальное исполнение; подключение ChatGPT, Copilot при наличии *отдельного* entitlement, Ollama и внешних провайдеров; читает `AGENTS.md` и `.agents/skills/` | V2 имеет несовместимую с V1 схему конфигурации; требуется локальная установка, вход в провайдеры и проверка эффективных прав/квот; внешние бесплатные модели могут иметь ограничения/политику данных | **Основной кандидат для целевой схемы** |
 | **LangGraph** | Явный граф переходов, состояние, checkpoints, прерывания и HITL | Нужен собственный программный код для редактирования файлов, git, делегирования, адаптеров моделей и хранения; сложнее, чем нужно для ручного SDLC | Резерв на случай подтверждённой потребности в долговременной/возобновляемой автоматизации |
 | **AutoGen** | Teams, manager/selector/swarm-паттерны; гибкая оркестрация | Требует собственной интеграции code tools, состояния, секретов и качественных gates; координация может стать дорогой | Не брать в базовую систему |
 | **CrewAI** | Разделение ролей, Crews/Flows и HITL | Дополнительный рантайм и адаптеры разработки; уместен для специальных агентных бизнес-процессов, а не очевидно лучше готового coding CLI | Не брать в базовую систему |
@@ -50,10 +50,10 @@
 
 ### Документированные факты, влияющие на выбор
 
-1. Codex: custom-agent файлы задают инструкции и model/effort; дочерние агенты наследуют \`model_provider\`, MCP, sandbox/approval. Указание «read-only» в тексте инструкций не создаёт sandbox. [Codex Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference).
-2. OpenCode V2: агент может использовать собственную модель и ограничения инструментов; субагенты имеют отдельный контекст и собственные permissions. В V2 параметры \`agents\`, \`permissions\`, \`shell\`, \`subagent\` отличаются от V1 \`agent\`/\`permission\`/\`bash\`/\`task\`. [Agents](https://opencode.ai/docs/agents), [Permissions](https://opencode.ai/docs/permissions).
+1. Codex: custom-agent файлы задают инструкции и model/effort; дочерние агенты наследуют `model_provider`, MCP, sandbox/approval. Указание «read-only» в тексте инструкций не создаёт sandbox. [Codex Subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents), [Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+2. OpenCode V2: агент может использовать собственную модель и ограничения инструментов; субагенты имеют отдельный контекст и собственные permissions. В V2 параметры `agents`, `permissions`, `shell`, `subagent` отличаются от V1 `agent`/`permission`/`bash`/`task`. [Agents](https://opencode.ai/docs/agents), [Permissions](https://opencode.ai/docs/permissions).
 3. OpenCode: документированы ChatGPT sign-in, GitHub Copilot OAuth (только с Copilot entitlement), Ollama и дополнительные модели. **GitHub Pro ≠ доказанное наличие Copilot.** Список доступных моделей проверять после входа, не предполагать. [Providers](https://opencode.ai/docs/providers), [Models](https://opencode.ai/docs/models).
-4. OpenCode: существующие NAPMS \`AGENTS.md\` и проектные \`.agents/skills\` обнаруживаются, следовательно, переписывать OpenSpec Skills заранее не нужно. [Instructions](https://opencode.ai/docs/instructions), [Skills](https://opencode.ai/docs/skills).
+4. OpenCode: существующие NAPMS `AGENTS.md` и проектные `.agents/skills` обнаруживаются, следовательно, переписывать OpenSpec Skills заранее не нужно. [Instructions](https://opencode.ai/docs/instructions), [Skills](https://opencode.ai/docs/skills).
 5. LangGraph полезен для durable checkpointing и human interrupts, но требует писать orchestration-код и следить за идемпотентностью повторов; пока это не продуктовая необходимость. [Graph API](https://langchain-ai.github.io/langgraph/how-tos/multi-agent-network/), [Interrupts](https://github.com/langchain-ai/docs/blob/main/src/oss/langgraph/interrupts.mdx).
 6. AutoGen поддерживает RoundRobin/Selector/Swarm и прямо отмечает потребность в дополнительном управлении сложными командами. [AutoGen Teams](https://microsoft.github.io/autogen/stable/user-guide/agentchat-user-guide/tutorial/teams.html).
 
@@ -68,9 +68,9 @@
 **Что не утверждается:** OpenCode не является «лучшей моделью»; его качество и расход не измерены на NAPMS, локальный CLI не проверен, бесплатные квоты и совместимость каждой модели с tool-use не гарантированы. Настройка permissions — не замена OS sandbox и отдельных worktrees.
 
 **Условия подтверждения решения:**
-- \`opencode --version\` и актуальная V2 schema определены на WSL.
-- \`/connect\` и \`/models\` обнаружили реальные доступные модели, не менее двух разных режимов модели/усилия; для претензии на multiprovider — не менее двух реальных провайдеров, в том числе локального при наличии.
-- OpenCode увидел NAPMS \`AGENTS.md\` и OpenSpec Skills; read-only Explorer/Reviewer не смогли выполнить запрещённую запись, а Worker написал только в выделенной disposable ветке/worktree.
+- `opencode --version` и актуальная V2 schema определены на WSL.
+- `/connect` и `/models` обнаружили реальные доступные модели, не менее двух разных режимов модели/усилия; для претензии на multiprovider — не менее двух реальных провайдеров, в том числе локального при наличии.
+- OpenCode увидел NAPMS `AGENTS.md` и OpenSpec Skills; read-only Explorer/Reviewer не смогли выполнить запрещённую запись, а Worker написал только в выделенной disposable ветке/worktree.
 - Сквозной проход Issue → architecture → plan → apply → review → handoff подтвердил доменные инварианты, тесты и запреты, с записанными версиями и затратами, если метрики доступны.
 - Если gate не пройден без новых платных обязательств или небезопасных обходов: **не мигрировать; реализовать роли в Codex** и отложить multiprovider маршрутизацию.
 
@@ -80,8 +80,8 @@
 
 | Неизвестное | Проверка | Критерий |
 | --- | --- | --- |
-| Версия OpenCode на WSL и V2-конфигурация | \`opencode --version\`, локальная справка/config validation | Конкретная версия и schema зафиксированы |
-| Право на модели через ChatGPT и GitHub | \`/connect\`, \`/models\`, короткая реальная tool-задача | Не путать подписку с entitlement |
+| Версия OpenCode на WSL и V2-конфигурация | `opencode --version`, локальная справка/config validation | Конкретная версия и schema зафиксированы |
+| Право на модели через ChatGPT и GitHub | `/connect`, `/models`, короткая реальная tool-задача | Не путать подписку с entitlement |
 | Реальные квоты, автоматическое переключение | Источники провайдеров / CLI metadata, тест отказа | Если надёжного API нет — ручной выбор профиля, не автоматический «remaining tokens» |
 | Реальные полномочия агентов | Попытка контролируемой записи, запуск shell, внешний путь, Git push в disposable среде | Deny/ask соответствует политике; OS sandbox по необходимости |
 | Качество / расход дешёвых моделей | Один ограниченный повторяемый NAPMS сценарий; фактические результаты и невыдуманный token usage | Сравнивать end-to-end результат и число доработок, не только цену/токены |
@@ -93,6 +93,6 @@
 - Доступность модели — переменная окружения/сеанса, а **не** идентичность роли.
 - Детальные инструкции/политики должны быть едиными для обоих рантаймов, насколько это возможно; спецификации и tests находятся в репозитории.
 - Не вводить агентные голосования, бесконечные self-reflection loops, автоматический merge и бесконтрольное переключение на бесплатные модели.
-- P1 для будущего внедрения: исправить рассогласование \`quality-gates-baseline.md\` и \`verify.yml\`, чтобы модель не принимала несуществующие обязательные CI за реальные.
+- P1 для будущего внедрения: исправить рассогласование `quality-gates-baseline.md` и `verify.yml`, чтобы модель не принимала несуществующие обязательные CI за реальные.
 
 **Вердикт:** предложен OpenCode V2 как целевой рантайм при сохранении Codex fallback; реализация разрешается только после согласования ADR и реального environment smoke.
