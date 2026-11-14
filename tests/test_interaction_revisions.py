@@ -144,7 +144,7 @@ def test_overlapping_clauses_are_rejected(env):
 def test_legacy_single_clause_and_migration_contract(env):
     db, _, _, client, _ = env
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 8
         original = c.execute("SELECT * FROM interaction_revisions WHERE id=?", (IDS["revision"],)).fetchone()
         assert original["traffic_clauses_json"] is None
         assert original["revision_number"] == 1
