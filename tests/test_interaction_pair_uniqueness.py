@@ -6,7 +6,6 @@ import pytest
 
 from conftest import auth
 from napms.dev import DEMO_REQUEST, IDS
-from napms.storage import Database
 from test_acceptance import decide
 
 
