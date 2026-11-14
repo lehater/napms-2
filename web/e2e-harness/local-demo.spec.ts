@@ -27,6 +27,10 @@ const test = base.extend<{}, { harness: Harness }>({
       if (!ready) throw new Error('One-command local demo readiness timed out')
     }
     try {
+      // Seed test-only data in an isolated real SQLite, explicitly before run.
+      const seeded = spawnSync(python, ['-m', 'napms.dev', 'init-demo', '--db', db, '--credentials', file],
+        { cwd: root, encoding: 'utf8' })
+      if (seeded.status !== 0) throw new Error('Explicit test fixture initialization failed')
       await start()
       function sql(statement: string, params: unknown[] = []): unknown[][] {
         const result = spawnSync(python, ['-c', 'import sqlite3,json,sys; c=sqlite3.connect(sys.argv[1]); r=c.execute(sys.argv[2],json.loads(sys.argv[3])); print(json.dumps(r.fetchall())); c.commit(); c.close()', db, statement, JSON.stringify(params)], {encoding:'utf8'})
@@ -314,9 +318,8 @@ test('one-command actor switching preserves independent grants and actual persis
   }
   await page.goto('/unknown/application/path')
   await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
-  await page.goto('/prototype/needs/mock-need?tab=communication')
-  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
-  await expect(page.getByLabel('Демонстрационная роль', {exact:true})).toBeVisible()
+  await page.goto('/prototype/needs/legacy')
+  await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
   const tokens = await harness.privateTokens()
   const browserData = await page.evaluate(() => JSON.stringify([document.documentElement.outerHTML, localStorage, sessionStorage, document.cookie, location.href]))
   expect(tokens.some(token => browserData.includes(token)), 'No private tokens in browser').toBe(false)
@@ -431,11 +434,9 @@ test('real collection pagination survives detail tabs, breadcrumbs and reload', 
     await expect(page.locator('tbody tr')).toHaveCount(body.items.length)
     await expect(page.getByText('Страница 2', {exact:true})).toBeVisible()
   }
-  // Research is a direct, isolated URL; a full document navigation resets real credentials.
+  // Synthetic routes are not part of the application.
   await page.goto('/prototype')
-  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
-  await page.getByLabel('Демонстрационная роль', {exact:true}).selectOption('Decider')
-  await expect(page.getByRole('navigation',{name:'Prototype navigation'}).getByRole('link',{name:'Заявки на доступ',exact:true})).toHaveAttribute('href','/prototype/requests')
+  await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
   await page.goto('/access-requests')
   await expect(page.getByLabel('Demo actor', {exact:true})).toHaveValue('anonymous')
   await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
@@ -663,7 +664,7 @@ test('confirmation summary contains the selected backend facts and resets with R
 })
 
 
-test('REAL navigation is bounded, resizable and independent of the research module',async ({page,harness})=>{
+test('REAL navigation is bounded, resizable and without synthetic routes',async ({page,harness})=>{
   const researchModules: string[] = []
   page.on('request', r=>{if(new URL(r.url()).pathname.startsWith('/src/prototype/')) researchModules.push(r.url())})
   for(const [width,height] of [[1920,1080],[1440,900],[2560,1440]]) {
@@ -699,15 +700,9 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await expect(nav.getByRole('link',{name:'Правила политики',exact:true})).toHaveAttribute('aria-current','page')
   }
   expect(researchModules).toEqual([])
-  // Only an explicit research URL loads its state/data and seven synthetic collections.
-  await page.goto('/prototype/needs/mock-need?tab=communication')
-  await expect(page.getByRole('navigation',{name:'Основная навигация'})).toHaveCount(0)
-  const research=page.getByRole('navigation',{name:'Prototype navigation'})
-  await expect(research.getByRole('link')).toHaveCount(7)
-  const hrefs=await research.getByRole('link').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')))
-  expect(hrefs.every(href=>href?.startsWith('/prototype/'))).toBe(true)
-  await expect(page.locator('.ux-topbar')).toContainText('RESEARCH / MOCK')
-  expect(researchModules.length).toBeGreaterThan(0)
+  await page.goto('/prototype/needs/legacy')
+  await expect(page.getByRole('heading',{name:'Страница не найдена'})).toBeVisible()
+  expect(researchModules).toEqual([])
   expect(harness.file).toBeTruthy()
 })
 
