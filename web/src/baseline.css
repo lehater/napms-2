@@ -90,3 +90,15 @@ section[aria-label="Потребности REAL"] td { overflow-wrap: anywhere; 
 .interaction-clause-draft input{width:96px;min-width:0;height:38px;padding:6px}
 .interaction-clause-draft select{height:38px}
 .interaction-revision-editor{display:grid;gap:12px}
+
+/* ACC: collection/detail navigation and transient revision editors. */
+.interaction-draft-form{display:grid;gap:22px;max-width:100%}
+.interaction-identity,.interaction-new-revision,.interaction-draft-clauses{display:grid;gap:12px;min-width:0}
+.interaction-draft-clauses h2,.interaction-new-revision h2,.interaction-identity h2{margin:0}
+.interaction-identity>label{display:grid;gap:6px;max-width:720px}
+.interaction-identity input,.interaction-identity select{height:38px;min-width:0}
+.interaction-participants{display:grid;grid-template-columns:repeat(2,minmax(220px,380px));gap:12px}
+.interaction-participants label{display:grid;gap:6px}
+.interaction-draft-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:8px}
+.interaction-draft-clauses>.ux-note{margin:0}
+@media(max-width:850px){.interaction-participants{grid-template-columns:minmax(0,1fr)}}
