@@ -1,6 +1,6 @@
 # OpenCode V2 — Stage 1 role catalog (candidate)
 
-**Статус:** candidate implementation, **не принят**. Описывает минимальный reusable режим A; [архитектура PR #68](https://github.com/lehater/napms-2/pull/68), [принятый изолированный pilot #69](https://github.com/lehater/napms-2/pull/69).
+**Статус:** candidate implementation; owner acceptance ещё требуется. Описывает минимальный reusable режим A; [архитектура PR #68](https://github.com/lehater/napms-2/pull/68), [принятый изолированный pilot #69](https://github.com/lehater/napms-2/pull/69).
 
 ## Назначение и границы
 
@@ -12,6 +12,8 @@
 - Worker — subagent с `edit: ask` для любого файла; shell и execute запрещены. Это **approval**, а не автоматическая файловая изоляция.
 - Validator — временный ограниченный LLM tool-runner, который запускает детерминированные команды; не принимает собственных решений о PASS. Общий target ADR предусматривает в дальнейшем non-LLM Validator; **этот промежуточный адаптер требует отдельной оценки**.
 - Reviewer — read-only subagent с `edit`, `shell`, `execute` и nested-subagent deny.
+
+Локальный provider объявлен явно: `http://127.0.0.1:11434/v1`, без auth store. Чистый HOME не должен зависеть от пользовательского provider config.
 
 **Политика моделей:** стартовый `orchestrator` выбирает уже проверенную локальную `ollama/qwen3-coder:30b`; остальные роли не задают модель и наследуют модель текущей root-сессии (согласно OpenCode V2). Для ограниченного облачного теста оператор явно указывает `--model openai/gpt-6.1-sol` и проверяет фактический model ID. Сравнение затрат, качества и Effort ещё не проведено. 503 ранее возникал, затем отдельный вызов вернул `OK`.
 
@@ -48,3 +50,25 @@ git status --short
 - Не выполнять merge или push из роли Worker; публикацию feature-ветки после review выполняет уполномоченный Git-инструмент с явным согласием.
 
 **Достаточный результат данного PR:** статически валидный конфиг, рабочий read-only маршрут в WSL, корректные model IDs и permission denials. Bounded write/test/review можно включать лишь после отдельного OS-sandbox smoke, owner review и исправления выявленных проблем.
+
+
+## Воспроизводимый PR #70 smoke (Linux/WSL)
+
+Fixture в `docs/engineering/opencode-smoke/` — opt-in проверка данного PR, не production runner и не Controller. Нужны установленные `bwrap`, OpenCode v2.2.0, `rg`, Python 3 и локальная Ollama с `qwen3-coder:30b`. Запускать из disposable worktree ветки PR #70; fixture создаёт только `role-smoke.txt` в checkout и private temporary runtime directories. Не добавлять `--auto`.
+
+```sh
+python3 -m unittest discover -s tests -p test_opencode_role_catalog.py
+python3 docs/engineering/opencode-smoke/run.py probe
+python3 docs/engineering/opencode-smoke/run.py agents
+python3 docs/engineering/opencode-smoke/run.py route
+python3 docs/engineering/opencode-smoke/run.py worker
+python3 docs/engineering/opencode-smoke/run.py reviewer
+```
+
+Каждый вызов печатает private evidence directory. Проверить `stream.jsonl` и SQLite `data/opencode/opencode.db`, таблицы `session_v2` и `session_message`. `session_v2.parent_id` связывает свежие дочерние контексты с одним root; `model` фиксирует фактическую модель. Для каждого assistant message JSON `content` содержит tool events: `state.status`, `state.error`, `state.metadata.exit`. CLI exit 0 и текстовый PASS агента сами по себе недостаточны.
+
+`route` использует копию постоянной конфигурации с ровно двумя дополнительными permissions: Worker `edit role-smoke.txt allow` и Validator `shell python3 /tmp/fixture/check_smoke.py allow`. Только `role-smoke.txt` примонтирован writable; весь остальной checkout read-only. Три unittest проверяют реальный артефакт, неправильный разделитель и лишнее содержимое. `worker` и `reviewer` используют постоянные permissions; отказ Worker должен быть `permission.rejected`, три Reviewer tools — недоступны. `agents` загружает постоянную конфигурацию через настоящий CLI. После `route` fixture автоматически проверяет сохранённые session/tool events: порядок и отсутствие пересечения стадий, реальные результаты checks и denials. Offline повтор: `python3 docs/engineering/opencode-smoke/run.py verify /path/to/private-evidence`. Это локальный acceptance fixture, не новый CI gate.
+
+Sandbox скрывает host `/home`, `/tmp` и Git metadata, очищает environment, не монтирует auth store, сохраняет отдельные scratch/state directories и разделяет PID/IPC/UTS/user namespaces. Host networking сохранён для Ollama; это не доказательство сетевой изоляции или универсального сокрытия всех секретов машины. `check-fast.py --dry-run` внутри sandbox ожидаемо видит Git как unavailable и выбирает FULL; он не запускает FULL. Настоящий Git SHA проверяет внешний координатор, настоящий FULL — локальный профиль и Verify на этом SHA.
+
+Результаты и ограничения: [evidence](opencode-role-catalog-evidence-2026-11-14.md). Последние SHA, CI и итоговые runtime sessions фиксируются в PR #70 после финального commit; это позволяет не подменять проверенный HEAD последующим documentation commit.
