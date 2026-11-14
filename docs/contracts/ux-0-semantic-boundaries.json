@@ -160,6 +160,11 @@
       },
       {
         "group": "Каталоги",
+        "title": "Ресурсы",
+        "path": "/resources"
+      },
+      {
+        "group": "Каталоги",
         "title": "Профили приложений",
         "path": "/applications"
       },

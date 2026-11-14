@@ -113,6 +113,18 @@ class ResourceCollection(Strict):
     hasMore: bool
 
 
+class ResourceEndpointInput(Strict):
+    kind: Literal["HOST", "PREFIX"]
+    address: str = Field(strict=True, min_length=1, max_length=64)
+
+
+class ResourceEndpoint(Strict):
+    endpointId: UUID
+    resourceId: UUID
+    address: str | None
+    kind: Literal["HOST", "PREFIX"] | None
+
+
 class DeploymentInput(Strict):
     componentId: UUID
     resourceId: UUID
@@ -483,10 +495,23 @@ def create_app(db, credentials, *, shared_read=False):
         response.headers["Cache-Control"] = "no-store"
         return service.resources(who, query.limit, query.offset)
 
+    @app.post("/resources", status_code=201, response_model=Resource, dependencies=[Depends(no_query)])
+    def create_resource(data: NameInput, who: Actor):
+        return service.create_resource(who, data.name)
+
     @app.get("/resources/{resourceId}", response_model=Resource, dependencies=[Depends(no_query)])
     def get_resource(resourceId: UUID, who: Actor, response: Response):
         response.headers["Cache-Control"] = "no-store"
         return service.resource(who, str(resourceId))
+
+    @app.get("/resources/{resourceId}/endpoint", response_model=ResourceEndpoint, dependencies=[Depends(no_query)])
+    def get_resource_endpoint(resourceId: UUID, who: Actor, response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.resource_endpoint(who, str(resourceId))
+
+    @app.put("/resources/{resourceId}/endpoint", response_model=ResourceEndpoint, dependencies=[Depends(no_query)])
+    def set_resource_endpoint(resourceId: UUID, data: ResourceEndpointInput, who: Actor):
+        return service.set_resource_endpoint(who, str(resourceId), data.kind, data.address)
 
     @app.post("/business-processes", status_code=201, response_model=BusinessProcess, dependencies=[Depends(no_query)])
     def create_process(data: ProcessInput, who: Actor):

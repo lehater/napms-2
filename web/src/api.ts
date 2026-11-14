@@ -15,6 +15,7 @@ export type InteractionRevision = { interactionRevisionId: string; ipProtocol: '
 export type Interaction = { interactionId: string; applicationId: string; applicationName: string; sourceComponentId: string; sourceComponentName: string; destinationComponentId: string; destinationComponentName: string; revisions: InteractionRevision[] }
 export type ComponentDeployment = { deploymentId: string; componentId: string; componentName: string; applicationId: string; applicationName: string; resourceId: string; resourceName: string }
 export type Resource = { resourceId: string; name: string }
+export type ResourceEndpoint = { endpointId: string; resourceId: string; address: string | null; kind: 'HOST' | 'PREFIX' | null }
 export type CatalogPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
 export type Outcome = 'ALLOWED' | 'DENIED'
 export type AccessInput = {
@@ -96,6 +97,9 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     createDeployment: (componentId: string, resourceId: string) => call<ComponentDeployment>('/deployments', 'POST', { componentId, resourceId }),
     resources: (offset = 0, limit = 20) => call<CatalogPage<Resource>>(`/resources?limit=${limit}&offset=${offset}`),
     resource: (id: string) => call<Resource>(`/resources/${encodeURIComponent(id)}`),
+    createResource: (name: string) => call<Resource>('/resources', 'POST', { name }),
+    resourceEndpoint: (id: string) => call<ResourceEndpoint>(`/resources/${encodeURIComponent(id)}/endpoint`),
+    setResourceEndpoint: (id: string, kind: 'HOST' | 'PREFIX', address: string) => call<ResourceEndpoint>(`/resources/${encodeURIComponent(id)}/endpoint`, 'PUT', { kind, address }),
     list: (offset = 0) => call<Collection>(`/access-requests?limit=20&offset=${offset}`),
     request: (id: string) => call<AccessRequest>(`/access-requests/${encodeURIComponent(id)}`),
     create: (data: AccessInput) => call<AccessRequest>('/access-requests', 'POST', data),
