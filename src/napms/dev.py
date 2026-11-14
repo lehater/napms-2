@@ -5,7 +5,7 @@ import json
 import os
 import secrets
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from .storage import Database
 
@@ -26,7 +26,7 @@ DEMO_REQUEST = {"sourceDeploymentId": IDS["sourceDeployment"],
                 "interactionRevisionId": IDS["revision"], "connectivityNeedId": IDS["need"]}
 
 
-def init_demo(db, credentials):
+def _ensure_credentials(credentials):
     credentials = Path(credentials)
     credentials.parent.mkdir(parents=True, exist_ok=True)
     # Exclusive file creation preserves existing credentials; restrictive mode from first byte.
@@ -39,6 +39,56 @@ def init_demo(db, credentials):
         with os.fdopen(fd, "w") as f:
             json.dump({role: {"actorId": IDS[role], "token": secrets.token_urlsafe(32)}
                        for role in ("requester", "decider", "exporter")}, f, indent=2)
+
+def init_auth(db, credentials):
+    """Explicit local authorization bootstrap. No catalog or business records."""
+    _ensure_credentials(credentials)
+    db.initialize()
+    with db.transaction(write=True) as c:
+        for role, label in (
+            ("requester", "Локальный заявитель"),
+            ("decider", "Локальный согласующий"),
+            ("exporter", "Локальный оператор политики"),
+        ):
+            c.execute("INSERT OR IGNORE INTO actors(id) VALUES (?)", (IDS[role],))
+            c.execute("INSERT OR IGNORE INTO actor_names(actor_id,name) VALUES (?,?)",
+                      (IDS[role], label))
+        for key, role, action, scope in (
+            ("decideGrant", "decider", "access.decide", "demo-policy"),
+            ("processReadGrant", "requester", "business.process.read", "demo-business"),
+            ("processCreateGrant", "requester", "business.process.create", "demo-business"),
+            ("needReadGrant", "requester", "business.need.read", "demo-business"),
+            ("needCreateGrant", "requester", "business.need.create", "demo-business"),
+            ("catalogCreateGrant", "requester", "catalog.create", "demo-catalog"),
+            ("catalogReadGrant", "requester", "catalog.read", "demo-catalog"),
+        ):
+            c.execute("INSERT OR IGNORE INTO grants"
+                      "(id,actor_id,action,scope,valid_from,valid_until)"
+                      " VALUES (?,?,?,?,NULL,NULL)",
+                      (IDS[key], IDS[role], action, scope))
+
+
+def authorize_demo_resource(db, resource_id):
+    """Explicitly authorize access to a real, already created Resource."""
+    with db.transaction(write=True) as c:
+        if not c.execute("SELECT 1 FROM resources WHERE id=?", (resource_id,)).fetchone():
+            raise RuntimeError("Resource does not exist in SQLite")
+        for role, action in (("requester", "access.request"),
+                             ("requester", "access.options.read"),
+                             ("exporter", "policy.export")):
+            if not c.execute("SELECT 1 FROM actors WHERE id=?", (IDS[role],)).fetchone():
+                raise RuntimeError("Run init-auth before authorizing a Resource")
+            if not c.execute("SELECT 1 FROM grants WHERE actor_id=? AND action=? AND scope=?",
+                             (IDS[role], action, resource_id)).fetchone():
+                c.execute("INSERT INTO grants"
+                          "(id,actor_id,action,scope,valid_from,valid_until)"
+                          " VALUES (?,?,?,?,NULL,NULL)",
+                          (str(uuid4()), IDS[role], action, resource_id))
+
+
+def init_demo(db, credentials):
+    """Explicit DB fixture for tests only; never called by runtime/reset."""
+    _ensure_credentials(credentials)
     db.initialize()
     with db.transaction(write=True) as c:
         def seed(table, values, columns):
@@ -111,14 +161,27 @@ def loopback(host):
 
 def main():
     parser = argparse.ArgumentParser(description="NAPMS local development only")
-    parser.add_argument("command", choices=("init-demo", "reset-demo", "serve", "run"))
+    parser.add_argument("command", choices=("init-demo", "init-auth", "grant-demo-resource", "reset-demo", "serve", "run"))
     parser.add_argument("--db", default="var/napms.sqlite3")
     parser.add_argument("--credentials", default="var/dev-credentials.json")
     parser.add_argument("--host", default="127.0.0.1", type=loopback)
     parser.add_argument("--port", default=8000, type=int)
     parser.add_argument("--profile", choices=("local-demo",))
     parser.add_argument("--yes", action="store_true", help="Explicitly confirm deletion of local demo data with reset-demo")
+    parser.add_argument("--resource-id", help="Existing Resource UUID for local grants")
     args = parser.parse_args()
+    if args.command == "grant-demo-resource":
+        if not args.resource_id:
+            parser.error("grant-demo-resource requires --resource-id")
+        authorize_demo_resource(Database(args.db), args.resource_id)
+        print("Local Resource grants persisted in SQLite.")
+        return
+    if args.resource_id is not None:
+        parser.error("--resource-id is supported only by grant-demo-resource")
+    if args.command == "init-auth":
+        init_auth(Database(args.db), args.credentials)
+        print("Local authorization initialized; business/catalog tables remain empty.")
+        return
     if args.command == "reset-demo":
         if not args.yes:
             parser.error("reset-demo permanently clears all local demo data; repeat with --yes")
@@ -129,7 +192,7 @@ def main():
             reset_demo(Database(args.db), args.credentials)
         except RuntimeError as error:
             parser.exit(1, f"Demo reset: {error}\n")
-        print("Demo reset complete: current schema and seed restored; private credentials preserved.")
+        print("SQLite schema restored with zero rows; private credentials file preserved.")
         return
     if args.yes:
         parser.error("--yes is supported only by reset-demo")
