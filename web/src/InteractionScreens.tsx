@@ -17,7 +17,7 @@ const newRevisionPath = (applicationId: string, interactionId: string) =>
 
 function catalogError(reason: unknown): string {
   if (reason instanceof ApiError) {
-    if (reason.code === 'INTERACTION_PURPOSE_EXISTS') return 'Взаимодействие с таким назначением уже существует. Откройте его и создайте новую ревизию.'
+    if (reason.code === 'INTERACTION_PAIR_EXISTS') return 'Между выбранными компонентами уже существует взаимодействие. Откройте его и создайте новую ревизию.'
     if (reason.code === 'DUPLICATE_INTERACTION') return 'Такое взаимодействие уже существует.'
     if (reason.code === 'DUPLICATE_TRAFFIC_CLAUSE' || reason.code === 'OVERLAPPING_TRAFFIC_CLAUSE')
       return 'Условия с одинаковым протоколом не должны дублироваться или пересекаться по портам.'
@@ -67,6 +67,17 @@ async function allComponents(client: Client, applicationId: string): Promise<Com
   }
 }
 
+async function allInteractions(client: Client, applicationId: string): Promise<Interaction[]> {
+  const items: Interaction[] = []
+  let offset = 0
+  for (;;) {
+    const page = await client.interactions(applicationId, offset, 100)
+    items.push(...page.items)
+    if (!page.hasMore) return items
+    offset += page.limit
+  }
+}
+
 function InteractionBreadcrumbs({ applicationId, applicationName, interactionId, name, currentInteraction = false }: {
   applicationId: string
   applicationName: string
@@ -104,6 +115,7 @@ export function InteractionCreateScreen({client}: {client: Client}) {
   const navigate = useNavigate()
   const [application, setApplication] = useState<Application | null>(null)
   const [components, setComponents] = useState<Component[]>([])
+  const [existingInteractions, setExistingInteractions] = useState<Interaction[]>([])
   const [source, setSource] = useState('')
   const [destination, setDestination] = useState('')
   const [purpose, setPurpose] = useState('')
@@ -112,16 +124,25 @@ export function InteractionCreateScreen({client}: {client: Client}) {
   const [busy, setBusy] = useState(false)
   useEffect(() => {
     let active = true
-    setApplication(null); setComponents([]); setError('')
+    setApplication(null); setComponents([]); setExistingInteractions([]); setError('')
     setSource(''); setDestination(''); setPurpose(''); setClauses([emptyClause()])
-    Promise.all([client.application(applicationId), allComponents(client, applicationId)])
-      .then(([a, c]) => { if (active) { setApplication(a); setComponents(c) } })
+    Promise.all([client.application(applicationId), allComponents(client, applicationId),
+      allInteractions(client, applicationId)])
+      .then(([a, c, existing]) => {
+        if (active) { setApplication(a); setComponents(c); setExistingInteractions(existing) }
+      })
       .catch(reason => { if (active) setError(catalogError(reason)) })
     return () => {active = false}
   }, [applicationId, client])
+  const samePair = existingInteractions.find(item =>
+    item.sourceComponentId === source && item.destinationComponentId === destination)
   async function submit(event: FormEvent) {
     event.preventDefault()
     setError('')
+    if (samePair) {
+      setError('Для выбранного направления взаимодействие уже существует. Создайте новую ревизию.')
+      return
+    }
     let trafficClauses: TrafficClauseInput[]
     try { trafficClauses = parseSnapshot(clauses) }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'Недопустимое условие'); return }
@@ -164,6 +185,11 @@ export function InteractionCreateScreen({client}: {client: Client}) {
             {components.map(c => <option key={c.componentId} value={c.componentId}>{c.name}</option>)}
           </select></label>
         </div>
+        {samePair && <p role="alert" className="ux-field-error">
+          Такая направленная связь уже существует: <Link to={interactionPath(applicationId, samePair.interactionId)}>
+            {samePair.purpose || `Interaction ${samePair.interactionId.slice(0,8)}`}
+          </Link>. Изменяйте условия через новую ревизию.
+        </p>}
       </section>
       <section className="interaction-new-revision">
         <h2>Ревизия #1 · черновик</h2>
@@ -171,7 +197,7 @@ export function InteractionCreateScreen({client}: {client: Client}) {
         <ClauseEditor clauses={clauses} setClauses={setClauses}/>
       </section>
       <div className="interaction-draft-actions">
-        <Button disabled={busy || !components.length || !clauses.length}>{busy ? 'Создание…' : 'Создать'}</Button>
+        <Button disabled={busy || !components.length || !clauses.length || !!samePair}>{busy ? 'Создание…' : 'Создать'}</Button>
         <Button type="button" variant="outline" asChild><Link to={`/applications/${applicationId}?tab=interactions`}>Отмена</Link></Button>
       </div>
     </form>
