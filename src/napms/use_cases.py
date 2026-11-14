@@ -1,5 +1,7 @@
 """Transactions, authority checks and orchestration; no HTTP dependency."""
 import ipaddress
+
+from .traffic_clauses import canonical_clauses, snapshot_json, stored_clauses
 import sqlite3
 from uuid import uuid4
 
@@ -103,24 +105,60 @@ def component_view(c, row):
 
 def interaction_view(c, interaction_id, application_id):
     revisions = c.execute(
-        "SELECT * FROM interaction_revisions WHERE interaction_id=? AND application_id=? ORDER BY id",
+        "SELECT * FROM interaction_revisions WHERE interaction_id=? AND application_id=? ORDER BY revision_number,id",
         (interaction_id, application_id),
     ).fetchall()
     if not revisions:
         raise Problem(404, "NOT_FOUND", "Entity not found")
     first = revisions[0]
+    metadata = c.execute("SELECT purpose FROM interaction_meta WHERE interaction_id=?", (interaction_id,)).fetchone()
     return dict(
         interactionId=interaction_id, applicationId=application_id,
         applicationName=catalog_name(c, "application", application_id),
+        purpose=metadata["purpose"] if metadata else "",
         sourceComponentId=first["source_component_id"],
         sourceComponentName=catalog_name(c, "component", first["source_component_id"]),
         destinationComponentId=first["destination_component_id"],
         destinationComponentName=catalog_name(c, "component", first["destination_component_id"]),
-        revisions=[dict(interactionRevisionId=r["id"], ipProtocol=r["protocol"],
-                        sourcePortStart=r["source_port_start"], sourcePortEnd=r["source_port_end"],
-                        destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"],
-                        trafficLabel=revision_view(c, r)["trafficLabel"]) for r in revisions],
+        revisions=[dict(
+            interactionRevisionId=r["id"], revisionNumber=r["revision_number"],
+            ipProtocol=r["protocol"], sourcePortStart=r["source_port_start"],
+            sourcePortEnd=r["source_port_end"], destinationPortStart=r["port_start"],
+            destinationPortEnd=r["port_end"], trafficLabel=revision_view(c, r)["trafficLabel"],
+            trafficClauses=stored_clauses(r),
+        ) for r in revisions],
     )
+
+
+def _plain_clauses(revision):
+    return [dict((key, value) for key, value in item.items() if key != "clauseIndex")
+            for item in stored_clauses(revision)]
+
+
+def _clauses_from_command(data):
+    if data.get("trafficClauses") is not None:
+        return canonical_clauses(data["trafficClauses"])
+    return canonical_clauses([dict(
+        ipProtocol=data["ipProtocol"],
+        sourcePortStart=data.get("sourcePortStart"), sourcePortEnd=data.get("sourcePortEnd"),
+        destinationPortStart=data["destinationPortStart"], destinationPortEnd=data["destinationPortEnd"],
+    )])
+
+
+def _insert_published_revision(c, interaction_id, application_id, source_id, destination_id,
+                               revision_number, clauses):
+    first = clauses[0]
+    revision_id = uid()
+    c.execute(
+        """INSERT INTO interaction_revisions
+        (id,interaction_id,application_id,source_component_id,destination_component_id,
+         protocol,port_start,port_end,source_port_start,source_port_end,revision_number,traffic_clauses_json)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (revision_id, interaction_id, application_id, source_id, destination_id,
+         first["ipProtocol"], first["destinationPortStart"], first["destinationPortEnd"],
+         first["sourcePortStart"], first["sourcePortEnd"], revision_number, snapshot_json(clauses)),
+    )
+    return revision_id
 
 
 def resource_view(c, row):
@@ -224,18 +262,54 @@ class Service:
             find(c, "applications", application_id)
             source = find(c, "components", data["sourceComponentId"])
             destination = find(c, "components", data["destinationComponentId"])
-            start, end = data["destinationPortStart"], data["destinationPortEnd"]
-            source_start, source_end = data.get("sourcePortStart"), data.get("sourcePortEnd")
-            if (source["application_id"] != application_id or destination["application_id"] != application_id
-                    or data["ipProtocol"] not in ("TCP", "UDP")
-                    or not 1 <= start <= end <= 65535
-                    or (source_start is None) != (source_end is None)
-                    or (source_start is not None and not 1 <= source_start <= source_end <= 65535)):
-                raise Problem(400, "INVALID_COMMUNICATION", "Invalid directed communication")
-            interaction_id, revision_id = uid(), uid()
+            if source["application_id"] != application_id or destination["application_id"] != application_id:
+                raise Problem(400, "INVALID_COMMUNICATION", "Components must share one Application")
+            clauses = _clauses_from_command(data)
+            purpose = (data.get("purpose") or "").strip()
+            for existing in c.execute(
+                """SELECT i.interaction_id FROM interaction_meta i
+                   WHERE i.application_id=? AND i.source_component_id=?
+                     AND i.destination_component_id=? AND i.purpose=?""",
+                (application_id, source["id"], destination["id"], purpose),
+            ).fetchall():
+                latest = c.execute(
+                    "SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number DESC,id DESC LIMIT 1",
+                    (existing["interaction_id"],),
+                ).fetchone()
+                if latest and canonical_clauses(_plain_clauses(latest)) == clauses:
+                    raise Problem(409, "DUPLICATE_INTERACTION", "Identical Interaction already exists")
+            interaction_id = uid()
             c.execute(
-                "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end,source_port_start,source_port_end) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                (revision_id, interaction_id, application_id, source["id"], destination["id"], data["ipProtocol"], start, end, source_start, source_end),
+                """INSERT INTO interaction_meta
+                   (interaction_id,application_id,source_component_id,destination_component_id,purpose)
+                   VALUES (?,?,?,?,?)""",
+                (interaction_id, application_id, source["id"], destination["id"], purpose),
+            )
+            _insert_published_revision(c, interaction_id, application_id, source["id"], destination["id"], 1, clauses)
+            return interaction_view(c, interaction_id, application_id)
+
+    def publish_interaction_revision(self, actor, application_id, interaction_id, clauses):
+        with self.db.transaction(write=True) as c:
+            self._catalog_create(c, actor)
+            metadata = c.execute(
+                "SELECT * FROM interaction_meta WHERE interaction_id=? AND application_id=?",
+                (interaction_id, application_id),
+            ).fetchone()
+            if metadata is None:
+                raise Problem(404, "NOT_FOUND", "Interaction not found")
+            incoming = canonical_clauses(clauses)
+            latest = c.execute(
+                "SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number DESC,id DESC LIMIT 1",
+                (interaction_id,),
+            ).fetchone()
+            if latest is None:
+                raise Problem(404, "NOT_FOUND", "Interaction revision not found")
+            if canonical_clauses(_plain_clauses(latest)) == incoming:
+                raise Problem(409, "UNCHANGED_REVISION", "New revision must change traffic clauses")
+            _insert_published_revision(
+                c, interaction_id, application_id,
+                metadata["source_component_id"], metadata["destination_component_id"],
+                latest["revision_number"] + 1, incoming,
             )
             return interaction_view(c, interaction_id, application_id)
 
