@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource } from './api'
+import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint } from './api'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 import { CollectionView } from './components/real/CollectionView'
@@ -190,6 +190,41 @@ export function DeploymentCatalog() {
   return <CatalogGate>{client => <DeploymentRoutes client={client} />}</CatalogGate>
 }
 
+export function ResourceCatalog() {
+  return <CatalogGate>{client => <ResourceRoutes client={client} />}</CatalogGate>
+}
+
+function ResourceRoutes({ client }: { client: Client }) {
+  return <Routes><Route index element={<ResourceList client={client} />} /><Route path="new" element={<NewResource client={client} />} /><Route path=":resourceId" element={<ResourceDetailView client={client} />} /><Route path="*" element={<section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/resources">Ресурсы</Link></section>} /></Routes>
+}
+
+function ResourceList({ client }: { client: Client }) {
+  const [params, setParams] = useSearchParams(), offset = Math.max(0, Number(params.get('offset')) || 0)
+  const [page, setPage] = useState<CatalogPage<Resource> | null>(null), [error, setError] = useState(''), [reload, setReload] = useState(0)
+  useEffect(() => { let active = true; setPage(null); setError(''); client.resources(offset).then(value => { if (active) setPage(value) }).catch(reason => { if (active) setError(catalogError(reason)) }); return () => { active = false } }, [client, offset, reload])
+  return <CollectionView<Resource> title="Ресурсы" description="Сетевые ресурсы и их стабильные Endpoints. Создание Resource не выдаёт полномочия на подачу заявок."
+    actions={<Button asChild><Link to="/resources/new">Создать Resource</Link></Button>}
+    rows={page?.items ?? []} columns={[{key:'resource',title:'Resource',render:item=><Link to={'/resources/' + item.resourceId}>{item.name}<small>{item.resourceId}</small></Link>}]}
+    getKey={item=>item.resourceId} emptyText="Ресурсы ещё не созданы." loading={!page && !error} error={error}
+    offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setParams(offset > 20 ? {offset:String(offset-20)} : {})}
+    onNext={()=>setParams({offset:String(offset+(page?.limit ?? 20))})} onRefresh={()=>setReload(value=>value+1)} />
+}
+
+function NewResource({ client }: { client: Client }) {
+  const [name, setName] = useState(''), [error, setError] = useState(''), [busy, setBusy] = useState(false)
+  const navigate = useNavigate()
+  async function submit(event: FormEvent) {
+    event.preventDefault(); setError(''); setBusy(true)
+    try { const item = await client.createResource(name); navigate(`/resources/${item.resourceId}?tab=endpoints`) }
+    catch (reason) { setError(catalogError(reason)) } finally { setBusy(false) }
+  }
+  return <section className="ux-panel ux-panel-body"><nav className="ux-breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to="/resources">Ресурсы</Link><span>/</span><span>Создание</span></nav>
+    <h1>Создать Resource</h1><p>Для нового Resource создаётся один стабильный Endpoint без адреса. Полномочия доступа не выдаются автоматически.</p><ErrorNotice text={error} />
+    <form className="process-form" onSubmit={submit}><label htmlFor="resource-name">Название Resource</label><input id="resource-name" required maxLength={300} value={name} onChange={event=>setName(event.target.value)} />
+      <Button disabled={busy}>{busy ? 'Сохранение…' : 'Создать Resource'}</Button><Link to="/resources">Отмена</Link></form>
+  </section>
+}
+
 function DeploymentRoutes({ client }: { client: Client }) {
   return <Routes><Route index element={<DeploymentList client={client}/>} /><Route path="new" element={<NewDeployment client={client}/>} /><Route path=":deploymentId" element={<DeploymentDetail client={client}/>} /><Route path="*" element={<section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/deployments">Развёрнутые компоненты</Link></section>} /></Routes>
 }
@@ -229,17 +264,28 @@ function DeploymentDetail({ client }: { client: Client }) {
   </DetailView>
 }
 
-export function ResourceDetail() {
-  return <CatalogGate>{client=><ResourceDetailView client={client}/>}</CatalogGate>
+function ResourceDetailView({client}:{client:Client}){
+  const {resourceId=''}=useParams()
+  return <ResourceDetailForResource key={resourceId} client={client} resourceId={resourceId} />
 }
 
-function ResourceDetailView({client}:{client:Client}){
-  const {resourceId=''}=useParams(),[loaded,setLoaded]=useState<{id:string;item:Resource}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
-  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.resource(resourceId).then(value=>{if(active)setLoaded({id:resourceId,item:value})}).catch(reason=>{if(active)setFailure({id:resourceId,text:catalogError(reason)})});return()=>{active=false}},[client,resourceId])
-  const item=loaded?.id===resourceId?loaded.item:null,error=failure?.id===resourceId?failure.text:''
-  if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка Resource…</p>}</section>
-  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/deployments">Развёрнутые компоненты</Link><span>/</span><span aria-current="page">{item.name}</span></>}
-    title={item.name} tabs={[{id:'overview',label:'Обзор',href:`/resources/${resourceId}`}]} activeTab="overview">
-    <dl className="ux-properties"><div><dt>Идентификатор</dt><dd>{item.resourceId}</dd></div><div><dt>Каталог</dt><dd><Link to="/deployments">Развёрнутые компоненты</Link></dd></div></dl>
+function ResourceDetailForResource({client,resourceId}:{client:Client;resourceId:string}){
+  const [params,setParams]=useSearchParams(),tab=params.get('tab')==='endpoints'?'endpoints':'overview'
+  const [loaded,setLoaded]=useState<{id:string;item:Resource;endpoint:ResourceEndpoint;deployments:ComponentDeployment[]}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
+  const [kind,setKind]=useState<'HOST'|'PREFIX'>('HOST'),[address,setAddress]=useState(''),[saving,setSaving]=useState(false),[formError,setFormError]=useState(''),[reload,setReload]=useState(0)
+  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);Promise.all([client.resource(resourceId),client.resourceEndpoint(resourceId),allPages((offset,limit)=>client.deployments(offset,limit))]).then(([item,endpoint,deployments])=>{if(active)setLoaded({id:resourceId,item,endpoint,deployments:deployments.filter(row=>row.resourceId===resourceId)})}).catch(reason=>{if(active)setFailure({id:resourceId,text:catalogError(reason)})});return()=>{active=false}},[client,resourceId,reload])
+  const data=loaded?.id===resourceId?loaded:null,error=failure?.id===resourceId?failure.text:''
+  async function saveEndpoint(event:FormEvent){event.preventDefault();setSaving(true);setFormError('');try{await client.setResourceEndpoint(resourceId,kind,address);setAddress('');setReload(value=>value+1)}catch(reason){setFormError(catalogError(reason))}finally{setSaving(false)}}
+  const href=(value:string)=>value==='overview'?`/resources/${resourceId}`:`/resources/${resourceId}?tab=${value}`
+  if(!data)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка Resource…</p>}</section>
+  const {item,endpoint,deployments}=data
+  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/resources">Ресурсы</Link><span>/</span><span aria-current="page">{item.name}</span></>}
+    title={item.name} tabs={[{id:'overview',label:'Обзор',href:href('overview')},{id:'endpoints',label:'Endpoints',href:href('endpoints')}]} activeTab={tab}>
+    {tab==='overview'&&<><dl className="ux-properties"><div><dt>Идентификатор</dt><dd>{item.resourceId}</dd></div><div><dt>Текущий Endpoint</dt><dd>{endpoint.address ? `${endpoint.address} / ${endpoint.kind}` : 'Адрес не задан'}</dd></div><div><dt>Каталог</dt><dd><Link to="/deployments">Развёрнутые компоненты</Link></dd></div></dl>
+      <h2>Связанные развёртывания</h2><EntityTable rows={deployments} columns={[{key:'deployment',title:'Компонент',render:row=><Link to={`/deployments/${row.deploymentId}`}>{row.componentName}<small>{row.applicationName}</small></Link>},{key:'deploymentResource',title:'Resource',render:row=><Link to={`/resources/${row.resourceId}`}>{row.resourceName}</Link>}]} getKey={row=>row.deploymentId} emptyText="Развёртывания для этого Resource отсутствуют." /></>}
+    {tab==='endpoints'&&<><EntityTable rows={[endpoint]} columns={[{key:'endpoint',title:'Endpoint ID',render:row=><span className="font-mono">{row.endpointId}</span>},{key:'kind',title:'Тип',render:row=>row.kind??'Не задан'},{key:'address',title:'Текущий адрес',render:row=>row.address??'Адрес не задан'}]} getKey={row=>row.endpointId} emptyText="Endpoint отсутствует." />
+      <h2>Назначить или заменить адрес</h2><ErrorNotice text={formError}/><form className="process-form" onSubmit={saveEndpoint}><label htmlFor="endpoint-kind">Тип адреса</label><select id="endpoint-kind" value={kind} onChange={event=>setKind(event.target.value as 'HOST'|'PREFIX')}><option value="HOST">HOST · IP-адрес</option><option value="PREFIX">PREFIX · CIDR</option></select>
+        <label htmlFor="endpoint-address">IPv4 / IPv6 адрес</label><input id="endpoint-address" required maxLength={64} value={address} onChange={event=>setAddress(event.target.value)} placeholder={kind==='HOST'?'192.0.2.10':'192.0.2.0/24'} />
+        <Button disabled={saving}>{saving?'Сохранение…':'Сохранить адрес'}</Button></form></>}
   </DetailView>
 }

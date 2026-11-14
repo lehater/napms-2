@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from conftest import auth
 from napms.dev import IDS, load_credentials
 from napms.http import create_app
-from napms.storage import Database
 
 
 def test_application_component_interaction_catalog_and_need_options(env):
