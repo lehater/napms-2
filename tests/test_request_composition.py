@@ -35,7 +35,7 @@ def test_options_shapes_paging_and_address_independence(env):
     body = response.json()
     assert body['kind'] == 'revisions' and body['hasMore']
     assert body['items'][0]['interactionRevisionId'] == min(extra, IDS['revision'])
-    assert set(body['items'][0]) == {'interactionRevisionId', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'sourcePortStart', 'sourcePortEnd', 'destinationPortStart', 'destinationPortEnd', 'displayLabel', 'trafficLabel'}
+    assert set(body['items'][0]) == {'interactionRevisionId', 'revisionNumber', 'trafficClauses', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'sourcePortStart', 'sourcePortEnd', 'destinationPortStart', 'destinationPortEnd', 'displayLabel', 'trafficLabel'}
     assert len(options(env, '?offset=1').json()['items']) == 1
     assert options(env, '?offset=' + '9'*60).json()['items'] == []
     for kind, key in [('source-deployments', 'sourceDeployment'), ('destination-deployments', 'destinationDeployment')]:
@@ -164,7 +164,7 @@ def test_read_snapshot_and_seed_upgrade(env):
     init_demo(env[0],env[1])
     assert env[1].read_bytes() == credentials
     with env[0].transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 6
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 7
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
 
 
