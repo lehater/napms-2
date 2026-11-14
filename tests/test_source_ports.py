@@ -70,6 +70,9 @@ def test_source_ports_any_and_explicit_end_to_end(env):
         csv_response = client.get('/policy/export', headers=exporter,
                                   params={"ruleId": rule_id, "format": "csv"})
         csv_row, = csv.DictReader(io.StringIO(csv_response.text))
+        csv_columns = list(csv_row)
+        assert csv_columns[csv_columns.index("ipProtocol") + 1] == "destinationPortStart"
+        assert csv_columns[-2:] == ["sourcePortStart", "sourcePortEnd"]
         for key in ("sourcePortStart", "sourcePortEnd"):
             assert csv_row[key] == ("" if data[key] is None else str(data[key]))
         current = client.get('/policy/export/current', headers=exporter).json()["rows"]
