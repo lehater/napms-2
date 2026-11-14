@@ -225,4 +225,27 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(20)
   expect(applicationId).toMatch(/^[0-9a-f-]{36}$/i)
   expect(interactionUrl).toContain(applicationId)
+
+  // An immutable revision owns the entire clause set; editing publishes a new snapshot.
+  await page.goto(interactionUrl)
+  await login(page, credentials.requester.token)
+  await expect(page.getByRole('table')).toContainText('#1')
+  await page.getByRole('button', { name: 'Добавить условие', exact: true }).click()
+  await page.getByLabel('Протокол условия 2').selectOption('UDP')
+  await page.getByLabel('Назначение от 2').fill('123')
+  await page.getByLabel('Назначение до 2').fill('123')
+  await expect(page.getByRole('group', { name: 'TrafficClause #2' })).toBeVisible()
+  await page.screenshot({ path: '/tmp/napms-issue75-clause-draft.png', fullPage: true })
+  await page.getByRole('button', { name: 'Опубликовать ревизию' }).click()
+  await expect(page.getByRole('table')).toContainText('#2')
+  await expect(page.getByRole('table')).toContainText('UDP · ANY → 123')
+  await expect(page.getByRole('table')).toContainText('TCP · 40000–40100 → 443')
+  const afterRevision = await (await page.request.get(`/applications/${applicationId}/interactions/${interactionUrl.split('/').pop()}`,
+    { headers: requester })).json()
+  expect(afterRevision.revisions).toHaveLength(2)
+  expect(afterRevision.revisions[0].interactionRevisionId).toBe(revisionId)
+  expect(afterRevision.revisions[1].trafficClauses).toHaveLength(2)
+  const originalRuleAfter = await (await page.request.get(`/policy-rules/${policyRuleId}`,
+    { headers: { Authorization: `Bearer ${credentials.exporter.token}` } })).json()
+  expect(originalRuleAfter.subject.interactionRevisionId).toBe(revisionId)
 })
