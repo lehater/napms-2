@@ -28,9 +28,9 @@ Each Interaction SHALL identify an Application, directed source and destination 
 
 ## ADDED Requirements
 
-### Requirement: Hierarchical navigation for Interaction revisions and owned clauses
+### Requirement: Navigable Interaction and Revision details
 
-The REAL Application catalog SHALL present Interactions as a nested collection of the Application without mixing the creation form into the list. Every Interaction SHALL have a stable Detail route, with an Overview and a Revisions collection. Each published Revision SHALL have a stable Detail URL nested under the Interaction and SHALL expose a read-only collection of its TrafficClauses. Creating an Interaction or publishing a subsequent Revision SHALL use a separate draft view and SHALL navigate to the published object. A draft's removal/cancellation SHALL NOT mutate published snapshots.
+The REAL Application catalog SHALL present Interactions as a nested collection. Each Interaction SHALL have a stable Detail route with Overview and Revisions tabs. Each published Revision SHALL have a stable nested Detail URL exposing its read-only TrafficClause collection.
 
 #### Scenario: Browse from Application to exact Revision
 
@@ -41,6 +41,10 @@ The REAL Application catalog SHALL present Interactions as a nested collection o
 
 - **WHEN** an authenticated actor opens or reloads the direct Revision URL
 - **THEN** the same immutable revision and its TrafficClauses are resolved, independent of current selected tab
+
+### Requirement: Separate Interaction and Revision publication drafts
+
+Creating an Interaction or publishing a subsequent Revision SHALL use a separate draft view, not an editor inside the collection or published history. Publication SHALL navigate to the published object's Detail. Cancelling a draft or removing its TrafficClause SHALL NOT mutate published snapshots.
 
 #### Scenario: Discard unsaved revision draft
 
