@@ -1,6 +1,6 @@
 # PR #70 — A2 manual segmented E2E (owner-approved diagnostic)
 
-**Статус:** первый запуск на `92ffa74` — **BLOCKED** на независимом Reviewer; второй **NOT RUN**. [Evidence и причина](../opencode-a2-evidence-2026-11-14.md). Разрешён ручной эксперимент после [архитектурного решения по PR #70](https://github.com/lehater/napms-2/pull/70#issuecomment-6873654170). Это **один логический run** через отдельные процессы/сессии, а **не** один OpenCode root session. Durable Controller, auto-dispatch, credential forwarding или API proxy не реализуются.
+**Статус:** два новых независимых запуска на `95a788e` — **COMPLETE/PASS**, с полным handoff перед каждым Reviewer и явным разделением observed/reported evidence. [Новые evidence №1/№2](../opencode-a2-rerun-evidence-2026-11-14.md). Предыдущий запуск на `92ffa74` остаётся **BLOCKED**, его второй — **NOT RUN** ([исторические evidence и причина](../opencode-a2-evidence-2026-11-14.md)). PR остаётся Draft до owner acceptance. Разрешён ручной эксперимент после [архитектурного решения по PR #70](https://github.com/lehater/napms-2/pull/70#issuecomment-6873654170). Это **один логический run** через отдельные процессы/сессии, а **не** один OpenCode root session. Durable Controller, auto-dispatch, credential forwarding или API proxy не реализуются.
 
 ## Контракт и границы
 

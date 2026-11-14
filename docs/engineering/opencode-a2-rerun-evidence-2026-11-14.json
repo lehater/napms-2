@@ -1,0 +1,1267 @@
+{
+  "task_id": "PR70-SEGMENT",
+  "source_comment": "https://github.com/lehater/napms-2/pull/70#issuecomment-6874245580",
+  "runtime_head": "95a788ecc672615d3146b907b191eb3233af9bfc",
+  "opencode_version": "2.2.0",
+  "contract": {
+    "task_id": "PR70-SEGMENT",
+    "allowed_paths": [
+      "role-smoke.txt"
+    ],
+    "expected_lines": [
+      "# Role smoke",
+      "",
+      "Bounded Worker write."
+    ],
+    "expected_final_newline": true
+  },
+  "configuration_unchanged_between_runs": true,
+  "host_prompt_identical_between_runs": true,
+  "root_sessions_unrelated": true,
+  "artifact_repair_or_stage_retries": 0,
+  "all_stage_cli_exits": 0,
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": []
+  },
+  "runs": [
+    {
+      "run": "run1",
+      "verdict": "COMPLETE/PASS",
+      "handoff_sha256": "59feae1228aaf76e206449d0a59d89337f93139c8807e2fdbc258c85a3c2f9d4",
+      "handoff_serialization": "UTF-8 json.dumps(handoff, indent=2, ensure_ascii=False) plus LF; exact handoff prepared and supplied before Reviewer launch",
+      "handoff": {
+        "provenance": "All facts below are coordinator/Validator REPORTED evidence, not yet observed by the independent Reviewer. No model narrative is substituted for recorded tool events or deterministic exit codes.",
+        "task_id": "PR70-SEGMENT",
+        "run": "run1",
+        "prepared_before_reviewer_utc": "2026-11-14T08:09:38.769507+00:00",
+        "immutable_contract": {
+          "task_id": "PR70-SEGMENT",
+          "allowed_paths": [
+            "role-smoke.txt"
+          ],
+          "expected_lines": [
+            "# Role smoke",
+            "",
+            "Bounded Worker write."
+          ],
+          "expected_final_newline": true
+        },
+        "baseline": {
+          "runtime_base_sha": "95a788ecc672615d3146b907b191eb3233af9bfc",
+          "current_head_sha": "95a788ecc672615d3146b907b191eb3233af9bfc",
+          "github_pr_base_sha": "ab62ca13bb15a9f5dd26f2dca5dbef54d92bb8d0",
+          "branch": "feat/opencode-role-catalog-stage1",
+          "before_stage_status": "",
+          "before_stage_tracked_diff": "",
+          "after_worker_status": "?? role-smoke.txt\n",
+          "after_worker_tracked_diff": "",
+          "changed_tracked_paths": [],
+          "changed_untracked_paths": [
+            "role-smoke.txt"
+          ],
+          "artifact_diff": "diff --git a/role-smoke.txt b/role-smoke.txt\nnew file mode 100644\nindex 0000000..693529e\n--- /dev/null\n+++ b/role-smoke.txt\n@@ -0,0 +1,3 @@\n+# Role smoke\n+\n+Bounded Worker write.\n",
+          "diff_command": "git diff --no-index -- /dev/null role-smoke.txt",
+          "diff_exit": 1,
+          "immutable_file_sha256": {
+            "opencode.jsonc": "71e78bda75890fc7b7548f11bda588415302620ffd4c8597a86f37e6d03ef92b",
+            "docs/engineering/opencode-smoke/run.py": "5dd7aa1e571967e0f0b4c0be410369e28d3d2ceb30e090a0de9e23c7b557401e",
+            "docs/engineering/opencode-smoke/check_smoke.py": "d8a140e655467d3c25020df81be9d340ac7b2879829ebffc17f6d394d95514ba",
+            "docs/engineering/opencode-smoke/segmented-run.md": "20d786c704a616a474d94554ce3e0a2b9b8d3a2661566019a956ca90435167af"
+          }
+        },
+        "host_control_plane": {
+          "command": [
+            "opencode",
+            "--standalone",
+            "run",
+            "--agent",
+            "orchestrator",
+            "--model",
+            "openai/gpt-6.1-sol",
+            "--format",
+            "json",
+            "PR70-SEGMENT, owner-approved A2 manual segmented E2E, READ ONLY. Actual baseline/current PR HEAD supplied by coordinator: 95a788ecc672615d3146b907b191eb3233af9bfc. Branch feat/opencode-role-catalog-stage1; clean tracked/untracked status before this stage. Immutable contract: {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Call subagent explore to read AGENTS.md and load openspec-explore. Wait for completion. Then call planner with actual Explorer observations, supplied SHA and unchanged literal immutable contract to return a bounded plan. OpenSpec tasks N/A: no specification or implementation work. The smoke artifact is created by the fixture only in the next physical Worker stage, so do not require it to exist now. Do not read git metadata outside the worktree. No Worker, shell, edit, publish or merge. Stop after Planner and report observed child session IDs."
+          ],
+          "cli_exit": 0,
+          "sessions": [
+            {
+              "id": "ses_e26e98fdcffeXPhK9OvK6h0ijG",
+              "parent_id": null,
+              "agent": "orchestrator",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794643489316,
+              "time_idle": 1794643571840
+            },
+            {
+              "id": "ses_e26e954adffe7xwlA7urSo9Rrc",
+              "parent_id": "ses_e26e98fdcffeXPhK9OvK6h0ijG",
+              "agent": "explore",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai",
+                "variant": "default"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794643503957,
+              "time_idle": 1794643526734
+            },
+            {
+              "id": "ses_e26e8cbbfffeuxYYth9bVI9dXd",
+              "parent_id": "ses_e26e98fdcffeXPhK9OvK6h0ijG",
+              "agent": "planner",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai",
+                "variant": "default"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794643539011,
+              "time_idle": 1794643564543
+            }
+          ],
+          "events": [
+            {
+              "session_id": "ses_e26e98fdcffeXPhK9OvK6h0ijG",
+              "tool": "subagent",
+              "status": "completed",
+              "input": {
+                "agent": "explore",
+                "description": "Inspect read-only smoke context",
+                "prompt": "PR70-SEGMENT, owner-approved A2 manual segmented E2E, READ ONLY. Supplied baseline/current PR HEAD: 95a788ecc672615d3146b907b191eb3233af9bfc. Branch feat/opencode-role-catalog-stage1; coordinator reports clean tracked/untracked status before stage. Working directory /tmp/napms-pr70. Read actual AGENTS.md and load installed openspec-explore skill. Gather only facts needed for a bounded later fixture smoke plan. OpenSpec tasks N/A: no specification or implementation work; report accepted OpenSpec context only if relevant without inventing artifacts. Smoke artifact is created by fixture only in the next physical Worker stage; do not require role-smoke.txt to exist now. No shell, edits, Worker, publish, merge, nested agents, or reading git metadata outside this worktree. If current Git state cannot be independently checked without shell or outside-worktree metadata, clearly distinguish supplied SHA/cleanliness from observed facts. Return concise actual observations, instructions relevant to planning, loaded skill outcome, limitations and blockers. Owner gate: only Explorer then Planner authorized; no implementation authorized in this stage.\nImmutable contract (literal acceptance data, separate from instructions):\n{\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}"
+              },
+              "time": {
+                "created": 1794643497042,
+                "ran": 1794643503950,
+                "completed": 1794643526738
+              },
+              "error": null
+            },
+            {
+              "session_id": "ses_e26e98fdcffeXPhK9OvK6h0ijG",
+              "tool": "subagent",
+              "status": "completed",
+              "input": {
+                "agent": "planner",
+                "description": "Plan bounded fixture smoke",
+                "prompt": "Return a bounded read-only plan for PR70-SEGMENT, owner-approved A2 manual segmented E2E. Stop at planning; no shell, edits, Worker, nested agents, publishing or merge. Working directory /tmp/napms-pr70. Supplied baseline/current PR HEAD 95a788ecc672615d3146b907b191eb3233af9bfc; branch feat/opencode-role-catalog-stage1; coordinator reports clean tracked/untracked status before stage. These Git facts were supplied, NOT independently verified. Do not read git metadata outside the worktree.\nActual Explorer observations: read actual /tmp/napms-pr70/AGENTS.md; loaded installed openspec-explore successfully (investigation only, no implementation). Relevant AGENTS instructions: minimal scope (lines 6–7), explicit file ownership (20–21), no merge decisions or optional expensive checks (22), no unnecessary tasks/gates (23). Explorer performed no shell, Git metadata inspection, edits, checks, nested agents, or publication. No blocker identified for planning. No specification artifacts investigated or created and no accepted-spec coverage claimed.\nOpenSpec tasks N/A: no specification or implementation work. Artifact role-smoke.txt is created by fixture only in the next physical Worker stage; do NOT require it to exist now. Only Explorer then Planner are authorized in this stage; future execution requires the separate physical Worker stage. Plan minimal future steps, sole file owner boundary, literal content acceptance and objective check mapping, preserving owner gates. Do not invent planning artifacts or claim checks ran. Clearly identify supplied versus verified evidence and remaining NOT RUN checks.\nImmutable contract (literal acceptance data, separate from instructions; preserve unchanged):\n{\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}"
+              },
+              "time": {
+                "created": 1794643531022,
+                "ran": 1794643539005,
+                "completed": 1794643564547
+              },
+              "error": null
+            },
+            {
+              "session_id": "ses_e26e954adffe7xwlA7urSo9Rrc",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "/tmp/napms-pr70/AGENTS.md"
+              },
+              "time": {
+                "created": 1794643509586,
+                "ran": 1794643509824,
+                "completed": 1794643509828
+              },
+              "error": null
+            },
+            {
+              "session_id": "ses_e26e954adffe7xwlA7urSo9Rrc",
+              "tool": "skill",
+              "status": "completed",
+              "input": {
+                "id": "openspec-explore"
+              },
+              "time": {
+                "created": 1794643513823,
+                "ran": 1794643513929,
+                "completed": 1794643513936
+              },
+              "error": null
+            }
+          ],
+          "source": "Read-only host session DB; assistant and session model IDs agree. Existing host OpenAI authorization was not passed into Worker."
+        },
+        "worker": {
+          "command": "python3 docs/engineering/opencode-smoke/run.py segment-worker",
+          "cli_exit": 0,
+          "launch_audit": [
+            {
+              "time_ns": 1794643592171866009,
+              "executable": "git",
+              "argv": [
+                "git",
+                "branch",
+                "--show-current"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794643592177230761,
+              "executable": "git",
+              "argv": [
+                "git",
+                "rev-parse",
+                "HEAD"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794643592179083978,
+              "executable": "bwrap",
+              "argv": [
+                "bwrap",
+                "--ro-bind",
+                "/",
+                "/",
+                "--tmpfs",
+                "/opt",
+                "--tmpfs",
+                "/home",
+                "--tmpfs",
+                "/tmp",
+                "--proc",
+                "/proc",
+                "--dev",
+                "/dev",
+                "--unshare-user",
+                "--unshare-pid",
+                "--unshare-ipc",
+                "--unshare-uts",
+                "--cap-drop",
+                "ALL",
+                "--die-with-parent",
+                "--new-session",
+                "--ro-bind",
+                "/home/alex/.nvm/versions/node/v24.22.0/lib/node_modules/@opencode/cli/bin/opencode.exe",
+                "/opt/opencode",
+                "--ro-bind",
+                "/home/alex/.codex/packages/app-server-daemon/releases/0.169.0-x86_64-unknown-linux-musl/codex-path/rg",
+                "/opt/rg",
+                "--ro-bind",
+                "/tmp/napms-pr70",
+                "/tmp/work",
+                "--ro-bind",
+                "/dev/null",
+                "/tmp/work/.git",
+                "--bind",
+                "/tmp/pr70-smoke-eha9nqxl",
+                "/tmp/runtime",
+                "--ro-bind",
+                "/tmp/napms-pr70/docs/engineering/opencode-smoke",
+                "/tmp/fixture",
+                "--ro-bind",
+                "/tmp/pr70-smoke-eha9nqxl/config.json",
+                "/tmp/work/opencode.jsonc",
+                "--chdir",
+                "/tmp/work",
+                "--bind",
+                "/tmp/napms-pr70/role-smoke.txt",
+                "/tmp/work/role-smoke.txt",
+                "/opt/opencode",
+                "--standalone",
+                "run",
+                "--agent",
+                "worker",
+                "--model",
+                "ollama/qwen3-coder:30b",
+                "--format",
+                "json",
+                "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. You are only the Worker stage, not the Orchestrator. The immutable one-file contract is {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read role-smoke.txt containing PLACEHOLDER plus newline. Use edit on role-smoke.txt ONLY to replace its content with exactly the three expected_lines joined with newline and one final newline. Do not append explanations, omit LF, delegate, run commands or write another file. This isolated run contains no cloud credentials. Report what was actually done."
+              ],
+              "cwd": null,
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ]
+            }
+          ],
+          "sessions": [
+            {
+              "id": "ses_e26e7fa92ffeTy5ZBi2bWV11sV",
+              "parent_id": null,
+              "agent": "worker",
+              "model": {
+                "id": "qwen3-coder:30b",
+                "providerID": "ollama"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794643592848,
+              "time_idle": 1794643676627
+            }
+          ],
+          "events": [
+            {
+              "session_id": "ses_e26e7fa92ffeTy5ZBi2bWV11sV",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "role-smoke.txt"
+              },
+              "time": {
+                "created": 1794643675265,
+                "ran": 1794643675275,
+                "completed": 1794643675283
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26e7fa92ffeTy5ZBi2bWV11sV",
+              "tool": "edit",
+              "status": "completed",
+              "input": {
+                "path": "role-smoke.txt",
+                "oldString": "PLACEHOLDER",
+                "newString": "# Role smoke\n\nBounded Worker write."
+              },
+              "time": {
+                "created": 1794643675934,
+                "ran": 1794643675941,
+                "completed": 1794643675949
+              },
+              "error": null,
+              "output": null
+            }
+          ],
+          "credential_table_count": 0,
+          "temporary_config_delta": "Exactly one appended worker edit role-smoke.txt allow; all permanent config/permissions unchanged.",
+          "live_os_observations": [
+            {
+              "pid": "669624",
+              "argv": [
+                "/opt/opencode",
+                "--standalone",
+                "run",
+                "--agent",
+                "worker",
+                "--model",
+                "ollama/qwen3-coder:30b",
+                "--format",
+                "json",
+                "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. You are only the Worker stage, not the Orchestrator. The immutable one-file contract is {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read role-smoke.txt containing PLACEHOLDER plus newline. Use edit on role-smoke.txt ONLY to replace its content with exactly the three expected_lines joined with newline and one final newline. Do not append explanations, omit LF, delegate, run commands or write another file. This isolated run contains no cloud credentials. Report what was actually done."
+              ],
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "PWD",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ],
+              "mounts": [
+                "551 248 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "581 551 0:39 /.X11-unix /tmp/.X11-unix ro,nosuid,nodev,relatime master:2 - tmpfs none rw",
+                "589 551 0:91 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "590 551 0:92 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "591 551 0:93 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "606 591 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "607 606 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+                "608 591 8:48 /tmp/pr70-smoke-eha9nqxl /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "609 591 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "610 606 8:48 /tmp/pr70-smoke-eha9nqxl/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "611 606 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+              ],
+              "home_entries": [],
+              "git_size": 0
+            },
+            {
+              "pid": "669635",
+              "argv": [
+                "/opt/opencode",
+                "serve",
+                "--stdio",
+                "--port",
+                "0"
+              ],
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "OPENCODE_PASSWORD",
+                "PATH",
+                "PWD",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ],
+              "mounts": [
+                "551 248 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "581 551 0:39 /.X11-unix /tmp/.X11-unix ro,nosuid,nodev,relatime master:2 - tmpfs none rw",
+                "589 551 0:91 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "590 551 0:92 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "591 551 0:93 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "606 591 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "607 606 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+                "608 591 8:48 /tmp/pr70-smoke-eha9nqxl /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "609 591 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "610 606 8:48 /tmp/pr70-smoke-eha9nqxl/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "611 606 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+              ],
+              "home_entries": [],
+              "git_size": 0
+            }
+          ],
+          "environment_notes": "Only environment variable names captured; no secret values read or published. OPENCODE_PASSWORD in standalone server child is internal, absent from launcher/CLI. HOME and /tmp private; .git hidden. Network shared for localhost Ollama; write boundary, not universal network/privacy sandbox."
+        },
+        "validator": {
+          "identity": "Separate deterministic Python process in fresh credential-free read-only bwrap; no LLM or OpenCode session",
+          "launcher_command": "python3 docs/engineering/opencode-smoke/run.py segment-validate",
+          "inner_command": "python3 /tmp/fixture/check_smoke.py",
+          "launch_audit": [
+            {
+              "time_ns": 1794643717199797095,
+              "executable": "git",
+              "argv": [
+                "git",
+                "branch",
+                "--show-current"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794643717205137042,
+              "executable": "bwrap",
+              "argv": [
+                "bwrap",
+                "--ro-bind",
+                "/",
+                "/",
+                "--tmpfs",
+                "/opt",
+                "--tmpfs",
+                "/home",
+                "--tmpfs",
+                "/tmp",
+                "--proc",
+                "/proc",
+                "--dev",
+                "/dev",
+                "--unshare-user",
+                "--unshare-pid",
+                "--unshare-ipc",
+                "--unshare-uts",
+                "--cap-drop",
+                "ALL",
+                "--die-with-parent",
+                "--new-session",
+                "--ro-bind",
+                "/home/alex/.nvm/versions/node/v24.22.0/lib/node_modules/@opencode/cli/bin/opencode.exe",
+                "/opt/opencode",
+                "--ro-bind",
+                "/home/alex/.codex/packages/app-server-daemon/releases/0.169.0-x86_64-unknown-linux-musl/codex-path/rg",
+                "/opt/rg",
+                "--ro-bind",
+                "/tmp/napms-pr70",
+                "/tmp/work",
+                "--ro-bind",
+                "/dev/null",
+                "/tmp/work/.git",
+                "--bind",
+                "/tmp/pr70-smoke-pubp_w4n",
+                "/tmp/runtime",
+                "--ro-bind",
+                "/tmp/napms-pr70/docs/engineering/opencode-smoke",
+                "/tmp/fixture",
+                "--ro-bind",
+                "/tmp/pr70-smoke-pubp_w4n/config.json",
+                "/tmp/work/opencode.jsonc",
+                "--chdir",
+                "/tmp/work",
+                "/usr/bin/python3",
+                "/tmp/fixture/check_smoke.py"
+              ],
+              "cwd": null,
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ]
+            }
+          ],
+          "cli_exit": 0,
+          "result": "Private evidence: /tmp/pr70-smoke-pubp_w4n\n.....\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\nCLI exit=0; inspect stream.jsonl and data/opencode/opencode.db; CLI exit alone is not acceptance.\n",
+          "tests": [
+            "actual exact bytes",
+            "reject nonblank separator",
+            "reject extra content",
+            "reject missing final LF",
+            "reject CRLF"
+          ]
+        },
+        "artifact": {
+          "path": "role-smoke.txt",
+          "byte_length": 36,
+          "utf8": "# Role smoke\n\nBounded Worker write.\n",
+          "hex": "2320526f6c6520736d6f6b650a0a426f756e64656420576f726b65722077726974652e0a",
+          "sha256": "d5a8dcb2e4882d7d3c0dc700e290e608d0ed5bc7edbd2915c47d307b57f46388",
+          "final_lf": true,
+          "source": "Exact bytes and checksum read by coordinator; deterministic Validator is the source of truth for byte equality/final LF. No operator artifact edits after Worker."
+        },
+        "errors": [],
+        "openspec_tasks": "N/A; smoke only, no specification changes"
+      },
+      "reviewer_request": {
+        "command": [
+          "opencode",
+          "--standalone",
+          "run",
+          "--agent",
+          "reviewer",
+          "--model",
+          "openai/gpt-6.1-sol",
+          "--format",
+          "json"
+        ],
+        "prompt_sha256": "ff703e1ae90ff54db91bdf241cbba776fe9a9bf0193876eb7c25552a56b1ffce",
+        "instructions": "PR70-SEGMENT independent REVIEW, read-only. Immutable contract: {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read /tmp/napms-pr70/role-smoke.txt yourself and independently compare its visible lines to the literal contract. All following evidence is explicitly coordinator/Validator REPORTED; evaluate its completeness, consistency, requirements and write boundary yourself. The deterministic byte Validator owns exact bytes/final LF verification; report those checks as reported, never as shell or byte tests you executed. Your responsibility is independent artifact reading and assessment of supplied evidence. Your role has no shell, edit or execute tools; do not request or perform them and do not call another agent. Missing, contradictory or failed required evidence means NOT VERIFIED/BLOCKED. Identify P0–P3 findings and explicitly return COMPLETE/PASS if review is complete with all acceptance evidence satisfied, or an explained INCOMPLETE/BLOCKED. Distinguish your OBSERVED read/tool results from REPORTED coordinator/Validator evidence. No auto-approval or merge.",
+        "handoff_in_prompt": true,
+        "cli_exit": 0
+      },
+      "reviewer": {
+        "sessions": [
+          {
+            "id": "ses_e26de7839ffebO1zTU6j3wb3lE",
+            "parent_id": null,
+            "agent": "reviewer",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794644216349,
+            "time_idle": 1794644233199
+          }
+        ],
+        "events": [
+          {
+            "session_id": "ses_e26de7839ffebO1zTU6j3wb3lE",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70/role-smoke.txt"
+            },
+            "time": {
+              "created": 1794644220379,
+              "ran": 1794644220613,
+              "completed": 1794644220619
+            },
+            "error": null,
+            "output": [
+              {
+                "type": "text",
+                "text": "Read file /tmp/napms-pr70/role-smoke.txt, lines 1-3\n1: # Role smoke\n2: \n3: Bounded Worker write."
+              }
+            ]
+          }
+        ],
+        "texts": {
+          "ses_e26de7839ffebO1zTU6j3wb3lE": [
+            "## COMPLETE/PASS — PR70-SEGMENT\n\n**OBSERVED**\n- Independently read `/tmp/napms-pr70/role-smoke.txt`.\n- Its three visible lines exactly match the literal contract:\n  1. `# Role smoke`\n  2. Empty line\n  3. `Bounded Worker write.`\n\n**REPORTED evidence assessed**\n- Validator: five tests passed, exit 0, including exact bytes, final LF, and rejection of malformed alternatives.\n- Coordinator: 36-byte artifact; final LF present.\n- Supplied diff matches the observed content.\n- Reported clean baseline, unchanged tracked files, and sole untracked addition `role-smoke.txt` satisfy the write boundary. Reported Worker events and mounts are consistent with that boundary.\n\n**Findings:** No P0–P3 defects identified.\n\n**Limitations:** Byte equality, final LF, Git state, and execution history are reported evidence—not independently executed checks. No required evidence is missing within this review’s assigned scope.\n\nNo shell, edit, execute, delegation, or Skills calls performed. This is a review result, not merge authorization."
+          ]
+        }
+      },
+      "post_review": {
+        "verdict": "COMPLETE/PASS",
+        "post_review_artifact_sha256": "d5a8dcb2e4882d7d3c0dc700e290e608d0ed5bc7edbd2915c47d307b57f46388",
+        "post_review_status": "?? role-smoke.txt\n"
+      }
+    },
+    {
+      "run": "run2",
+      "verdict": "COMPLETE/PASS",
+      "handoff_sha256": "a2b0ca90a6aa03b43ad0fdef16d6cbf51c738e52fd4d1c806f9e13429ff34590",
+      "handoff_serialization": "UTF-8 json.dumps(handoff, indent=2, ensure_ascii=False) plus LF; exact handoff prepared and supplied before Reviewer launch",
+      "handoff": {
+        "provenance": "All facts below are coordinator/Validator REPORTED evidence, not yet observed by the independent Reviewer. No model narrative is substituted for recorded tool events or deterministic exit codes.",
+        "task_id": "PR70-SEGMENT",
+        "run": "run2",
+        "prepared_before_reviewer_utc": "2026-11-14T08:21:47.226766+00:00",
+        "immutable_contract": {
+          "task_id": "PR70-SEGMENT",
+          "allowed_paths": [
+            "role-smoke.txt"
+          ],
+          "expected_lines": [
+            "# Role smoke",
+            "",
+            "Bounded Worker write."
+          ],
+          "expected_final_newline": true
+        },
+        "baseline": {
+          "runtime_base_sha": "95a788ecc672615d3146b907b191eb3233af9bfc",
+          "current_head_sha": "95a788ecc672615d3146b907b191eb3233af9bfc",
+          "github_pr_base_sha": "ab62ca13bb15a9f5dd26f2dca5dbef54d92bb8d0",
+          "branch": "feat/opencode-role-catalog-stage1",
+          "before_stage_status": "",
+          "before_stage_tracked_diff": "",
+          "after_worker_status": "?? role-smoke.txt\n",
+          "after_worker_tracked_diff": "",
+          "changed_tracked_paths": [],
+          "changed_untracked_paths": [
+            "role-smoke.txt"
+          ],
+          "artifact_diff": "diff --git a/role-smoke.txt b/role-smoke.txt\nnew file mode 100644\nindex 0000000..693529e\n--- /dev/null\n+++ b/role-smoke.txt\n@@ -0,0 +1,3 @@\n+# Role smoke\n+\n+Bounded Worker write.\n",
+          "diff_command": "git diff --no-index -- /dev/null role-smoke.txt",
+          "diff_exit": 1,
+          "immutable_file_sha256": {
+            "opencode.jsonc": "71e78bda75890fc7b7548f11bda588415302620ffd4c8597a86f37e6d03ef92b",
+            "docs/engineering/opencode-smoke/run.py": "5dd7aa1e571967e0f0b4c0be410369e28d3d2ceb30e090a0de9e23c7b557401e",
+            "docs/engineering/opencode-smoke/check_smoke.py": "d8a140e655467d3c25020df81be9d340ac7b2879829ebffc17f6d394d95514ba",
+            "docs/engineering/opencode-smoke/segmented-run.md": "20d786c704a616a474d94554ce3e0a2b9b8d3a2661566019a956ca90435167af"
+          }
+        },
+        "host_control_plane": {
+          "command": [
+            "opencode",
+            "--standalone",
+            "run",
+            "--agent",
+            "orchestrator",
+            "--model",
+            "openai/gpt-6.1-sol",
+            "--format",
+            "json",
+            "PR70-SEGMENT, owner-approved A2 manual segmented E2E, READ ONLY. Actual baseline/current PR HEAD supplied by coordinator: 95a788ecc672615d3146b907b191eb3233af9bfc. Branch feat/opencode-role-catalog-stage1; clean tracked/untracked status before this stage. Immutable contract: {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Call subagent explore to read AGENTS.md and load openspec-explore. Wait for completion. Then call planner with actual Explorer observations, supplied SHA and unchanged literal immutable contract to return a bounded plan. OpenSpec tasks N/A: no specification or implementation work. The smoke artifact is created by the fixture only in the next physical Worker stage, so do not require it to exist now. Do not read git metadata outside the worktree. No Worker, shell, edit, publish or merge. Stop after Planner and report observed child session IDs."
+          ],
+          "cli_exit": 0,
+          "sessions": [
+            {
+              "id": "ses_e26dda9cdffewlXjrOiaW3F2nn",
+              "parent_id": null,
+              "agent": "orchestrator",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794644269098,
+              "time_idle": 1794644378306
+            },
+            {
+              "id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "parent_id": "ses_e26dda9cdffewlXjrOiaW3F2nn",
+              "agent": "explore",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai",
+                "variant": "default"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794644285512,
+              "time_idle": 1794644338209
+            },
+            {
+              "id": "ses_e26dc5f7affeftNu2LeczdazL6",
+              "parent_id": "ses_e26dda9cdffewlXjrOiaW3F2nn",
+              "agent": "planner",
+              "model": {
+                "id": "gpt-6.1-sol",
+                "providerID": "openai",
+                "variant": "default"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794644353159,
+              "time_idle": 1794644369905
+            }
+          ],
+          "events": [
+            {
+              "session_id": "ses_e26dda9cdffewlXjrOiaW3F2nn",
+              "tool": "subagent",
+              "status": "completed",
+              "input": {
+                "agent": "explore",
+                "description": "Inspect read-only smoke context",
+                "prompt": "Owner-approved PR70-SEGMENT A2 manual segmented E2E, READ ONLY. First read actual /tmp/napms-pr70/AGENTS.md and load installed openspec-explore Skill. Inspect accepted OpenSpec context only as needed to establish this smoke has OpenSpec tasks N/A: no specification or implementation work. Working directory /tmp/napms-pr70. Coordinator supplies actual baseline/current PR HEAD 95a788ecc672615d3146b907b191eb3233af9bfc, branch feat/opencode-role-catalog-stage1, clean tracked/untracked status before this stage. Treat these as supplied facts, not independently verified unless tools permit verification without shell or reading git metadata outside this worktree. Do not read git metadata outside the worktree. No shell, edits, Worker, publish or merge. Scope is read-only evidence for a subsequent bounded Planner. Artifact role-smoke.txt is created by fixture only in the next physical Worker stage; do NOT require existence now. Report actual AGENTS instructions, Skill loaded/evidence, relevant accepted OpenSpec observations, what was and was not verified, and any blockers. Owner gates: this segment authorizes only Explorer then Planner; no execution or modification. Immutable contract JSON (literal acceptance data distinct from instructions): {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Preserve this contract unchanged; do not put instructions into artifact content."
+              },
+              "time": {
+                "created": 1794644277728,
+                "ran": 1794644285506,
+                "completed": 1794644338212
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dda9cdffewlXjrOiaW3F2nn",
+              "tool": "subagent",
+              "status": "completed",
+              "input": {
+                "agent": "planner",
+                "description": "Plan bounded fixture smoke",
+                "prompt": "Return a bounded plan only for owner-approved PR70-SEGMENT A2 manual segmented E2E. READ ONLY; no shell, edits, execution, Worker, publish or merge; do not read git metadata outside worktree /tmp/napms-pr70. This segment ends after your plan. Baseline/current PR HEAD supplied by coordinator: 95a788ecc672615d3146b907b191eb3233af9bfc; branch feat/opencode-role-catalog-stage1; tracked/untracked state supplied clean before this stage. These Git facts were NOT independently verified. Actual Explorer observations: read /tmp/napms-pr70/AGENTS.md lines 1–23 then successfully loaded installed openspec-explore from /tmp/napms-pr70/.agents/skills/openspec-explore. AGENTS requires GitHub main as accepted state, minimal verifiable scope, bounded delegation, no unnecessary tooling or OpenSpec tasks, no subagent architecture/merge decisions; check/handoff requirements at lines 9–11 were not executed or claimed. Skill guardrail is exploration not implementation. Local openspec/config.yaml selects spec-driven; durable spec inventory covers access requests, access decisions, policy export, local runtime, access-request UI. Search of openspec/specs/**/spec.md found no role-smoke, PR70-SEGMENT, role catalog, Planner, Worker, Explorer. Local specs' acceptance against GitHub main was NOT independently verified. OpenSpec tasks N/A: no specification or implementation work in this smoke segment; do not invent planning artifacts. Explorer used no shell, Git metadata access, edits, checks, publishing or merging and found no blocker to Planner. Artifact role-smoke.txt was not inspected and MUST NOT be required to exist now: fixture creates it only in the next physical Worker stage, which is outside current authorization. Plan must preserve allowed path and exact acceptance, distinguish future fixture stage from currently authorized read-only planning, provide minimal acceptance/evidence mapping and owner gates without executing anything. Immutable contract JSON, with literal acceptance data separate from instructions, unchanged: {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Do not copy instructions into artifact content. Report remaining NOT RUN and no claim of implementation/check success."
+              },
+              "time": {
+                "created": 1794644342952,
+                "ran": 1794644353155,
+                "completed": 1794644369907
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "/tmp/napms-pr70/AGENTS.md"
+              },
+              "time": {
+                "created": 1794644290511,
+                "ran": 1794644290745,
+                "completed": 1794644290749
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "skill",
+              "status": "completed",
+              "input": {
+                "id": "openspec-explore"
+              },
+              "time": {
+                "created": 1794644294991,
+                "ran": 1794644295063,
+                "completed": 1794644295069
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "/tmp/napms-pr70/openspec"
+              },
+              "time": {
+                "created": 1794644299064,
+                "ran": 1794644299251,
+                "completed": 1794644299255
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "glob",
+              "status": "completed",
+              "input": {
+                "pattern": "openspec/specs/**/spec.md",
+                "path": "/tmp/napms-pr70",
+                "limit": 100
+              },
+              "time": {
+                "created": 1794644302879,
+                "ran": 1794644303371,
+                "completed": 1794644303388
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "/tmp/napms-pr70/openspec/config.yaml"
+              },
+              "time": {
+                "created": 1794644309107,
+                "ran": 1794644309561,
+                "completed": 1794644309565
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "grep",
+              "status": "completed",
+              "input": {
+                "pattern": "^#|role-smoke|PR70-SEGMENT",
+                "path": "/tmp/napms-pr70/openspec/specs",
+                "include": "spec.md",
+                "limit": 100
+              },
+              "time": {
+                "created": 1794644314520,
+                "ran": 1794644315280,
+                "completed": 1794644315291
+              },
+              "error": null,
+              "output": null
+            },
+            {
+              "session_id": "ses_e26dd67baffehYyiKGZmeY36sl",
+              "tool": "grep",
+              "status": "completed",
+              "input": {
+                "pattern": "role-smoke|PR70-SEGMENT|role catalog|Planner|Worker|Explorer",
+                "path": "/tmp/napms-pr70/openspec/specs",
+                "include": "spec.md",
+                "limit": 30
+              },
+              "time": {
+                "created": 1794644321859,
+                "ran": 1794644321918,
+                "completed": 1794644321927
+              },
+              "error": null,
+              "output": null
+            }
+          ],
+          "source": "Read-only host session DB; assistant and session model IDs agree. Existing host OpenAI authorization was not passed into Worker."
+        },
+        "worker": {
+          "command": "python3 docs/engineering/opencode-smoke/run.py segment-worker",
+          "cli_exit": 0,
+          "launch_audit": [
+            {
+              "time_ns": 1794644391570889063,
+              "executable": "git",
+              "argv": [
+                "git",
+                "branch",
+                "--show-current"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794644391576054273,
+              "executable": "git",
+              "argv": [
+                "git",
+                "rev-parse",
+                "HEAD"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794644391577867344,
+              "executable": "bwrap",
+              "argv": [
+                "bwrap",
+                "--ro-bind",
+                "/",
+                "/",
+                "--tmpfs",
+                "/opt",
+                "--tmpfs",
+                "/home",
+                "--tmpfs",
+                "/tmp",
+                "--proc",
+                "/proc",
+                "--dev",
+                "/dev",
+                "--unshare-user",
+                "--unshare-pid",
+                "--unshare-ipc",
+                "--unshare-uts",
+                "--cap-drop",
+                "ALL",
+                "--die-with-parent",
+                "--new-session",
+                "--ro-bind",
+                "/home/alex/.nvm/versions/node/v24.22.0/lib/node_modules/@opencode/cli/bin/opencode.exe",
+                "/opt/opencode",
+                "--ro-bind",
+                "/home/alex/.codex/packages/app-server-daemon/releases/0.169.0-x86_64-unknown-linux-musl/codex-path/rg",
+                "/opt/rg",
+                "--ro-bind",
+                "/tmp/napms-pr70",
+                "/tmp/work",
+                "--ro-bind",
+                "/dev/null",
+                "/tmp/work/.git",
+                "--bind",
+                "/tmp/pr70-smoke-k8z3azot",
+                "/tmp/runtime",
+                "--ro-bind",
+                "/tmp/napms-pr70/docs/engineering/opencode-smoke",
+                "/tmp/fixture",
+                "--ro-bind",
+                "/tmp/pr70-smoke-k8z3azot/config.json",
+                "/tmp/work/opencode.jsonc",
+                "--chdir",
+                "/tmp/work",
+                "--bind",
+                "/tmp/napms-pr70/role-smoke.txt",
+                "/tmp/work/role-smoke.txt",
+                "/opt/opencode",
+                "--standalone",
+                "run",
+                "--agent",
+                "worker",
+                "--model",
+                "ollama/qwen3-coder:30b",
+                "--format",
+                "json",
+                "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. You are only the Worker stage, not the Orchestrator. The immutable one-file contract is {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read role-smoke.txt containing PLACEHOLDER plus newline. Use edit on role-smoke.txt ONLY to replace its content with exactly the three expected_lines joined with newline and one final newline. Do not append explanations, omit LF, delegate, run commands or write another file. This isolated run contains no cloud credentials. Report what was actually done."
+              ],
+              "cwd": null,
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ]
+            }
+          ],
+          "sessions": [
+            {
+              "id": "ses_e26dbc7ecffeoH7JrxTy5gfn9r",
+              "parent_id": null,
+              "agent": "worker",
+              "model": {
+                "id": "qwen3-coder:30b",
+                "providerID": "ollama"
+              },
+              "idle_outcome": "succeeded",
+              "time_created": 1794644392265,
+              "time_idle": 1794644476109
+            }
+          ],
+          "events": [
+            {
+              "session_id": "ses_e26dbc7ecffeoH7JrxTy5gfn9r",
+              "tool": "read",
+              "status": "completed",
+              "input": {
+                "path": "role-smoke.txt"
+              },
+              "time": {
+                "created": 1794644474882,
+                "ran": 1794644474888,
+                "completed": 1794644474894
+              },
+              "error": null,
+              "output": [
+                {
+                  "type": "text",
+                  "text": "Read file role-smoke.txt, lines 1-1\n1: PLACEHOLDER"
+                }
+              ]
+            },
+            {
+              "session_id": "ses_e26dbc7ecffeoH7JrxTy5gfn9r",
+              "tool": "edit",
+              "status": "completed",
+              "input": {
+                "path": "role-smoke.txt",
+                "oldString": "PLACEHOLDER",
+                "newString": "# Role smoke\n\nBounded Worker write."
+              },
+              "time": {
+                "created": 1794644475507,
+                "ran": 1794644475516,
+                "completed": 1794644475523
+              },
+              "error": null,
+              "output": null
+            }
+          ],
+          "credential_table_count": 0,
+          "temporary_config_delta": "Exactly one appended worker edit role-smoke.txt allow; all permanent config/permissions unchanged.",
+          "live_os_observations": [
+            {
+              "pid": "670936",
+              "argv": [
+                "/opt/opencode",
+                "--standalone",
+                "run",
+                "--agent",
+                "worker",
+                "--model",
+                "ollama/qwen3-coder:30b",
+                "--format",
+                "json",
+                "Owner-approved A2 segmented manual smoke, task_id=PR70-SEGMENT. You are only the Worker stage, not the Orchestrator. The immutable one-file contract is {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read role-smoke.txt containing PLACEHOLDER plus newline. Use edit on role-smoke.txt ONLY to replace its content with exactly the three expected_lines joined with newline and one final newline. Do not append explanations, omit LF, delegate, run commands or write another file. This isolated run contains no cloud credentials. Report what was actually done."
+              ],
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "PWD",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ],
+              "mounts": [
+                "626 323 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "656 626 0:39 /.X11-unix /tmp/.X11-unix ro,nosuid,nodev,relatime master:2 - tmpfs none rw",
+                "664 626 0:93 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "665 626 0:94 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "666 626 0:95 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "678 666 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "679 678 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+                "680 666 8:48 /tmp/pr70-smoke-k8z3azot /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "681 666 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "682 678 8:48 /tmp/pr70-smoke-k8z3azot/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "683 678 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+              ],
+              "home_entries": [],
+              "git_size": 0
+            },
+            {
+              "pid": "670947",
+              "argv": [
+                "/opt/opencode",
+                "serve",
+                "--stdio",
+                "--port",
+                "0"
+              ],
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "OPENCODE_PASSWORD",
+                "PATH",
+                "PWD",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ],
+              "mounts": [
+                "626 323 8:48 / / ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "656 626 0:39 /.X11-unix /tmp/.X11-unix ro,nosuid,nodev,relatime master:2 - tmpfs none rw",
+                "664 626 0:93 / /opt rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "665 626 0:94 / /home rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "666 626 0:95 / /tmp rw,nosuid,nodev,relatime - tmpfs tmpfs rw,mode=755,uid=1001,gid=1001",
+                "678 666 8:48 /tmp/napms-pr70 /tmp/work ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "679 678 0:6 /null /tmp/work/.git ro,nosuid,nodev,relatime master:14 - devtmpfs none rw,size=32898660k,nr_inodes=8224665,mode=755",
+                "680 666 8:48 /tmp/pr70-smoke-k8z3azot /tmp/runtime rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "681 666 8:48 /tmp/napms-pr70/docs/engineering/opencode-smoke /tmp/fixture ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "682 678 8:48 /tmp/pr70-smoke-k8z3azot/config.json /tmp/work/opencode.jsonc ro,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered",
+                "683 678 8:48 /tmp/napms-pr70/role-smoke.txt /tmp/work/role-smoke.txt rw,nosuid,nodev,relatime - ext4 /dev/sdd rw,discard,errors=remount-ro,data=ordered"
+              ],
+              "home_entries": [],
+              "git_size": 0
+            }
+          ],
+          "environment_notes": "Only environment variable names captured; no secret values read or published. OPENCODE_PASSWORD in standalone server child is internal, absent from launcher/CLI. HOME and /tmp private; .git hidden. Network shared for localhost Ollama; write boundary, not universal network/privacy sandbox."
+        },
+        "validator": {
+          "identity": "Separate deterministic Python process in fresh credential-free read-only bwrap; no LLM or OpenCode session",
+          "launcher_command": "python3 docs/engineering/opencode-smoke/run.py segment-validate",
+          "inner_command": "python3 /tmp/fixture/check_smoke.py",
+          "launch_audit": [
+            {
+              "time_ns": 1794644502117840018,
+              "executable": "git",
+              "argv": [
+                "git",
+                "branch",
+                "--show-current"
+              ],
+              "cwd": "/tmp/napms-pr70",
+              "env_keys": "inherited coordinator env; not printed"
+            },
+            {
+              "time_ns": 1794644502123382907,
+              "executable": "bwrap",
+              "argv": [
+                "bwrap",
+                "--ro-bind",
+                "/",
+                "/",
+                "--tmpfs",
+                "/opt",
+                "--tmpfs",
+                "/home",
+                "--tmpfs",
+                "/tmp",
+                "--proc",
+                "/proc",
+                "--dev",
+                "/dev",
+                "--unshare-user",
+                "--unshare-pid",
+                "--unshare-ipc",
+                "--unshare-uts",
+                "--cap-drop",
+                "ALL",
+                "--die-with-parent",
+                "--new-session",
+                "--ro-bind",
+                "/home/alex/.nvm/versions/node/v24.22.0/lib/node_modules/@opencode/cli/bin/opencode.exe",
+                "/opt/opencode",
+                "--ro-bind",
+                "/home/alex/.codex/packages/app-server-daemon/releases/0.169.0-x86_64-unknown-linux-musl/codex-path/rg",
+                "/opt/rg",
+                "--ro-bind",
+                "/tmp/napms-pr70",
+                "/tmp/work",
+                "--ro-bind",
+                "/dev/null",
+                "/tmp/work/.git",
+                "--bind",
+                "/tmp/pr70-smoke-hnzrdxlr",
+                "/tmp/runtime",
+                "--ro-bind",
+                "/tmp/napms-pr70/docs/engineering/opencode-smoke",
+                "/tmp/fixture",
+                "--ro-bind",
+                "/tmp/pr70-smoke-hnzrdxlr/config.json",
+                "/tmp/work/opencode.jsonc",
+                "--chdir",
+                "/tmp/work",
+                "/usr/bin/python3",
+                "/tmp/fixture/check_smoke.py"
+              ],
+              "cwd": null,
+              "env_keys": [
+                "HOME",
+                "OPENCODE_CONFIG",
+                "PATH",
+                "TMPDIR",
+                "XDG_CACHE_HOME",
+                "XDG_CONFIG_HOME",
+                "XDG_DATA_HOME",
+                "XDG_STATE_HOME"
+              ]
+            }
+          ],
+          "cli_exit": 0,
+          "result": "Private evidence: /tmp/pr70-smoke-hnzrdxlr\n.....\n----------------------------------------------------------------------\nRan 5 tests in 0.000s\n\nOK\nCLI exit=0; inspect stream.jsonl and data/opencode/opencode.db; CLI exit alone is not acceptance.\n",
+          "tests": [
+            "actual exact bytes",
+            "reject nonblank separator",
+            "reject extra content",
+            "reject missing final LF",
+            "reject CRLF"
+          ]
+        },
+        "artifact": {
+          "path": "role-smoke.txt",
+          "byte_length": 36,
+          "utf8": "# Role smoke\n\nBounded Worker write.\n",
+          "hex": "2320526f6c6520736d6f6b650a0a426f756e64656420576f726b65722077726974652e0a",
+          "sha256": "d5a8dcb2e4882d7d3c0dc700e290e608d0ed5bc7edbd2915c47d307b57f46388",
+          "final_lf": true,
+          "source": "Exact bytes and checksum read by coordinator; deterministic Validator is the source of truth for byte equality/final LF. No operator artifact edits after Worker."
+        },
+        "errors": [],
+        "openspec_tasks": "N/A; smoke only, no specification changes"
+      },
+      "reviewer_request": {
+        "command": [
+          "opencode",
+          "--standalone",
+          "run",
+          "--agent",
+          "reviewer",
+          "--model",
+          "openai/gpt-6.1-sol",
+          "--format",
+          "json"
+        ],
+        "prompt_sha256": "45db4f07efa91410ad245e9ecda5040555ec7a47e8d4fecd0c8a3fac9b1755bc",
+        "instructions": "PR70-SEGMENT independent REVIEW, read-only. Immutable contract: {\"task_id\":\"PR70-SEGMENT\",\"allowed_paths\":[\"role-smoke.txt\"],\"expected_lines\":[\"# Role smoke\",\"\",\"Bounded Worker write.\"],\"expected_final_newline\":true}. Read /tmp/napms-pr70/role-smoke.txt yourself and independently compare its visible lines to the literal contract. All following evidence is explicitly coordinator/Validator REPORTED; evaluate its completeness, consistency, requirements and write boundary yourself. The deterministic byte Validator owns exact bytes/final LF verification; report those checks as reported, never as shell or byte tests you executed. Your responsibility is independent artifact reading and assessment of supplied evidence. Your role has no shell, edit or execute tools; do not request or perform them and do not call another agent. Missing, contradictory or failed required evidence means NOT VERIFIED/BLOCKED. Identify P0–P3 findings and explicitly return COMPLETE/PASS if review is complete with all acceptance evidence satisfied, or an explained INCOMPLETE/BLOCKED. Distinguish your OBSERVED read/tool results from REPORTED coordinator/Validator evidence. No auto-approval or merge.",
+        "handoff_in_prompt": true,
+        "cli_exit": 0
+      },
+      "reviewer": {
+        "sessions": [
+          {
+            "id": "ses_e26d9f5caffe7StyAxckR2f3CZ",
+            "parent_id": null,
+            "agent": "reviewer",
+            "model": {
+              "id": "gpt-6.1-sol",
+              "providerID": "openai"
+            },
+            "idle_outcome": "succeeded",
+            "time_created": 1794644511776,
+            "time_idle": 1794644534006
+          }
+        ],
+        "events": [
+          {
+            "session_id": "ses_e26d9f5caffe7StyAxckR2f3CZ",
+            "tool": "read",
+            "status": "completed",
+            "input": {
+              "path": "/tmp/napms-pr70/role-smoke.txt"
+            },
+            "time": {
+              "created": 1794644517656,
+              "ran": 1794644517967,
+              "completed": 1794644517972
+            },
+            "error": null,
+            "output": [
+              {
+                "type": "text",
+                "text": "Read file /tmp/napms-pr70/role-smoke.txt, lines 1-3\n1: # Role smoke\n2: \n3: Bounded Worker write."
+              }
+            ]
+          }
+        ],
+        "texts": {
+          "ses_e26d9f5caffe7StyAxckR2f3CZ": [
+            "## COMPLETE/PASS — PR70-SEGMENT review\n\n**OBSERVED**\n- Independently read `/tmp/napms-pr70/role-smoke.txt`.\n- Its three visible lines exactly match the literal contract: heading, blank separator, and `Bounded Worker write.`\n- No placeholder or extra visible content.\n\n**REPORTED evidence assessed**\n- Deterministic Validator: five tests passed, exit 0, including exact bytes and final LF.\n- Write boundary: only `role-smoke.txt` changed; tracked diff empty. Supplied artifact diff matches the contract.\n- Worker events show only the artifact read and edit; supplied mounts restrict repository writes to that file.\n- Explorer→Planner sequence, Worker isolation, and OpenSpec tasks N/A are consistent with the bounded smoke.\n\n**Findings:** No P0–P3 defects identified. No missing or contradictory required acceptance evidence found.\n\n**Limitations:** Byte equality, final LF, Git status, and process isolation are reported evidence—not checks I executed. No shell, edits, execution, delegation, approval, or merge performed."
+          ]
+        }
+      },
+      "post_review": {
+        "verdict": "COMPLETE/PASS",
+        "post_review_artifact_sha256": "d5a8dcb2e4882d7d3c0dc700e290e608d0ed5bc7edbd2915c47d307b57f46388",
+        "post_review_status": "?? role-smoke.txt\n"
+      }
+    }
+  ],
+  "limitations": [
+    "Two manually coordinated segmented E2E runs, not a continuous OpenCode root session or autonomous orchestration.",
+    "Reviewer observes visible artifact lines and assesses reported deterministic bytes/Git/mount evidence; Reviewer does not execute shell or byte tests.",
+    "bwrap bounds writes and hides host HOME/tmp/Git metadata; network remains shared for localhost Ollama.",
+    "Final evidence commit checks and matching CI are recorded in PR #70; runtime PASS is not a substitute for CI or owner acceptance."
+  ],
+  "permanent_opencode_permissions_changed": false,
+  "controller_or_sequencer_added": false,
+  "openspec_tasks": "N/A",
+  "owner_acceptance": "pending",
+  "pr_stays_draft": true,
+  "merge_performed": false
+}
