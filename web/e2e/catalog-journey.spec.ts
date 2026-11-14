@@ -335,4 +335,19 @@ test('REAL catalogs create an active policy from a new application profile', asy
   const originalRuleAfter = await (await page.request.get(`/policy-rules/${policyRuleId}`,
     { headers: { Authorization: `Bearer ${credentials.exporter.token}` } })).json()
   expect(originalRuleAfter.subject.interactionRevisionId).toBe(revisionId)
+
+  // Directed pair is unique regardless of purpose or traffic. Guide the actor
+  // back to the existing Interaction instead of allowing a duplicate.
+  await page.goto(`/applications/${applicationId}/interactions/new`)
+  await login(page, credentials.requester.token)
+  await page.getByLabel('Назначение взаимодействия').fill('Different traffic, same direction')
+  await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'Sender' })
+  await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'Receiver' })
+  await expect(page.getByRole('alert')).toContainText('направленная связь уже существует')
+  await expect(page.getByRole('button', { name: 'Создать', exact: true })).toBeDisabled()
+  await page.getByRole('alert').getByRole('link', { name: 'Order fulfillment traffic' }).click()
+  await expect(page).toHaveURL(interactionUrl)
+  const afterAttempt = await (await page.request.get(`/applications/${applicationId}/interactions`,
+    { headers: requester })).json()
+  expect(afterAttempt.items).toHaveLength(1)
 })
