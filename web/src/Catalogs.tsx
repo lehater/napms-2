@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint, type TrafficClauseInput } from './api'
+import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint } from './api'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
-import { ClauseFields, RevisionPublisher, emptyClause, parseClause, type ClauseDraft } from './TrafficClauseDraft'
+import { InteractionCreateScreen, InteractionDetailScreen, InteractionRevisionCreateScreen, InteractionRevisionDetailScreen } from './InteractionScreens'
 import { CollectionView } from './components/real/CollectionView'
 import { DetailView } from './components/real/DetailView'
 import { EntityTable } from './components/real/EntityTable'
@@ -74,7 +74,10 @@ function ApplicationRoutes({ client }: { client: Client }) {
     <Route path="new" element={<NewApplication client={client} />} />
     <Route path=":applicationId" element={<ApplicationDetail client={client} />} />
     <Route path=":applicationId/components/:componentId" element={<ComponentDetail client={client} />} />
-    <Route path=":applicationId/interactions/:interactionId" element={<InteractionDetail client={client} />} />
+    <Route path=":applicationId/interactions/new" element={<InteractionCreateScreen client={client} />} />
+    <Route path=":applicationId/interactions/:interactionId" element={<InteractionDetailScreen client={client} />} />
+    <Route path=":applicationId/interactions/:interactionId/revisions/new" element={<InteractionRevisionCreateScreen client={client} />} />
+    <Route path=":applicationId/interactions/:interactionId/revisions/:revisionId" element={<InteractionRevisionDetailScreen client={client} />} />
     <Route path="*" element={<section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/applications">Профили приложений</Link></section>} />
   </Routes>
 }
@@ -123,9 +126,9 @@ function ApplicationDetail({ client }: { client: Client }) {
   if (!application) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} />{!error && <p role="status">Загрузка профиля…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><span aria-current="page">{application.name}</span></>}
     title={application.name} tabs={[{id:'overview',label:'Обзор',href:href('overview')},{id:'components',label:'Компоненты',href:href('components')},{id:'interactions',label:'Взаимодействия',href:href('interactions')}]} activeTab={tab}>
-    {tab === 'overview' && <dl className="ux-properties"><div><dt>Идентификатор</dt><dd>{application.applicationId}</dd></div><div><dt>Компоненты и взаимодействия</dt><dd>Создавайте на соответствующих вкладках. Ревизия взаимодействия сохраняется вместе с направлением и портом.</dd></div></dl>}
+    {tab === 'overview' && <dl className="ux-properties"><div><dt>Идентификатор</dt><dd>{application.applicationId}</dd></div><div><dt>Компоненты и взаимодействия</dt><dd>Создавайте компоненты на вкладке «Компоненты», взаимодействия — на вкладке «Взаимодействия». Ревизии и условия трафика доступны из карточки взаимодействия.</dd></div></dl>}
     {tab === 'components' && <ComponentsTab client={client} application={application} reloadKey={reload} refresh={()=>setReload(value=>value+1)} />}
-    {tab === 'interactions' && <InteractionsTab client={client} application={application} reloadKey={reload} refresh={()=>setReload(value=>value+1)} />}
+    {tab === 'interactions' && <InteractionsTab client={client} application={application} reloadKey={reload} />}
   </DetailView>
 }
 
@@ -141,79 +144,51 @@ function ComponentsTab({ client, application, reloadKey, refresh }: { client: Cl
   </div>
 }
 
-function portRange(start: number | null, end: number | null) {
-  return start === null || end === null ? 'ANY' : start === end ? String(start) : `${start}–${end}`
-}
-
-function InteractionsTab({ client, application, reloadKey, refresh }: { client: Client; application: Application; reloadKey: number; refresh: () => void }) {
-  const [page, setPage] = useState<CatalogPage<Interaction> | null>(null), [components, setComponents] = useState<Component[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false)
-  const [source, setSource] = useState(''), [destination, setDestination] = useState(''), [protocol, setProtocol] = useState<'TCP'|'UDP'>('TCP'), [start, setStart] = useState('443'), [end, setEnd] = useState('443'), [sourceStart, setSourceStart] = useState(''), [sourceEnd, setSourceEnd] = useState('')
-  const [purpose, setPurpose] = useState(''), [additional, setAdditional] = useState<ClauseDraft[]>([])
+function InteractionsTab({ client, application, reloadKey }: {
+  client: Client; application: Application; reloadKey: number
+}) {
+  const [page, setPage] = useState<CatalogPage<Interaction> | null>(null)
+  const [error, setError] = useState('')
   const [params, setParams] = useSearchParams()
   const offset = Math.max(0, Number(params.get('interactionOffset')) || 0)
-  useEffect(() => { let active=true; setPage(null); setError(''); Promise.all([client.interactions(application.applicationId,offset), allPages((pageOffset,limit)=>client.components(application.applicationId,pageOffset,limit))]).then(([rows,values])=>{if(active){setPage(rows);setComponents(values)}}).catch(reason=>{if(active)setError(catalogError(reason))}); return ()=>{active=false} }, [client,application.applicationId,offset,reloadKey])
-  async function submit(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    let clauses: TrafficClauseInput[]
-    try {
-      clauses = [parseClause({
-        ipProtocol: protocol, sourcePortStart: sourceStart, sourcePortEnd: sourceEnd,
-        destinationPortStart: start, destinationPortEnd: end,
-      }), ...additional.map(parseClause)]
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Недопустимый диапазон портов.')
-      return
-    }
-    setBusy(true)
-    try {
-      await client.createInteraction(application.applicationId, {
-        sourceComponentId: source, destinationComponentId: destination,
-        purpose, trafficClauses: clauses,
-      })
-      setAdditional([])
-      refresh()
-    } catch(reason) { setError(catalogError(reason)) } finally { setBusy(false) }
+  useEffect(() => {
+    let active = true
+    setPage(null); setError('')
+    client.interactions(application.applicationId, offset)
+      .then(result => { if (active) setPage(result) })
+      .catch(reason => { if (active) setError(catalogError(reason)) })
+    return () => { active = false }
+  }, [client, application.applicationId, offset, reloadKey])
+  function changePage(nextOffset: number) {
+    setParams(current => {
+      const next = new URLSearchParams(current)
+      next.set('tab', 'interactions')
+      if (nextOffset > 0) next.set('interactionOffset', String(nextOffset))
+      else next.delete('interactionOffset')
+      return next
+    })
   }
-  function changePage(nextOffset: number) { setParams(current => { const next = new URLSearchParams(current); next.set('tab','interactions'); if (nextOffset > 0) next.set('interactionOffset',String(nextOffset)); else next.delete('interactionOffset'); return next }) }
-  return <div className="space-y-4"><h2>Направленные взаимодействия</h2><ErrorNotice text={error} />
-    <form className="process-form interaction-form" onSubmit={submit}>
-      <label className="interaction-purpose">Назначение взаимодействия
-        <input aria-label="Назначение взаимодействия" required maxLength={300} value={purpose}
-          placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
-      </label>
-      <p className="interaction-initial-label">Ревизия #1 · TrafficClause #1</p>
-      <label>Источник<select required value={source} onChange={event=>setSource(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
-      <label>Получатель<select required value={destination} onChange={event=>setDestination(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
-      <label>Протокол<select value={protocol} onChange={event=>setProtocol(event.target.value as 'TCP'|'UDP')}><option value="TCP">TCP</option><option value="UDP">UDP</option></select></label>
-      <fieldset className="interaction-port-group">
-        <legend>Порт источника (ANY)</legend>
-        <label>От<input aria-label="Порт источника от" type="number" min={1} max={65535} placeholder="ANY" value={sourceStart} onChange={event=>setSourceStart(event.target.value)} /></label>
-        <span aria-hidden="true">–</span>
-        <label>До<input aria-label="Порт источника до" type="number" min={1} max={65535} placeholder="ANY" value={sourceEnd} onChange={event=>setSourceEnd(event.target.value)} /></label>
-      </fieldset>
-      <fieldset className="interaction-port-group">
-        <legend>Порт назначения</legend>
-        <label>От<input aria-label="Порт назначения от" type="number" required min={1} max={65535} value={start} onChange={event=>setStart(event.target.value)} /></label>
-        <span aria-hidden="true">–</span>
-        <label>До<input aria-label="Порт назначения до" type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
-      </fieldset>
-      <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать'}</Button>
-      {additional.map((item,index) => <div className="interaction-extra" key={index}>
-        <ClauseFields index={index+1} item={item}
-          change={next => setAdditional(items => items.map((clause,i) => i === index ? next : clause))}
-          remove={() => setAdditional(items => items.filter((_,i) => i !== index))} />
-      </div>)}
-      <div className="interaction-extra">
-        <Button type="button" variant="outline" disabled={additional.length >= 31}
-          onClick={() => setAdditional(items => [...items, emptyClause()])}>Добавить условие</Button>
-      </div>
-    </form>
+  return <div className="space-y-4">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><h2>Взаимодействия</h2><p className="ux-note">Каждая запись описывает отдельное назначение связи. Ревизии и условия трафика доступны из карточки взаимодействия.</p></div>
+      <Button asChild><Link to={`/applications/${application.applicationId}/interactions/new`}>Создать</Link></Button>
+    </div>
+    <ErrorNotice text={error}/>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
-      {key:'interaction',title:'Направление',render:item=><><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link><small>{item.purpose || 'Без описания (legacy)'}</small></>},
-      {key:'revision',title:'Последняя ревизия',render:item=>{ const current=item.revisions.at(-1)!; return <span>#{current.revisionNumber} · {current.trafficLabel}</span> }},
-    ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы." loading={!page && !error} error={error} />
-    <div className="ux-pagination"><Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit??20)))}>Назад</Button><span>Страница {Math.floor(offset/(page?.limit??20))+1}</span><Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit??20))}>Далее</Button></div>
+      {key:'purpose', title:'Назначение', render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.purpose || 'Без описания (историческая запись)'}</Link>},
+      {key:'direction', title:'Направление', render:item=>`${item.sourceComponentName} → ${item.destinationComponentName}`},
+      {key:'latest', title:'Последняя ревизия', render:item=>{
+        const latest = item.revisions.at(-1)!
+        return <Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}/revisions/${latest.interactionRevisionId}`}>{`#${latest.revisionNumber}`}</Link>
+      }},
+      {key:'count', title:'Условий', render:item=>item.revisions.at(-1)!.trafficClauses.length},
+    ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы."
+      loading={!page && !error} error={error}/>
+    <div className="ux-pagination">
+      <Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit ?? 20)))}>Назад</Button>
+      <span>Страница {Math.floor(offset/(page?.limit ?? 20)) + 1}</span>
+      <Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit ?? 20))}>Далее</Button>
+    </div>
   </div>
 }
 
@@ -226,29 +201,6 @@ function ComponentDetail({ client }: { client: Client }) {
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}`}>{item.applicationName}</Link><span>/</span><span aria-current="page">{item.name}</span></>}
     title={item.name} tabs={[{id:'overview',label:'Обзор',href:`/applications/${applicationId}/components/${componentId}`}]} activeTab="overview">
     <dl className="ux-properties"><div><dt>Профиль приложения</dt><dd><Link to={`/applications/${applicationId}`}>{item.applicationName}</Link></dd></div><div><dt>Идентификатор</dt><dd>{item.componentId}</dd></div></dl>
-  </DetailView>
-}
-
-function InteractionDetail({ client }: { client: Client }) {
-  const { applicationId='', interactionId='' } = useParams()
-  const [loaded,setLoaded]=useState<{id:string;item:Interaction}|null>(null),[failure,setFailure]=useState<{id:string;text:string}|null>(null)
-  useEffect(()=>{let active=true;setLoaded(null);setFailure(null);client.interaction(applicationId,interactionId).then(value=>{if(active)setLoaded({id:interactionId,item:value})}).catch(reason=>{if(active)setFailure({id:interactionId,text:catalogError(reason)})});return()=>{active=false}},[client,applicationId,interactionId])
-  const item=loaded?.id===interactionId?loaded.item:null,error=failure?.id===interactionId?failure.text:''
-  if(!item)return <section className="ux-panel ux-panel-body"><ErrorNotice text={error}/>{!error&&<p role="status">Загрузка взаимодействия…</p>}</section>
-  return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}?tab=interactions`}>{item.applicationName}</Link><span>/</span><span aria-current="page">Взаимодействие</span></>}
-    title={`${item.sourceComponentName} → ${item.destinationComponentName}`} subtitle={<Link to={`/applications/${applicationId}`}>{item.applicationName}</Link>}
-    tabs={[{id:'overview',label:'Ревизии',href:`/applications/${applicationId}/interactions/${interactionId}`}]} activeTab="overview">
-    {item.purpose && <p><strong>Назначение:</strong> {item.purpose}</p>}
-    <EntityTable rows={item.revisions} columns={[
-      {key:'number',title:'Ревизия',render:revision=>`#${revision.revisionNumber}`},
-      {key:'clauses',title:'TrafficClause (неизменяемые)',render:revision=>
-        <div className="flex flex-col gap-1">{revision.trafficClauses.map(clause=>
-          <span key={clause.clauseIndex}>{`#${clause.clauseIndex}`} · {clause.ipProtocol} · {portRange(clause.sourcePortStart,clause.sourcePortEnd)} → {portRange(clause.destinationPortStart,clause.destinationPortEnd)}</span>)}</div>},
-      {key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>},
-    ]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
-    <RevisionPublisher key={`${interactionId}:${item.revisions.at(-1)?.revisionNumber}`}
-      applicationId={applicationId} interaction={item} client={client} describeError={catalogError}
-      onPublished={updated=>setLoaded({id:interactionId,item:updated})}/>
   </DetailView>
 }
 
