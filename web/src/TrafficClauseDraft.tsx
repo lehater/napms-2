@@ -1,6 +1,5 @@
-import { useState, type FormEvent } from 'react'
 import { Button } from './components/ui/button'
-import { type Client, type Interaction, type TrafficClauseInput, type TrafficClause } from './api'
+import { type TrafficClauseInput, type TrafficClause } from './api'
 
 export type ClauseDraft = {
   ipProtocol: 'TCP' | 'UDP'
@@ -69,48 +68,3 @@ export function ClauseFields({ item, index, change, remove }: {
   </fieldset>
 }
 
-export function RevisionPublisher({ client, applicationId, interaction, onPublished, describeError }: {
-  client: Client
-  applicationId: string
-  interaction: Interaction
-  onPublished: (item: Interaction) => void
-  describeError: (error: unknown) => string
-}) {
-  const latest = interaction.revisions.at(-1)!
-  const [clauses, setClauses] = useState<ClauseDraft[]>(latest.trafficClauses.map(draftFromClause))
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  function update(index: number, next: ClauseDraft) {
-    setClauses(previous => previous.map((value, i) => i === index ? next : value))
-  }
-  async function publish(event: FormEvent) {
-    event.preventDefault()
-    setError('')
-    let trafficClauses: TrafficClauseInput[]
-    try { trafficClauses = clauses.map(parseClause) }
-    catch (reason) { setError(reason instanceof Error ? reason.message : 'Недопустимое условие'); return }
-    setBusy(true)
-    try {
-      const updated = await client.publishInteractionRevision(applicationId, interaction.interactionId, trafficClauses)
-      onPublished(updated)
-    } catch (reason) { setError(describeError(reason)) }
-    finally { setBusy(false) }
-  }
-  return <section className="ux-panel ux-panel-body" aria-label="Новая ревизия">
-    <h3>Новая ревизия #{latest.revisionNumber + 1}</h3>
-    <p>Изменения остаются черновиком до публикации. Существующие ревизии и правила не меняются.</p>
-    {error && <p role="alert" className="ux-field-error">{error}</p>}
-    <form onSubmit={publish} className="interaction-revision-editor">
-      {clauses.map((clause, index) =>
-        <ClauseFields key={index} item={clause} index={index}
-          change={next => update(index, next)}
-          remove={() => setClauses(previous => previous.filter((_, i) => i !== index))} />)}
-      <div className="flex flex-wrap gap-3">
-        <Button type="button" variant="outline" disabled={clauses.length >= 32}
-          onClick={() => setClauses(previous => [...previous, emptyClause()])}>Добавить условие</Button>
-        <Button disabled={busy || clauses.length === 0}>{busy ? 'Публикация…' : 'Опубликовать ревизию'}</Button>
-      </div>
-    </form>
-  </section>
-}
