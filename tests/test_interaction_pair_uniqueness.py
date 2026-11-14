@@ -58,11 +58,15 @@ def test_v7_duplicate_pair_consolidation_preserves_need_and_policy_provenance(en
         assert c.execute("""SELECT COUNT(*) FROM interaction_meta WHERE application_id=?
             AND source_component_id=? AND destination_component_id=?""",
             (IDS["application"], IDS["sender"], IDS["receiver"])).fetchone()[0] == 1
+        canonical = c.execute("""SELECT interaction_id FROM interaction_meta WHERE application_id=?
+            AND source_component_id=? AND destination_component_id=?""",
+            (IDS["application"], IDS["sender"], IDS["receiver"])).fetchone()[0]
+        old_id = alias_id if canonical != alias_id else IDS["interaction"]
         alias = c.execute("SELECT canonical_id FROM interaction_aliases WHERE alias_id=?",
-                          (alias_id,)).fetchone()
-        assert alias is not None
+                          (old_id,)).fetchone()
+        assert alias is not None and alias["canonical_id"] == canonical
         revisions = c.execute("""SELECT * FROM interaction_revisions WHERE interaction_id=?
-            ORDER BY revision_number""", (alias["canonical_id"],)).fetchall()
+            ORDER BY revision_number""", (canonical,)).fetchall()
         assert len(revisions) == 3
         assert {r["id"] for r in revisions[:2]} == {IDS["revision"], revision_id}
         assert len({r["revision_number"] for r in revisions}) == 3
