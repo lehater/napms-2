@@ -72,7 +72,7 @@ def test_source_ports_any_and_explicit_end_to_end(env):
         csv_row, = csv.DictReader(io.StringIO(csv_response.text))
         csv_columns = list(csv_row)
         assert csv_columns[csv_columns.index("ipProtocol") + 1] == "destinationPortStart"
-        assert csv_columns[-2:] == ["sourcePortStart", "sourcePortEnd"]
+        assert csv_columns[-3:] == ["sourcePortStart", "sourcePortEnd", "clauseIndex"]
         for key in ("sourcePortStart", "sourcePortEnd"):
             assert csv_row[key] == ("" if data[key] is None else str(data[key]))
         current = client.get('/policy/export/current', headers=exporter).json()["rows"]
@@ -127,6 +127,10 @@ def test_old_post_without_source_fields_means_any(env):
 def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     db = Database(tmp_path / "old.sqlite3")
     with db.connect() as c:
+        c.execute("CREATE TABLE applications(id TEXT PRIMARY KEY)")
+        c.execute("CREATE TABLE components(id TEXT PRIMARY KEY, application_id TEXT REFERENCES applications(id))")
+        c.execute("INSERT INTO applications VALUES('app')")
+        c.execute("INSERT INTO components VALUES('src','app'),('dst','app')")
         c.execute("""CREATE TABLE interaction_revisions(
             id TEXT PRIMARY KEY, interaction_id TEXT, application_id TEXT,
             source_component_id TEXT, destination_component_id TEXT,
@@ -136,7 +140,7 @@ def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     db.initialize()
     db.initialize()
     with db.connect() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 7
         row = c.execute("SELECT * FROM interaction_revisions WHERE id='old'").fetchone()
         assert row["source_port_start"] is row["source_port_end"] is None
         assert row["port_start"] == row["port_end"] == 123
