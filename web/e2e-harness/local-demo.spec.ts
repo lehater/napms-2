@@ -1001,7 +1001,7 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByRole('combobox', { name: 'Протокол', exact: true }).selectOption('UDP')
   await page.getByLabel('Порт назначения от', { exact: true }).fill('123')
   await page.getByLabel('Порт назначения до', { exact: true }).fill('123')
-  await page.getByRole('button', { name: 'Создать взаимодействие', exact: true }).click()
+  await page.getByRole('button', { name: 'Создать', exact: true }).click()
   await expect(page.getByRole('table')).toContainText('NTP Server → NTP Server')
 
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Развёрнутые компоненты', exact: true }).click()
