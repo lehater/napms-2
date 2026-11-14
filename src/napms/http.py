@@ -11,7 +11,6 @@ from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .dev import DEMO_REQUEST
 from .domain import Problem
 from .use_cases import Service
 
@@ -296,7 +295,7 @@ class Subject(Strict):
 
 
 class AccessInput(Strict):
-    model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
+    model_config = ConfigDict(extra="forbid")
     sourceDeploymentId: UUID
     destinationDeploymentId: UUID
     interactionRevisionId: UUID
