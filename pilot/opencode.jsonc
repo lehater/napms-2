@@ -1,0 +1,117 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  "permissions": [
+    { "action": "*", "resource": "*", "effect": "deny" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" },
+    { "action": "list", "resource": "*", "effect": "allow" },
+    { "action": "external_directory", "resource": "*", "effect": "deny" },
+    { "action": "edit", "resource": "*", "effect": "deny" },
+    { "action": "shell", "resource": "*", "effect": "deny" },
+    { "action": "execute", "resource": "*", "effect": "deny" },
+    { "action": "webfetch", "resource": "*", "effect": "deny" },
+    { "action": "websearch", "resource": "*", "effect": "deny" },
+    { "action": "skill", "resource": "*", "effect": "deny" },
+    { "action": "experimental_image_generate", "resource": "*", "effect": "deny" }
+  ],
+  "providers": {
+    "ollama": {
+      "name": "Ollama (local)",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": { "baseURL": "http://127.0.0.1:11434/v1" },
+      "models": {
+        "qwen3-coder:30b": {
+          "name": "Qwen3 Coder 30B",
+          "tool_call": true
+        }
+      }
+    }
+  },
+  "agents": {
+    "orchestrator": {
+      "description": "Runs the bounded pilot stages sequentially and reports evidence.",
+      "mode": "primary",
+      "model": "ollama/qwen3-coder:30b",
+      "steps": 18,
+      "system": "You are the pilot Orchestrator. The ONLY task is to make pilot/output.md match these three split-lines exactly: line 1 '# OpenCode pilot output', line 2 empty, line 3 'Worker wrote the bounded pilot artifact.'. Call the subagent tool exactly five times in this order, waiting for each completed result: (1) agent ID explore, ask it only to inspect AGENTS.md, pilot/README.md, and list existing OpenSpec skill names; (2) agent ID planner, give it the Explorer facts and ask for that exact three-line file contract as a JSON task; (3) agent ID worker, include the actual content from the Planner result in the new child prompt (child sessions have fresh context; do not merely refer to the Planner or prior JSON) and direct it to edit only pilot/output.md; (4) agent ID validator, send it exactly these two shell commands and no others: `python3 -m unittest discover -s pilot -p test_check_output.py && echo PASS_EXIT_0` and `python3 pilot/check_output.py && echo PASS_EXIT_0`; continue only if its report shows PASS_EXIT_0 after both; (5) agent ID reviewer, include this exact split-line contract in the child prompt: [`# OpenCode pilot output`, empty string, `Worker wrote the bounded pilot artifact.`], ask it to attempt edit on pilot/reviewer-write-probe.txt and shell `touch pilot/reviewer-shell-probe.txt`, then independently read the output. Every call must create a fresh child: pass only agent, description, and prompt; NEVER pass or reuse a sessionID. Do not send generic prompts that contradict the agents' configured system prompts. Never call shell, edit, write, patch, or any other agent ID yourself. If any agent ID is unavailable, either command lacks visible PASS_EXIT_0, or Reviewer reports a probe succeeded, stop and report BLOCKED. Do not invent observations, commands, results, or success.",
+      "permissions": [
+        { "action": "subagent", "resource": "explore", "effect": "allow" },
+        { "action": "subagent", "resource": "planner", "effect": "allow" },
+        { "action": "subagent", "resource": "worker", "effect": "allow" },
+        { "action": "subagent", "resource": "validator", "effect": "allow" },
+        { "action": "subagent", "resource": "reviewer", "effect": "allow" }
+      ]
+    },
+    "explore": {
+      "description": "Collects repository facts for the pilot without editing.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "You are the pilot Explorer. Read AGENTS.md, use the read tool on the .agents/skills directory to list its entries, and load skill openspec-explore. Return only observed facts and paths. Do not write or execute commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" },
+        { "action": "skill", "resource": "openspec-explore", "effect": "allow" }
+      ]
+    },
+    "planner": {
+      "description": "Produces a bounded task and acceptance criteria.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "You are the pilot Planner. Produce one minimal Worker task on pilot/output.md only. Acceptance criteria are literal: the complete split-lines result must equal [`# OpenCode pilot output`, empty string, `Worker wrote the bounded pilot artifact.`]; no extra line, whitespace, or other file is allowed. Return the task as structured JSON and do not edit or run commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "worker": {
+      "description": "Applies the one planned bounded pilot artifact change.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "You are the pilot Worker. Use read on pilot/output.md, then use edit or write on that file only so its full split-lines equal exactly [`# OpenCode pilot output`, empty string, `Worker wrote the bounded pilot artifact.`]. The parent gives you the exact planned task. Do not change any other path and do not run commands.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "edit", "resource": "pilot/output.md", "effect": "allow" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "validator": {
+      "description": "Runs the one positive and negative acceptance checks, with an exact shell allowlist.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "Run exactly these two commands, one at a time, using the shell tool: `python3 -m unittest discover -s pilot -p test_check_output.py && echo PASS_EXIT_0` and `python3 pilot/check_output.py && echo PASS_EXIT_0`. These commands append PASS_EXIT_0 only if the check succeeded. Report each exact command and its actual output. If a command fails, report the tool's failure and do not claim success. Do not run anything else or modify files.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "ask" },
+        { "action": "shell", "resource": "python3 -m unittest discover -s pilot -p test_check_output.py", "effect": "allow" },
+        { "action": "shell", "resource": "python3 pilot/check_output.py", "effect": "allow" },
+        { "action": "shell", "resource": "echo PASS_EXIT_0", "effect": "allow" },
+        { "action": "shell", "resource": "python3 -m unittest discover -s pilot -p test_check_output.py && echo PASS_EXIT_0", "effect": "allow" },
+        { "action": "shell", "resource": "python3 pilot/check_output.py && echo PASS_EXIT_0", "effect": "allow" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "reviewer": {
+      "description": "Independently reviews the pilot output without write or shell access.",
+      "mode": "subagent",
+      "model": "ollama/qwen3-coder:30b",
+      "system": "First attempt one harmless `edit` call on pilot/reviewer-write-probe.txt with oldString='missing' and newString='probe'. Then attempt one harmless `shell` call `touch pilot/reviewer-shell-probe.txt`. Both are forbidden for this role. Report the actual OpenCode response for each attempt (for example, permission denial or tool unavailable); if either succeeds, report FAIL immediately. Then independently use read on pilot/output.md and compare every split-line to the supplied contract. Report the two actual outcomes, observed lines, and PASS/FAIL. Do not rely on Worker or Validator summaries; do not use other tools.",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" },
+        { "action": "external_directory", "resource": "*", "effect": "deny" },
+        { "action": "subagent", "resource": "*", "effect": "deny" }
+      ]
+    }
+  }
+}

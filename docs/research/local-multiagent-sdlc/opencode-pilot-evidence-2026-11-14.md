@@ -1,63 +1,80 @@
 # OpenCode multi-agent pilot evidence (2026-11-14)
 
-## Scope
+## Scope and checkout
 
-This is a local mode-A smoke run in one OpenCode root session. The pilot uses only a separate worktree based on `origin/main` at `e957bd4247d78847d70d7f92923e9cf1c1592f63`; it did not modify the accepted checkout, product code, Codex Harness, OpenSpec changes, or PR #68. ADR-001 and ADR-002 in PR #68 are still proposals. The run does not implement a durable Controller.
+- Draft PR: [#69](https://github.com/lehater/napms-2/pull/69); branch `experiment/opencode-multiagent-pilot-2026-11-14`.
+- Accepted `main` base: `e957bd4247d78847d70d7f92923e9cf1c1592f63`.
+- Feature branch HEAD before these P1 fixes: `29357ce5b2b0351d395ad086ab7307339a79abb9`.
+- This was a disposable worktree under `/tmp/napms-opencode-pilot`. The accepted checkout, `main`, product code, existing Codex Harness, OpenSpec changes, and PR #68 were not modified. No push or merge was attempted by the agents.
 
-## Environment and model checks
+## Environment and model availability
 
 | Item | Observed |
 | --- | --- |
-| OpenCode | `v2.2.0`, installed through npm; `opencode auth list` reports OpenAI stored |
+| OpenCode | `v2.2.0`, npm installation; `opencode auth list` reports OpenAI stored |
 | Node.js / npm | `v24.22.0` / `11.19.1` |
 | Python | `3.12.3` |
-| OpenSpec | `1.16.0` |
-| Ollama client | `0.40.5` |
-| OpenAI catalog | Includes `openai/gpt-6.1-sol` and other GPT-5.5/GPT-5.6/GPT-6 variants |
-| Local catalog | `ollama/gpt-oss:20b`, `ollama/qwen3-coder:30b` |
+| OpenAI model | `openai/gpt-6.1-sol` is in the installed model catalog |
+| Ollama models | `qwen3-coder:30b`, `gpt-oss:20b`; local `/api/tags` was reachable |
 
-A fresh read-only request via `opencode run --model openai/gpt-6.1-sol --agent plan --format json` returned `OpenAI ChatGPT model request passed.` No credentials or authorization configuration were read or copied. In a normal WSL user session, Ollama listed both local models. An HTTP `/api/tags` request from the pilot namespace also reached `127.0.0.1:11434` and returned both models.
+OpenAI authorization is present, and a prior read-only request to `openai/gpt-6.1-sol` succeeded. During this continuation, an isolated request first failed DNS because the temporary process had no proxy variables; after passing the inherited proxy variables privately, OpenCode returned `UnexpectedStatus: 503`. No credentials were displayed or copied. The verified route below therefore used local `ollama/qwen3-coder:30b` for all agents.
 
-## Pilot route
+## Isolated pilot configuration
 
-Root OpenCode session: `ses_e27c54de5ffe96ynAth31BQFcz`.
+The former root `opencode.jsonc` was moved to `pilot/opencode.jsonc`. OpenCode does not auto-discover that location; the pilot selects it with `OPENCODE_CONFIG`. `pilot/README.md` documents a per-run invocation using temporary HOME/XDG config, data, state, cache, and temp paths. The disposable config explicitly points its local Ollama-compatible provider at `127.0.0.1:11434`; it does not load the persistent auth store. This isolates the pilot role configuration from normal project and user defaults.
 
-| Stage | Agent | Model | Result |
-| --- | --- | --- | --- |
-| Explorer | Built-in `explore` | `ollama/qwen3-coder:30b` | Read `AGENTS.md`, listed entries under `.agents/skills`, and loaded `openspec-explore`. |
-| Planner | Pilot `planner` | `ollama/qwen3-coder:30b` | Produced the one-file task and exact acceptance criteria. |
-| Worker | Built-in `general` configured as Worker | `ollama/qwen3-coder:30b` | Replaced the placeholder in `pilot/output.md`; the only writable project path was that file. |
-| Test | Coordinator, inside offline bwrap | Python 3.12.3 | `python3 pilot/check_output.py` printed `PASS: bounded worker output matches the acceptance criteria`. |
-| Reviewer | Pilot `reviewer` | `ollama/qwen3-coder:30b` | Independently read the file and returned PASS. |
+Resolved configuration was inspected with `opencode --standalone debug agents`. The resulting agent IDs, models, modes, and permissions were present. The earlier `UnsupportedContentType` from the default diagnostic path was not reproduced by this isolated `--standalone` invocation; its original cause remains unestablished and it did not prevent the pilot.
 
-The final artifact has exactly three lines: `# OpenCode pilot output`, a blank line, and `Worker wrote the bounded pilot artifact.`
+## Acceptance check
 
-## Access checks
+`pilot/check_output.py` compares the complete `splitlines()` tuple with exactly:
 
-The temporary bwrap namespace mounted the worktree read-only and bound only `pilot/output.md` writable for the Worker. OpenCode ran with a cleared environment, temporary HOME/XDG paths, and a temporary data directory; no authentication files were mounted into that profile or read/copied. The root filesystem itself was mounted read-only, so this run does not claim confidentiality isolation from all host files. The OpenCode permissions deny `edit`, `shell`, and `execute` by default; the Worker gets an `edit` allow only for `pilot/output.md`. Reviewer has `edit`, `shell`, `execute`, external-directory, and subagent access denied. The local Ollama run shared the network namespace only to reach the local Ollama HTTP endpoint; the acceptance check ran offline.
+1. `# OpenCode pilot output`
+2. an empty line
+3. `Worker wrote the bounded pilot artifact.`
 
-Observed probes:
+`pilot/test_check_output.py` covers a passing artifact, a nonblank separator, and an extra trailing line. In the route, Validator ran these allowlisted commands; the shell tool metadata recorded exit 0 for both:
 
-- OpenCode denied the Worker's file-tool attempt at `pilot/unauthorized.md`.
-- The Worker's shell tool was unavailable; the harmless dummy push request was blocked before command execution. No push or merge command was executed, and no merge probe was sent.
-- With the Worker mount shape, direct `touch /mnt/pilot/worker-unauthorized.md` failed with `Read-only file system`; the permitted `pilot/output.md` edit succeeded.
-- The Reviewer returned PASS. Its extra write probe was interpreted as a read and therefore did not exercise OpenCode's write-deny rule. A direct `touch /mnt/pilot/reviewer-unauthorized.md` against the Reviewer read-only mount failed with `Read-only file system`. The configured OpenCode rule also denies `edit` for Reviewer.
+```text
+python3 -m unittest discover -s pilot -p test_check_output.py && echo PASS_EXIT_0
+Ran 3 tests ... OK
+PASS_EXIT_0
 
-This verifies the tested filesystem write boundary for this process namespace. bwrap shared the host network for Ollama, so this is not a general-purpose production sandbox or network-isolation proof. Keep shell and Code Mode denied for these roles and use a separately hardened runner for future untrusted code.
+python3 pilot/check_output.py && echo PASS_EXIT_0
+PASS: bounded worker output matches all three acceptance lines
+PASS_EXIT_0
+```
 
-The role, tool, permission, skill, and provider setup follows the installed CLI's documented interfaces: [Agents](https://opencode.ai/docs/agents/), [Permissions](https://opencode.ai/docs/permissions/), [Tools](https://opencode.ai/docs/tools/), [Skills](https://opencode.ai/docs/skills/), and [Providers](https://opencode.ai/docs/providers/). In particular, V2 permissions use ordered rules and the last matching rule wins; `execute` exposes Code Mode and nested tools retain their own permission checks.
+The acceptance script and negative test also passed in the focused local check. Other shell commands are `ask` and are rejected in noninteractive mode; the Validator's Python checks and `echo PASS_EXIT_0` are the only allowed shell subcommands.
 
-## Checks and limitations
+## One-session mode-A route
 
-- `opencode auth list`, `opencode models`, and `opencode --version`: passed.
-- ChatGPT subscription model request (`openai/gpt-6.1-sol`): passed.
-- Ollama normal-session and pilot-namespace reachability: passed.
-- Ordered one-session route Explorer → Planner → Worker → test → Reviewer: passed, using local Qwen for all pilot agents.
-- Pilot acceptance script: passed inside an offline, read-only bwrap worktree.
-- `python3 scripts/check-fast.py --dry-run`: selected `FULL` because the pilot files have unknown change scope.
-- `python3 scripts/check-fast.py` first reported missing worktree-local prerequisites. With existing compatible dependencies temporarily exposed from the accepted checkout, backend regression started but produced no output or progress for over five minutes at its first pytest temporary context; it was interrupted with exit 130. No project test result is claimed. The temporary dependency symlink was removed.
-- `opencode debug agents` without `--print-logs` can still raise `UnsupportedContentType`; `--print-logs` is the observed workaround. This diagnostic issue did not prevent model calls or the pilot route.
+Root session: `ses_e276effdcffekIGzwQUutHpj7d` (`ollama/qwen3-coder:30b`). It completed five fresh child sessions in sequence:
 
-## Follow-up
+| Stage | Agent | Child session | Model | Observed result |
+| --- | --- | --- | --- | --- |
+| Explorer | `explore` | `ses_e276db6e9ffewRdpkt1HBp70r1` | `ollama/qwen3-coder:30b` | Read `AGENTS.md` and the pilot README, loaded `openspec-explore`, and returned facts. Some glob discovery attempts were inconclusive, so this is not evidence that the full skills directory was enumerated. |
+| Planner | `planner` | `ses_e276d8203ffe77QmDz5U7yYYnq` | `ollama/qwen3-coder:30b` | Returned the one-file task and exact three-line acceptance contract. |
+| Worker | `worker` | `ses_e276d71a5fferoIjAyLIldKJcz` | `ollama/qwen3-coder:30b` | OpenCode `edit` changed only `pilot/output.md`, replacing `PLACEHOLDER` with the planned text. |
+| Validator | `validator` | `ses_e276d59bdffejpQqM9lQgQssYU` | `ollama/qwen3-coder:30b` | Two actual shell events, each exit 0; 3 unit tests passed and acceptance printed PASS. |
+| Reviewer | `reviewer` | `ses_e276d429affe0ctXY1btkKIK3a` | `ollama/qwen3-coder:30b` | Independently read all three lines and returned PASS. |
 
-Review this pilot config and local evidence in the Draft PR. Before adopting these roles for regular work, verify the full project check on a clean runner, exercise the Reviewer write rule with a direct OpenCode write-tool denial in a controlled run, and choose the intended stronger OS/network sandbox boundary. No role catalog beyond this smoke route is approved by this pilot.
+The route's serialized OpenCode session stream and the temporary OpenCode database were inspected. The Worker had one failed stale-text edit attempt followed by a successful `PLACEHOLDER` replacement, both scoped to `pilot/output.md`. The Validator's two successful shell events each recorded exit 0. The Reviewer attempted both forbidden operations: `edit` on `pilot/reviewer-write-probe.txt` and `shell touch pilot/reviewer-shell-probe.txt`. OpenCode returned `No tool named "edit"/"shell" is currently available` for those calls; both probe files remained absent. This is the actual deny result in v2.2.0's tool interface, not a claimed attempt or only a host filesystem error.
+
+## Write and shell boundary checks
+
+- During the route, bubblewrap mounted the checkout read-only and bound only `pilot/output.md` writable for the Worker. OpenCode permissions denied Reviewer `edit`, `shell`, `execute`, external-directory, and subagent access. The Validator had only its narrowly allowlisted checks.
+- Separately, a bubblewrap shell probe mounted the checkout read-only and attempted `touch /mnt/pilot/reviewer-shell-probe.txt`; it failed with `Read-only file system`, and no probe file was created. This tests the OS-level mount boundary in addition to OpenCode tool denials. A Git worktree alone was not treated as OS isolation.
+- No `git push` or merge command was made available to the pilot agents; neither was executed.
+
+## Checks and status
+
+- `python3 -m json.tool pilot/opencode.jsonc`: passed.
+- `git diff --check`: passed.
+- `python3 -m unittest discover -s pilot -p test_check_output.py`: 3 tests passed, including both negative cases.
+- `python3 pilot/check_output.py`: passed for the Worker artifact.
+- Continuous mode-A route Explorer → Planner → Worker → Validator → Reviewer: passed in one OpenCode root session; child-level tool metadata independently confirms Worker edit, both validator exit codes, and Reviewer tool denial.
+- `python3 scripts/check-fast.py --dry-run`: selected FULL because the rename/delete and new pilot files are unknown scope. The local full profile was not repeated: a prior attempt on this same disposable worktree stalled at the first pytest temporary context for over five minutes and was interrupted with exit 130. The requested GitHub Verify FULL is the full-project check for this revision.
+- GitHub Verify FULL for the updated PR head: pending; run this exact command after commit and push, then record its run ID, head SHA, and outcome here.
+
+The pilot does not implement a long-running Controller or establish a production-grade sandbox. The OpenAI 503 remains an external model connectivity issue for this run; local Ollama completed the bounded route.
