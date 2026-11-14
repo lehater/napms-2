@@ -98,7 +98,7 @@
 
 ## 7. ADR-002 — способ исполнения непрерывного плана
 
-**Предлагаемое решение:** [два режима непрерывной работы](execution-engine.md): **A — один активный OpenCode run с явными границами задач и проверками** (проверить первым); **B — отдельный детерминированный Controller поверх OpenCode** для принятого DAG, owner gates, checkpoint/restart/reconcile, если именно автономное восстановление требуется и не обеспечивается выбранным рантаймом. LLM Orchestrator принимает scoped инженерные решения, но не утверждает собственные side effects.
+**Принято после дополнительного review:** [два режима непрерывной работы](execution-engine.md): **A — один логический run** (A1: одна сессия, A2: отдельные trust boundaries/сессии с ручной детерминированной последовательностью) с явными границами и проверками; **B — отдельный детерминированный Controller поверх OpenCode** для принятого DAG, owner gates, checkpoint/restart/reconcile, если именно автономное восстановление требуется и не обеспечивается выбранным рантаймом. LLM Orchestrator принимает scoped инженерные решения, но не утверждает собственные side effects.
 
 **Почему не только OpenCode session:** [CLI](https://opencode.ai/docs/cli/commands) подтверждает `run --continue`, `--session`, JSON output и [SDK](https://opencode.ai/docs/build/sdk) подтверждает хост/сессии, однако эти механизмы не заменяют бизнес-state machine и durable task approval. [Agent permissions](https://opencode.ai/docs/permissions) дополнительно требуют реального smoke, прежде чем доверять запретам на опасные операции.
 
