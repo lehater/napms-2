@@ -61,7 +61,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5):
+            if version not in (0, 1, 2, 3, 4, 5, 6):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -112,11 +112,31 @@ class Database:
                     c.rollback()
                     raise
 
+            # v5 -> v6: source-port constraints are additive. NULL/NULL is ANY.
+            # An existing v5 file, including immutable revisions/rules, is never rewritten.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 5:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    columns = {r["name"] for r in c.execute("PRAGMA table_info(interaction_revisions)")}
+                    if "source_port_start" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN source_port_start INTEGER CHECK(source_port_start BETWEEN 1 AND 65535)")
+                    if "source_port_end" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN source_port_end INTEGER CHECK(source_port_end BETWEEN source_port_start AND 65535)")
+                    c.execute("""CREATE TRIGGER IF NOT EXISTS valid_source_port_pair
+                        BEFORE INSERT ON interaction_revisions
+                        WHEN (NEW.source_port_start IS NULL) != (NEW.source_port_end IS NULL)
+                        BEGIN SELECT RAISE(ABORT, 'invalid source port interval'); END""")
+                    c.execute("PRAGMA user_version=6")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
     @contextmanager
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 5:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 6:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c

@@ -117,6 +117,7 @@ def interaction_view(c, interaction_id, application_id):
         destinationComponentId=first["destination_component_id"],
         destinationComponentName=catalog_name(c, "component", first["destination_component_id"]),
         revisions=[dict(interactionRevisionId=r["id"], ipProtocol=r["protocol"],
+                        sourcePortStart=r["source_port_start"], sourcePortEnd=r["source_port_end"],
                         destinationPortStart=r["port_start"], destinationPortEnd=r["port_end"],
                         trafficLabel=revision_view(c, r)["trafficLabel"]) for r in revisions],
     )
@@ -224,14 +225,17 @@ class Service:
             source = find(c, "components", data["sourceComponentId"])
             destination = find(c, "components", data["destinationComponentId"])
             start, end = data["destinationPortStart"], data["destinationPortEnd"]
+            source_start, source_end = data.get("sourcePortStart"), data.get("sourcePortEnd")
             if (source["application_id"] != application_id or destination["application_id"] != application_id
                     or data["ipProtocol"] not in ("TCP", "UDP")
-                    or not 1 <= start <= end <= 65535):
+                    or not 1 <= start <= end <= 65535
+                    or (source_start is None) != (source_end is None)
+                    or (source_start is not None and not 1 <= source_start <= source_end <= 65535)):
                 raise Problem(400, "INVALID_COMMUNICATION", "Invalid directed communication")
             interaction_id, revision_id = uid(), uid()
             c.execute(
-                "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) VALUES (?,?,?,?,?,?,?,?)",
-                (revision_id, interaction_id, application_id, source["id"], destination["id"], data["ipProtocol"], start, end),
+                "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end,source_port_start,source_port_end) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (revision_id, interaction_id, application_id, source["id"], destination["id"], data["ipProtocol"], start, end, source_start, source_end),
             )
             return interaction_view(c, interaction_id, application_id)
 
@@ -551,7 +555,7 @@ class Service:
             rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
             projection = subject_list_projection(c, subject)
             rule_display = {key: projection[key] for key in ("participantsLabel", "applicationLabel", "sourceResourceLabel", "destinationResourceLabel", "trafficLabel")}
-            return dict(**rule_display, displayLabel=subject_label(c, subject), ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
+            return dict(**rule_display, displayLabel=subject_label(c, subject), ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"], ruleId=rid, subjectId=subject["id"], state=rule["state"],
                         subject=dict(sourceDeploymentId=subject["source_deployment_id"], destinationDeploymentId=subject["destination_deployment_id"], interactionRevisionId=subject["interaction_revision_id"]),
                         originatingDecision=decision_view(c, origin, actor, at, self.shared_read), originatingRequest=request_view(c, req, actor, at, self.shared_read),
                         connectivityNeedId=req["need_id"], allowances=allowances)
@@ -575,7 +579,7 @@ class Service:
             rev = find(c, "interaction_revisions", subject["interaction_revision_id"])
             rows.append(dict(ruleId=rid, subjectId=subject["id"], sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
                 sourceEndpointId=se["id"], destinationEndpointId=de["id"], sourceAddress=se["address"], destinationAddress=de["address"],
-                ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
+                ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
                 readiness="READY" if se["address"] and de["address"] else "INCOMPLETE",
                 interactionRevisionId=rev["id"], connectivityNeedId=r["need_id"], requestId=r["id"], requesterActorId=r["actor_id"],
                 decisionId=d["id"], deciderActorId=d["actor_id"], evaluationAt=at, requestSubmittedAt=r["submitted_at"],
@@ -604,7 +608,7 @@ class Service:
                 items.append(dict(**rule_display, ruleId=rule["id"], subjectId=subject["id"], state=rule["state"], displayLabel=subject_label(c, subject),
                     subject=dict(sourceDeploymentId=src["id"], destinationDeploymentId=dst["id"], interactionRevisionId=rev["id"]),
                     sourceResourceId=src["resource_id"], destinationResourceId=dst["resource_id"],
-                    ipProtocol=rev["protocol"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
+                    ipProtocol=rev["protocol"], sourcePortStart=rev["source_port_start"], sourcePortEnd=rev["source_port_end"], destinationPortStart=rev["port_start"], destinationPortEnd=rev["port_end"],
                     originatingDecisionId=rule["originating_decision_id"],
                     allowanceDecisionIds=[r[0] for r in c.execute("SELECT decision_id FROM rule_allowances WHERE rule_id=? ORDER BY decision_id", (rule["id"],))]))
             return dict(items=items, limit=limit, offset=offset, hasMore=len(page) > limit)
