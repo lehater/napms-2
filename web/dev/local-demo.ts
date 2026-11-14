@@ -14,6 +14,7 @@ const paths = [
   { pattern: new RegExp(`^/applications/${uuid}/components/${uuid}$`), methods: ['GET'] },
   { pattern: new RegExp(`^/applications/${uuid}/interactions$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/applications/${uuid}/interactions/${uuid}/revisions$`), methods: ['POST'] },
   { pattern: /^\/deployments$/, methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/deployments/${uuid}$`), methods: ['GET'] },
   { pattern: /^\/resources$/, methods: ['GET', 'POST'] },

@@ -71,7 +71,7 @@ async function login(page: Page, token: string) {
   await page.getByRole('button', { name: 'Применить token', exact: true }).click()
 }
 
-test('REAL Process persists through refresh and actual backend restart; MOCK remains isolated', async ({ page, backend }) => {
+test('REAL Process persists through refresh and actual backend restart', async ({ page, backend }) => {
   const { credentials } = backend
   await page.goto('/')
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Бизнес-процессы', exact: true }).click()
@@ -130,8 +130,7 @@ test('REAL Process persists through refresh and actual backend restart; MOCK rem
   const storage = await page.evaluate(() => [...Object.values(localStorage), ...Object.values(sessionStorage), document.cookie])
   expect(Object.values(credentials).some(c => storage.some(v => v.includes(c.token)))).toBe(false)
   await page.goto('/prototype/processes')
-  await expect(page.getByRole('heading', { name: 'Бизнес-процессы', exact: true })).toBeVisible()
-  await expect(page.getByText('Приёмка SQLite', { exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Страница не найдена', exact: true })).toBeVisible()
 })
 
 test('REAL Process authorization, failed POST and actual API outage have safe retry states', async ({ page, backend }) => {

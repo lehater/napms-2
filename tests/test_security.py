@@ -18,7 +18,7 @@ def test_openapi_docs_and_no_secrets(env, caplog, capsys):
     assert schema.status_code == 200
     assert "/resources/{resourceId}/endpoint" in schema.json()['paths']
     assert env[3].get('/docs').status_code == 200
-    assert schema.json()['components']['schemas']['AccessInput']['example'] == DEMO_REQUEST
+    assert 'example' not in schema.json()['components']['schemas']['AccessInput']  # No fictional request prefilled in working API docs
     rid = approved(env)
     export(env, rid)
     output = schema.text + caplog.text + str(capsys.readouterr())

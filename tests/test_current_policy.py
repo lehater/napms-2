@@ -26,7 +26,7 @@ def policy(env):
         revision = str(uuid4())
         change(
             env,
-            "INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,?,?,? FROM interaction_revisions LIMIT 1",
+            "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,?,?,? FROM interaction_revisions LIMIT 1",
             (revision, protocol, start, end),
         )
         request = service.submit(
@@ -245,7 +245,7 @@ def test_current_export_includes_rules_beyond_the_first_collection_page(env):
         revision = str(uuid4())
         change(
             env,
-            "INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions LIMIT 1",
+            "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions LIMIT 1",
             (revision, port, port),
         )
         request = service.submit(

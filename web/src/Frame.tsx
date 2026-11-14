@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode }
 import { Link, useLocation } from 'react-router-dom'
 import './baseline.css'
 
-// Preserve the existing stored width preference across the UI navigation cleanup.
-const sidebarWidthKey = 'napms.prototype.sidebarWidth'
+// Presentation preference only; never a source of business data.
+const sidebarWidthKey = 'napms.ui.sidebarWidth'
 const clamp = (width: number) => Math.min(360, Math.max(200, width))
 export function Frame({ children, navigation, header, home = '/', real = false }: { children: ReactNode; navigation: ReactNode; header: ReactNode; home?: string; real?: boolean }) {
   const { pathname } = useLocation()
@@ -27,6 +27,7 @@ export function Frame({ children, navigation, header, home = '/', real = false }
   }, [pathname])
   const [width, setWidth] = useState(() => {
     try {
+      localStorage.removeItem('napms.prototype.sidebarWidth')
       const saved = Number(localStorage.getItem(sidebarWidthKey))
       return Number.isFinite(saved) && saved >= 200 && saved <= 360 ? saved : 264
     } catch { return 264 }

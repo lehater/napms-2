@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.request import ProxyHandler, build_opener
 
-from .dev import init_demo, load_credentials
+from .dev import load_credentials
 from .storage import Database
 
 
@@ -34,10 +34,16 @@ def run(db_path, credentials_path):
     if credentials.exists() and (credentials.is_symlink() or not credentials.is_file() or credentials.stat().st_mode & 0o077):
         raise RuntimeError('Credentials must be a private regular file (mode 0600)')
     try:
-        init_demo(Database(db), credentials)
+        database = Database(db)
+        database.initialize()
         load_credentials(credentials)
+        with database.transaction() as c:
+            if not c.execute("SELECT 1 FROM actors LIMIT 1").fetchone():
+                raise RuntimeError('No local actors in SQLite; run make init-auth explicitly')
+    except RuntimeError:
+        raise
     except Exception:
-        raise RuntimeError('Demo initialization failed; check DB schema/path and private credentials (regular file, mode 0600)') from None
+        raise RuntimeError('Local authorization missing/invalid; run make init-auth (then make run)') from None
     children = []
     previous = signal.getsignal(signal.SIGTERM)
     def stop_signal(*_):

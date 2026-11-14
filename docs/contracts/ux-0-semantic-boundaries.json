@@ -1,155 +1,12 @@
 {
-  "schemaVersion": 2,
-  "scope": "Historical UX-0 fictional fixture semantics and research presentation, plus the explicitly scoped REAL main navigation contract; not a universal API validator",
-  "enforced": {
-    "statusDomains": {
-      "Resource": {
-        "label": "Наличие данных",
-        "values": [
-          "Known"
-        ]
-      },
-      "Endpoint": {
-        "label": "Наличие данных",
-        "values": [
-          "Known"
-        ]
-      },
-      "Application": {
-        "label": null,
-        "values": []
-      },
-      "Interaction": {
-        "label": "Актуальность",
-        "values": [
-          "Current"
-        ]
-      },
-      "InteractionRevision": {
-        "label": null,
-        "values": []
-      },
-      "ComponentDeployment": {
-        "label": "Состояние размещения",
-        "values": [
-          "Active"
-        ]
-      },
-      "BusinessProcess": {
-        "label": "Актуальность",
-        "values": [
-          "Current"
-        ]
-      },
-      "ConnectivityNeed": {
-        "label": "Актуальность",
-        "values": [
-          "Current"
-        ]
-      },
-      "AccessRequest": {
-        "label": "Статус заявки",
-        "values": [
-          "PENDING",
-          "ALLOWED",
-          "DENIED"
-        ]
-      },
-      "PolicyRule": {
-        "label": "Состояние правила",
-        "values": [
-          "Active",
-          "Inactive"
-        ]
-      },
-      "TechnicalAccessEvidenceSet": {
-        "label": "Происхождение данных",
-        "values": [
-          "MOCK"
-        ]
-      },
-      "TechnicalAccessEntry": {
-        "label": "Интерпретация записи",
-        "values": [
-          "Normalized (MOCK)"
-        ]
-      },
-      "NST": {
-        "label": "Определённость кандидата",
-        "values": [
-          "Candidate",
-          "Unknown"
-        ]
-      },
-      "TargetRequiredPolicy": {
-        "label": "Происхождение проекции",
-        "values": [
-          "MOCK"
-        ]
-      },
-      "ConfiguredEffectivePolicySnapshot": {
-        "label": "Полнота интерпретации",
-        "values": [
-          "Complete (MOCK)",
-          "Unknown"
-        ]
-      },
-      "Reconciliation": {
-        "label": "Результат сопоставления",
-        "values": [
-          "Drift",
-          "Uncomparable"
-        ]
-      }
-    },
-    "catalogues": {
-      "policy": {
-        "allowedKinds": [
-          "PolicyRule"
-        ]
-      }
-    },
-    "routes": {
-      "AccessRequest": "/prototype/requests/",
-      "PolicyRule": "/prototype/policy/"
-    },
-    "deniedRequest": {
-      "mustHaveExplicitNullPolicyRuleId": true,
-      "mustHaveNoPolicyRuleLink": true
-    },
-    "coverage": {
-      "topLevelSectionIds": [
-        "processes",
-        "needs",
-        "resources",
-        "applications",
-        "deployments",
-        "requests",
-        "policy"
-      ],
-      "browserSuites": [
-        "web/e2e/prototype.spec.ts",
-        "web/e2e/semantic-contract.spec.ts"
-      ]
-    }
-  },
-  "documentationOnly": {
-    "distinctions": [
-      "ALLOWED is not PolicyRule.Active or NST technical PERMIT",
-      "DENIED is not NST DENY or revocation",
-      "Read-only is prototype UI mode, not Application lifecycle",
-      "Immutable is an InteractionRevision invariant, not lifecycle",
-      "Unknown/Uncomparable must not be represented as success"
+  "schemaVersion": 3,
+  "scope": "NAPMS working runtime UI only; no fictional frontend collections",
+  "runtime": {
+    "sourceOfTruth": "FastAPI/SQLite",
+    "forbiddenRoutes": [
+      "/prototype"
     ],
-    "authority": [
-      "openspec/specs/access-requests/spec.md",
-      "openspec/specs/access-requests-web-ui/spec.md",
-      "openspec/changes/ux-0-prototype/specs/ux-research-prototype/spec.md"
-    ],
-    "excluded": [
-      "real /access-requests backend UI has separate E2E",
-      "future UI collections require a new normative mapping and browser tests"
-    ]
+    "reset": "schema-only, all user tables empty"
   },
   "realNavigation": {
     "entries": [
@@ -187,8 +44,11 @@
     "contextualRoutes": {
       "ConnectivityNeed": "/business-processes/{processId}?tab=needs",
       "PolicyRule": "/policy-rules/{ruleId}"
-    },
-    "researchPrefix": "/prototype",
-    "mainConsumesSimulation": false
-  }
+    }
+  },
+  "semanticInvariants": [
+    "AccessRequest PENDING/ALLOWED/DENIED is separate from PolicyRule ACTIVE/INACTIVE",
+    "InteractionRevision is immutable once published",
+    "DENIED does not create a PolicyRule"
+  ]
 }

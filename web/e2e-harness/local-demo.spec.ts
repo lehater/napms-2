@@ -27,6 +27,10 @@ const test = base.extend<{}, { harness: Harness }>({
       if (!ready) throw new Error('One-command local demo readiness timed out')
     }
     try {
+      // Seed test-only data in an isolated real SQLite, explicitly before run.
+      const seeded = spawnSync(python, ['-m', 'napms.dev', 'init-demo', '--db', db, '--credentials', file],
+        { cwd: root, encoding: 'utf8' })
+      if (seeded.status !== 0) throw new Error('Explicit test fixture initialization failed')
       await start()
       function sql(statement: string, params: unknown[] = []): unknown[][] {
         const result = spawnSync(python, ['-c', 'import sqlite3,json,sys; c=sqlite3.connect(sys.argv[1]); r=c.execute(sys.argv[2],json.loads(sys.argv[3])); print(json.dumps(r.fetchall())); c.commit(); c.close()', db, statement, JSON.stringify(params)], {encoding:'utf8'})
@@ -314,9 +318,8 @@ test('one-command actor switching preserves independent grants and actual persis
   }
   await page.goto('/unknown/application/path')
   await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
-  await page.goto('/prototype/needs/mock-need?tab=communication')
-  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
-  await expect(page.getByLabel('Демонстрационная роль', {exact:true})).toBeVisible()
+  await page.goto('/prototype/needs/legacy')
+  await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
   const tokens = await harness.privateTokens()
   const browserData = await page.evaluate(() => JSON.stringify([document.documentElement.outerHTML, localStorage, sessionStorage, document.cookie, location.href]))
   expect(tokens.some(token => browserData.includes(token)), 'No private tokens in browser').toBe(false)
@@ -431,11 +434,9 @@ test('real collection pagination survives detail tabs, breadcrumbs and reload', 
     await expect(page.locator('tbody tr')).toHaveCount(body.items.length)
     await expect(page.getByText('Страница 2', {exact:true})).toBeVisible()
   }
-  // Research is a direct, isolated URL; a full document navigation resets real credentials.
+  // Synthetic routes are not part of the application.
   await page.goto('/prototype')
-  await expect(page.getByLabel('Demo actor', {exact:true})).toHaveCount(0)
-  await page.getByLabel('Демонстрационная роль', {exact:true}).selectOption('Decider')
-  await expect(page.getByRole('navigation',{name:'Prototype navigation'}).getByRole('link',{name:'Заявки на доступ',exact:true})).toHaveAttribute('href','/prototype/requests')
+  await expect(page.getByRole('heading', {name:'Страница не найдена'})).toBeVisible()
   await page.goto('/access-requests')
   await expect(page.getByLabel('Demo actor', {exact:true})).toHaveValue('anonymous')
   await page.getByLabel('Demo actor', {exact:true}).selectOption('requester')
@@ -621,7 +622,8 @@ test('composition delayed options and POST do not restore old context or navigat
 })
 
 
-async function expectSummary(page: import('@playwright/test').Page, needId: string, revision = '00000000-0000-0000-0000-000000000009', protocol = 'TCP', ports = '443–443') {
+async function expectSummary(page: import('@playwright/test').Page, needId: string,
+  revision = '00000000-0000-0000-0000-000000000009', clauses = ['#1 · TCP · ANY → 443']) {
   // Scope every assertion to the confirmation summary, not selector labels above it.
   const summary = page.getByRole('group', {name:'Сводка заявки',exact:true})
   await expect(summary).toBeVisible()
@@ -630,26 +632,27 @@ async function expectSummary(page: import('@playwright/test').Page, needId: stri
     Interaction:'00000000-0000-0000-0000-000000000008',
     Revision:revision,
     'Направление Components':'00000000-0000-0000-0000-000000000006 → 00000000-0000-0000-0000-000000000007',
-    'Протокол':protocol,
-    'Порты назначения':ports,
     'Source Deployment':'00000000-0000-0000-0000-00000000000a',
     'Source Resource':'00000000-0000-0000-0000-000000000001',
     'Destination Deployment':'00000000-0000-0000-0000-00000000000b',
     'Destination Resource':'00000000-0000-0000-0000-000000000002',
   })) await expect(summary.locator('dt').filter({hasText:new RegExp('^'+label+'$')}).locator('..').locator('dd')).toHaveText(value)
+  const traffic = summary.locator('dt').filter({hasText:/^Условия трафика$/}).locator('..').locator('dd')
+  await expect(traffic.locator('li')).toHaveCount(clauses.length)
+  for (const clause of clauses) await expect(traffic).toContainText(clause)
   await expect(summary.getByLabel('Подтверждаю состав заявки',{exact:true})).not.toBeChecked()
 }
 
 test('confirmation summary contains the selected backend facts and resets with Revision',async ({page,harness})=>{
   const alternate = 'ffffffff-ffff-ffff-ffff-fffffffffff1'
-  harness.sql("INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',5353,5355 FROM interaction_revisions WHERE id=?",[alternate,demoInput.interactionRevisionId])
+  harness.sql("INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',5353,5355 FROM interaction_revisions WHERE id=?",[alternate,demoInput.interactionRevisionId])
   await openComposition(page)
   await page.getByLabel('Revision',{exact:true}).selectOption(alternate)
   await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment',{exact:true}).selectOption({index:1})
-  await expectSummary(page,demoInput.connectivityNeedId,alternate,'UDP','5353–5355')
+  await expectSummary(page,demoInput.connectivityNeedId,alternate,['#1 · UDP · ANY → 5353–5355'])
   await page.getByLabel('Подтверждаю состав заявки',{exact:true}).check()
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeEnabled()
   await page.getByRole('button',{name:'Обновить · Revision',exact:true}).click()
@@ -661,7 +664,7 @@ test('confirmation summary contains the selected backend facts and resets with R
 })
 
 
-test('REAL navigation is bounded, resizable and independent of the research module',async ({page,harness})=>{
+test('REAL navigation is bounded, resizable and without synthetic routes',async ({page,harness})=>{
   const researchModules: string[] = []
   page.on('request', r=>{if(new URL(r.url()).pathname.startsWith('/src/prototype/')) researchModules.push(r.url())})
   for(const [width,height] of [[1920,1080],[1440,900],[2560,1440]]) {
@@ -697,15 +700,9 @@ test('REAL navigation is bounded, resizable and independent of the research modu
     await expect(nav.getByRole('link',{name:'Правила политики',exact:true})).toHaveAttribute('aria-current','page')
   }
   expect(researchModules).toEqual([])
-  // Only an explicit research URL loads its state/data and seven synthetic collections.
-  await page.goto('/prototype/needs/mock-need?tab=communication')
-  await expect(page.getByRole('navigation',{name:'Основная навигация'})).toHaveCount(0)
-  const research=page.getByRole('navigation',{name:'Prototype navigation'})
-  await expect(research.getByRole('link')).toHaveCount(7)
-  const hrefs=await research.getByRole('link').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')))
-  expect(hrefs.every(href=>href?.startsWith('/prototype/'))).toBe(true)
-  await expect(page.locator('.ux-topbar')).toContainText('RESEARCH / MOCK')
-  expect(researchModules.length).toBeGreaterThan(0)
+  await page.goto('/prototype/needs/legacy')
+  await expect(page.getByRole('heading',{name:'Страница не найдена'})).toBeVisible()
+  expect(researchModules).toEqual([])
   expect(harness.file).toBeTruthy()
 })
 
@@ -945,6 +942,16 @@ test('new policy proxy routes preserve method, origin and actor boundaries',asyn
     }
     expect((await request.post(path,{headers:actorHeaders('exporter')})).status()).toBe(404)
   }
+  // The new publish endpoint must be explicitly allowed, while unsupported verbs stay blocked.
+  const [applicationId, interactionId] = harness.sql(
+    'SELECT application_id,interaction_id FROM interaction_revisions WHERE id=?',
+    [demoInput.interactionRevisionId])[0] as [string,string]
+  const revisionPath = `/applications/${applicationId}/interactions/${interactionId}/revisions`
+  expect((await request.post(revisionPath,{headers:actorHeaders('requester'),
+    data:{trafficClauses:[]}})).status()).toBe(422)
+  expect((await request.get(revisionPath,{headers:actorHeaders('requester')})).status()).toBe(404)
+  expect((await request.post(revisionPath,{headers:{...actorHeaders('requester'),Origin:'http://evil.example'},
+    data:{trafficClauses:[]}})).status()).toBe(403)
   expect(harness.file).toBeTruthy()
 })
 
@@ -952,7 +959,7 @@ test('new policy proxy routes preserve method, origin and actor boundaries',asyn
 test('Rule collection paging and actor reset preserve readable current-policy scope',async ({page,request,harness})=>{
   for(let i=0;i<21;i++) {
     const revision='ffffffff-ffff-ffff-ffff-'+(100+i).toString(16).padStart(12,'0')
-    harness.sql('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions WHERE id=?',[revision,10000+i,10000+i,demoInput.interactionRevisionId])
+    harness.sql('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,?,? FROM interaction_revisions WHERE id=?',[revision,10000+i,10000+i,demoInput.interactionRevisionId])
     const created=await request.post('/access-requests',{headers:actorHeaders('requester'),data:{...demoInput,interactionRevisionId:revision}})
     expect(created.status()).toBe(201)
     const decision=await request.post('/access-requests/'+(await created.json()).requestId+'/decision',{headers:actorHeaders('decider'),data:{outcome:'ALLOWED'}})
@@ -996,13 +1003,16 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByLabel('Название компонента', { exact: true }).fill('NTP Server')
   await page.getByRole('button', { name: 'Добавить компонент', exact: true }).click()
   await page.getByRole('link', { name: 'Взаимодействия', exact: true }).click()
+  await page.getByRole('link', { name: 'Создать', exact: true }).click()
+  await page.getByLabel('Назначение взаимодействия').fill('Time synchronization')
   await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'NTP Server' })
   await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'NTP Server' })
-  await page.getByRole('combobox', { name: 'Протокол', exact: true }).selectOption('UDP')
-  await page.getByLabel('Порт от', { exact: true }).fill('123')
-  await page.getByLabel('Порт до', { exact: true }).fill('123')
-  await page.getByRole('button', { name: 'Создать взаимодействие', exact: true }).click()
-  await expect(page.getByRole('table')).toContainText('NTP Server → NTP Server')
+  await page.getByRole('combobox', { name: 'Протокол условия 1', exact: true }).selectOption('UDP')
+  await page.getByLabel('Назначение от 1').fill('123')
+  await page.getByLabel('Назначение до 1').fill('123')
+  await page.getByRole('button', { name: 'Создать', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Time synchronization', exact: true })).toBeVisible()
+  await expect(page.getByText('NTP Server → NTP Server', { exact: true })).toBeVisible()
 
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Развёрнутые компоненты', exact: true }).click()
   for (const resourceName of ['sender.demo.example', 'receiver.demo.example']) {

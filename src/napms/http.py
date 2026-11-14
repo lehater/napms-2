@@ -11,14 +11,14 @@ from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .dev import DEMO_REQUEST
 from .domain import Problem
 from .use_cases import Service
 
 COLUMNS = ("ruleId", "subjectId", "sourceResourceId", "destinationResourceId", "sourceEndpointId", "destinationEndpointId",
            "sourceAddress", "destinationAddress", "ipProtocol", "destinationPortStart", "destinationPortEnd", "readiness",
            "interactionRevisionId", "connectivityNeedId", "requestId", "requesterActorId", "decisionId", "deciderActorId",
-           "evaluationAt", "requestSubmittedAt", "decisionAt", "sourceAddressKind", "destinationAddressKind")
+           "evaluationAt", "requestSubmittedAt", "decisionAt", "sourceAddressKind", "destinationAddressKind",
+           "sourcePortStart", "sourcePortEnd", "clauseIndex")
 
 
 class Strict(BaseModel):
@@ -75,9 +75,22 @@ class ComponentCollection(Strict):
     hasMore: bool
 
 
+class TrafficClause(Strict):
+    clauseIndex: int = Field(ge=1)
+    ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
+    destinationPortStart: int
+    destinationPortEnd: int
+
+
 class InteractionRevision(Strict):
     interactionRevisionId: UUID
+    revisionNumber: int
+    trafficClauses: list[TrafficClause]
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     trafficLabel: str
@@ -86,6 +99,7 @@ class InteractionRevision(Strict):
 class Interaction(Strict):
     interactionId: UUID
     applicationId: UUID
+    purpose: str
     applicationName: str
     sourceComponentId: UUID
     sourceComponentName: str
@@ -147,10 +161,10 @@ class DeploymentCollection(Strict):
     hasMore: bool
 
 
-class InteractionInput(Strict):
-    sourceComponentId: UUID
-    destinationComponentId: UUID
+class TrafficClauseInput(Strict):
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None = Field(default=None, strict=True, ge=1, le=65535)
+    sourcePortEnd: int | None = Field(default=None, strict=True, ge=1, le=65535)
     destinationPortStart: int = Field(strict=True, ge=1, le=65535)
     destinationPortEnd: int = Field(strict=True, ge=1, le=65535)
 
@@ -158,7 +172,45 @@ class InteractionInput(Strict):
     def ordered_ports(self):
         if self.destinationPortStart > self.destinationPortEnd:
             raise ValueError("Invalid destination port range")
+        if (self.sourcePortStart is None) != (self.sourcePortEnd is None):
+            raise ValueError("Incomplete source port range")
+        if self.sourcePortStart is not None and (
+            self.sourcePortEnd is None or self.sourcePortStart > self.sourcePortEnd
+        ):
+            raise ValueError("Invalid source port range")
         return self
+
+
+class InteractionInput(Strict):
+    sourceComponentId: UUID
+    destinationComponentId: UUID
+    purpose: str = Field(default="", strict=True, max_length=300)
+    trafficClauses: list[TrafficClauseInput] | None = Field(default=None, min_length=1, max_length=32)
+    # Legacy single-clause POST payload remains compatible.
+    ipProtocol: Literal["TCP", "UDP"] | None = None
+    sourcePortStart: int | None = Field(default=None, strict=True, ge=1, le=65535)
+    sourcePortEnd: int | None = Field(default=None, strict=True, ge=1, le=65535)
+    destinationPortStart: int | None = Field(default=None, strict=True, ge=1, le=65535)
+    destinationPortEnd: int | None = Field(default=None, strict=True, ge=1, le=65535)
+
+    @model_validator(mode="after")
+    def validate_clauses(self):
+        if self.trafficClauses is not None:
+            if (self.ipProtocol is not None or self.sourcePortStart is not None
+                    or self.sourcePortEnd is not None or self.destinationPortStart is not None
+                    or self.destinationPortEnd is not None):
+                raise ValueError("Use either trafficClauses or legacy port fields")
+        else:
+            TrafficClauseInput(
+                ipProtocol=self.ipProtocol,
+                sourcePortStart=self.sourcePortStart, sourcePortEnd=self.sourcePortEnd,
+                destinationPortStart=self.destinationPortStart, destinationPortEnd=self.destinationPortEnd,
+            )
+        return self
+
+
+class PublishRevisionInput(Strict):
+    trafficClauses: list[TrafficClauseInput] = Field(min_length=1, max_length=32)
 
 
 class NeedInput(Strict):
@@ -174,6 +226,8 @@ class Need(Strict):
 
 
 class NeedOption(Strict):
+    revisionNumber: int
+    trafficClauses: list[TrafficClause]
     trafficLabel: str
     displayLabel: str
     interactionRevisionId: UUID
@@ -182,6 +236,8 @@ class NeedOption(Strict):
     sourceComponentId: UUID
     destinationComponentId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
 
@@ -239,7 +295,7 @@ class Subject(Strict):
 
 
 class AccessInput(Strict):
-    model_config = ConfigDict(extra="forbid", json_schema_extra={"example": DEMO_REQUEST})
+    model_config = ConfigDict(extra="forbid")
     sourceDeploymentId: UUID
     destinationDeploymentId: UUID
     interactionRevisionId: UUID
@@ -304,12 +360,15 @@ class RequestCollection(Strict):
 
 
 class Rule(Strict):
+    trafficClauses: list[TrafficClause]
     participantsLabel: str
     applicationLabel: str
     sourceResourceLabel: str
     destinationResourceLabel: str
     trafficLabel: str
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     displayLabel: str
@@ -324,6 +383,7 @@ class Rule(Strict):
 
 
 class RuleSummary(Strict):
+    trafficClauses: list[TrafficClause]
     participantsLabel: str
     applicationLabel: str
     sourceResourceLabel: str
@@ -336,6 +396,8 @@ class RuleSummary(Strict):
     sourceResourceId: UUID
     destinationResourceId: UUID
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     trafficLabel: str
@@ -351,6 +413,7 @@ class RuleCollection(Strict):
 
 
 class PolicyRow(Strict):
+    clauseIndex: int
     ruleId: UUID
     subjectId: UUID
     sourceResourceId: UUID
@@ -360,6 +423,8 @@ class PolicyRow(Strict):
     sourceAddress: str | None
     destinationAddress: str | None
     ipProtocol: Literal["TCP", "UDP"]
+    sourcePortStart: int | None
+    sourcePortEnd: int | None
     destinationPortStart: int
     destinationPortEnd: int
     readiness: Literal["READY", "INCOMPLETE"]
@@ -465,6 +530,14 @@ def create_app(db, credentials, *, shared_read=False):
     @app.post("/applications/{applicationId}/interactions", status_code=201, response_model=Interaction, dependencies=[Depends(no_query)])
     def create_interaction(applicationId: UUID, data: InteractionInput, who: Actor):
         return service.create_interaction(who, str(applicationId), data.model_dump(mode="json"))
+
+    @app.post("/applications/{applicationId}/interactions/{interactionId}/revisions", status_code=201,
+              response_model=Interaction, dependencies=[Depends(no_query)])
+    def publish_interaction_revision(applicationId: UUID, interactionId: UUID, data: PublishRevisionInput, who: Actor):
+        return service.publish_interaction_revision(
+            who, str(applicationId), str(interactionId),
+            [clause.model_dump(mode="json") for clause in data.trafficClauses],
+        )
 
     @app.get("/applications/{applicationId}/interactions", response_model=InteractionCollection)
     def list_interactions(applicationId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):

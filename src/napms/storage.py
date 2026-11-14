@@ -3,6 +3,8 @@ import sqlite3
 from contextlib import closing, contextmanager
 from pathlib import Path
 
+from .migrate_interactions import upgrade_to_v8
+
 SCHEMA = """
 CREATE TABLE resources(id TEXT PRIMARY KEY);
 CREATE TABLE endpoints(id TEXT PRIMARY KEY, resource_id TEXT NOT NULL UNIQUE REFERENCES resources(id), address TEXT, kind TEXT CHECK(kind IN ('HOST','PREFIX')), CHECK((address IS NULL) = (kind IS NULL)));
@@ -61,7 +63,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5):
+            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -112,11 +114,74 @@ class Database:
                     c.rollback()
                     raise
 
+            # v5 -> v6: source-port constraints are additive. NULL/NULL is ANY.
+            # An existing v5 file, including immutable revisions/rules, is never rewritten.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 5:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    columns = {r["name"] for r in c.execute("PRAGMA table_info(interaction_revisions)")}
+                    if "source_port_start" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN source_port_start INTEGER CHECK(source_port_start BETWEEN 1 AND 65535)")
+                    if "source_port_end" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN source_port_end INTEGER CHECK(source_port_end BETWEEN source_port_start AND 65535)")
+                    c.execute("""CREATE TRIGGER IF NOT EXISTS valid_source_port_pair
+                        BEFORE INSERT ON interaction_revisions
+                        WHEN (NEW.source_port_start IS NULL) != (NEW.source_port_end IS NULL)
+                        BEGIN SELECT RAISE(ABORT, 'invalid source port interval'); END""")
+                    c.execute("PRAGMA user_version=6")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
+            # v6 -> v7: preserve immutable revision rows and policy refs verbatim.
+            # Missing traffic_clauses_json denotes exactly the legacy single clause.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 6:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    columns = {r["name"] for r in c.execute("PRAGMA table_info(interaction_revisions)")}
+                    if "revision_number" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN revision_number INTEGER NOT NULL DEFAULT 1 CHECK(revision_number >= 1)")
+                    if "traffic_clauses_json" not in columns:
+                        c.execute("ALTER TABLE interaction_revisions ADD COLUMN traffic_clauses_json TEXT")
+                    c.execute("""CREATE TABLE IF NOT EXISTS interaction_meta(
+                        interaction_id TEXT PRIMARY KEY,
+                        application_id TEXT NOT NULL REFERENCES applications(id),
+                        source_component_id TEXT NOT NULL REFERENCES components(id),
+                        destination_component_id TEXT NOT NULL REFERENCES components(id),
+                        purpose TEXT NOT NULL DEFAULT ''
+                    )""")
+                    c.execute("""INSERT OR IGNORE INTO interaction_meta
+                        (interaction_id,application_id,source_component_id,destination_component_id,purpose)
+                        SELECT interaction_id,application_id,source_component_id,destination_component_id,''
+                        FROM interaction_revisions GROUP BY interaction_id""")
+                    for operation in ("UPDATE", "DELETE"):
+                        c.execute(f"""CREATE TRIGGER IF NOT EXISTS immutable_interaction_meta_{operation}
+                            BEFORE {operation} ON interaction_meta
+                            BEGIN SELECT RAISE(ABORT, 'immutable interaction'); END""")
+                    c.execute("PRAGMA user_version=7")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
+            # v7 → v8: one directed Interaction per Application / source / target.
+            # All historical Revision IDs and Need IDs survive; duplicates are
+            # consolidated transactionally with alias resolution.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 7:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    upgrade_to_v8(c)
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
     @contextmanager
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 5:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 8:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c

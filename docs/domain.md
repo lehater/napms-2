@@ -30,6 +30,8 @@
 
 Список отражает **предметные понятия**. Он не предписывает отдельный агрегат, модуль, сервис, таблицу или Bounded Context на каждую строку.
 
+**Уточнение N2 к D-04:** исходная ACC-модель NAPMS 1.0 допускала несколько Interaction для одной пары с разными причинами. Для NAPMS 2.0 владелец явно изменил правило: уникальность по направленной паре, вся совокупность условий трафика принадлежит Revision. Миграция v7→v8 сохраняет старые Revision и Need как историю и консолидирует дубликаты, не переписывая прежние PolicyRule.
+
 ## Минимальная цепочка смысла
 
 `Application → Component → Interaction@Revision` описывает **что и почему передаётся**.
@@ -51,7 +53,7 @@
 | D-01 | Resource/Endpoint identity переживают смену или отсутствие IP; нельзя пересоздавать Resource при смене адреса | REQ-RES-001..003 |
 | D-02 | Endpoint имеет не более одной текущей реализации HOST **или** PREFIX; ресурс может иметь несколько Endpoint только как одну логическую единицу | REQ-RES-003..004 |
 | D-03 | Application — профиль, Component — его роль, а Interaction соединяет только Components *одного* Application; межпрофильная связь недопустима | REQ-APP-001..002, REQ-INT-001 |
-| D-04 | Две независимые причины связи одной пары Components могут иметь разные Interaction; revision traffic неизменяем | REQ-INT-002..003; ACC domain |
+| D-04 | **Решение N2 (14.11.2026):** в пределах Application направленная пара source→destination Components определяет ровно один Interaction. Протоколы, порты и различающиеся бизнес-причины описываются внутри объекта и его неизменяемых Revision; B→A — другая пара. | Решение владельца по Issue #75, переопределяет N1 REQ-INT-002..003 |
 | D-05 | Deployment identity = конкретные Component и Resource; смена адреса не меняет placement identity | REQ-DEP-001 |
 | D-06 | ConnectivityNeed опирается на Process и Interaction, но не создаёт permission; уход Need не переписывает решения и автоматически не отбирает Rule | REQ-BUS-001..007 |
 | D-07 | Для NAPMS 2.0 **подача запроса** требует `access.request` на source Resource; право на destination для подачи не требуется. Проверка admission отдельно от ALLOWED/DENIED; отказ на admission не является DENIED | REQ-AUTH-001, REQ-PERM-001; решение 2.0 от 2026-11-06 |
