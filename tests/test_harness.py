@@ -68,3 +68,7 @@ def test_child_failure_stops_other_service(tmp_path, monkeypatch):
         run(tmp_path / 'test.db', tmp_path / 'credentials.json')
     assert backend.stopped and frontend.stopped
     assert groups == [frontend.pid]
+    with Database(tmp_path / 'test.db').transaction() as c:
+        assert c.execute("SELECT COUNT(*) FROM processes").fetchone()[0] == 0
+        assert c.execute("SELECT COUNT(*) FROM resources").fetchone()[0] == 0
+        assert c.execute("SELECT COUNT(*) FROM interaction_revisions").fetchone()[0] == 0
