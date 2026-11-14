@@ -113,6 +113,7 @@ export function InteractionCreateScreen({client}: {client: Client}) {
   useEffect(() => {
     let active = true
     setApplication(null); setComponents([]); setError('')
+    setSource(''); setDestination(''); setPurpose(''); setClauses([emptyClause()])
     Promise.all([client.application(applicationId), allComponents(client, applicationId)])
       .then(([a, c]) => { if (active) { setApplication(a); setComponents(c) } })
       .catch(reason => { if (active) setError(catalogError(reason)) })
