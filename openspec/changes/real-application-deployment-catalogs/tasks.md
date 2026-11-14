@@ -19,7 +19,7 @@
 ## 4. REAL Deployment Catalog UI
 
 - [x] 4.1 Add `/deployments` collection, creation flow using existing Components and read-only Resources, and Deployment detail with links to Component, Application, and Resource; verify TypeScript typecheck and direct route navigation.
-- [x] 4.2 Add the minimal read-only Resource detail relation target and Sidebar navigation group in the required order; verify breadcrumbs and all relation links resolve to REAL routes.
+- [x] 4.2 Add the minimal read-only Resource detail relation target and five-entry Sidebar contract (Business Processes → Applications → Deployments → Access Requests → Policy Rules); verify breadcrumbs and all relation links resolve to REAL routes.
 
 ## 5. End-to-End Acceptance
 

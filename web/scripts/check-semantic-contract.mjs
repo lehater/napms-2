@@ -74,5 +74,5 @@ if (errors.length) {
   process.exitCode = 1
 } else {
   console.log('SEMANTIC_CONTRACT_PASS: ' + Object.keys(enforced.statusDomains).length +
-    ' kinds, ' + sections.length + ' research sections, 3 REAL collections, routes, denied provenance, 2 validator sentinels')
+    ' kinds, ' + sections.length + ' research sections, ' + navigation.length + ' REAL navigation entries, routes, denied provenance, 2 validator sentinels')
 }
