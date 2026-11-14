@@ -3,11 +3,15 @@ import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 're
 import { api, ApiError, message, type Application, type CatalogPage, type Client, type Component, type ComponentDeployment, type Interaction, type Resource, type ResourceEndpoint } from './api'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
+import { ClauseFields, RevisionPublisher, emptyClause, parseClause, type ClauseDraft } from './TrafficClauseDraft'
 import { CollectionView } from './components/real/CollectionView'
 import { DetailView } from './components/real/DetailView'
 import { EntityTable } from './components/real/EntityTable'
 
 function catalogError(error: unknown) {
+  if (error instanceof ApiError && error.code === 'DUPLICATE_INTERACTION') return 'Такое взаимодействие уже существует: выберите его или укажите другое назначение.'
+  if (error instanceof ApiError && error.code === 'DUPLICATE_TRAFFIC_CLAUSE') return 'Повторяющееся условие трафика в одной ревизии.'
+  if (error instanceof ApiError && error.code === 'UNCHANGED_REVISION') return 'Состав условий не изменился: новая ревизия не создана.'
   if (error instanceof ApiError && error.status === 409) return 'Такое имя уже используется в этом профиле приложения.'
   if (error instanceof ApiError && error.status === 400) return 'Проверьте направление взаимодействия, компоненты и диапазон портов.'
   if (error instanceof ApiError && error.status === 404) return 'Объект или связанный каталог не найден.'
@@ -143,23 +147,30 @@ function portRange(start: number | null, end: number | null) {
 function InteractionsTab({ client, application, reloadKey, refresh }: { client: Client; application: Application; reloadKey: number; refresh: () => void }) {
   const [page, setPage] = useState<CatalogPage<Interaction> | null>(null), [components, setComponents] = useState<Component[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false)
   const [source, setSource] = useState(''), [destination, setDestination] = useState(''), [protocol, setProtocol] = useState<'TCP'|'UDP'>('TCP'), [start, setStart] = useState('443'), [end, setEnd] = useState('443'), [sourceStart, setSourceStart] = useState(''), [sourceEnd, setSourceEnd] = useState('')
+  const [purpose, setPurpose] = useState(''), [additional, setAdditional] = useState<ClauseDraft[]>([])
   const [params, setParams] = useSearchParams()
   const offset = Math.max(0, Number(params.get('interactionOffset')) || 0)
   useEffect(() => { let active=true; setPage(null); setError(''); Promise.all([client.interactions(application.applicationId,offset), allPages((pageOffset,limit)=>client.components(application.applicationId,pageOffset,limit))]).then(([rows,values])=>{if(active){setPage(rows);setComponents(values)}}).catch(reason=>{if(active)setError(catalogError(reason))}); return ()=>{active=false} }, [client,application.applicationId,offset,reloadKey])
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if ((sourceStart === '') !== (sourceEnd === '')) {
-      setError('Укажите обе границы исходного диапазона или оставьте обе пустыми (ANY).')
+    setError('')
+    let clauses
+    try {
+      clauses = [parseClause({
+        ipProtocol: protocol, sourcePortStart: sourceStart, sourcePortEnd: sourceEnd,
+        destinationPortStart: start, destinationPortEnd: end,
+      }), ...additional.map(parseClause)]
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Недопустимый диапазон портов.')
       return
     }
-    setBusy(true); setError('')
+    setBusy(true)
     try {
       await client.createInteraction(application.applicationId, {
-        sourceComponentId: source, destinationComponentId: destination, ipProtocol: protocol,
-        sourcePortStart: sourceStart === '' ? null : Number(sourceStart),
-        sourcePortEnd: sourceEnd === '' ? null : Number(sourceEnd),
-        destinationPortStart: Number(start), destinationPortEnd: Number(end),
+        sourceComponentId: source, destinationComponentId: destination,
+        purpose, trafficClauses: clauses,
       })
+      setAdditional([])
       refresh()
     } catch(reason) { setError(catalogError(reason)) } finally { setBusy(false) }
   }
@@ -182,10 +193,23 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
         <label>До<input aria-label="Порт назначения до" type="number" required min={1} max={65535} value={end} onChange={event=>setEnd(event.target.value)} /></label>
       </fieldset>
       <Button disabled={busy || !components.length}>{busy ? 'Сохранение…' : 'Создать'}</Button>
+      <label className="interaction-purpose">Назначение взаимодействия
+        <input aria-label="Назначение взаимодействия" maxLength={300} value={purpose}
+          placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
+      </label>
+      {additional.map((item,index) => <div className="interaction-extra" key={index}>
+        <ClauseFields index={index+1} item={item}
+          change={next => setAdditional(items => items.map((clause,i) => i === index ? next : clause))}
+          remove={() => setAdditional(items => items.filter((_,i) => i !== index))} />
+      </div>)}
+      <div className="interaction-extra">
+        <Button type="button" variant="outline" disabled={additional.length >= 31}
+          onClick={() => setAdditional(items => [...items, emptyClause()])}>Добавить условие</Button>
+      </div>
     </form>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
       {key:'interaction',title:'Направление',render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.sourceComponentName} → {item.destinationComponentName}</Link>},
-      {key:'revision',title:'Текущие ревизии',render:item=>item.revisions.map(revision=><span key={revision.interactionRevisionId}>{revision.ipProtocol} · {portRange(revision.sourcePortStart,revision.sourcePortEnd)} → {portRange(revision.destinationPortStart,revision.destinationPortEnd)}</span>)},
+      {key:'revision',title:'Последняя ревизия',render:item=>{ const current=item.revisions.at(-1)!; return <span>#{current.revisionNumber} · {current.trafficLabel}</span> }},
     ]} getKey={item=>item.interactionId} emptyText="Взаимодействия ещё не созданы." loading={!page && !error} error={error} />
     <div className="ux-pagination"><Button variant="outline" disabled={!offset} onClick={()=>changePage(Math.max(0,offset-(page?.limit??20)))}>Назад</Button><span>Страница {Math.floor(offset/(page?.limit??20))+1}</span><Button variant="outline" disabled={!page?.hasMore} onClick={()=>changePage(offset+(page?.limit??20))}>Далее</Button></div>
   </div>
@@ -212,7 +236,17 @@ function InteractionDetail({ client }: { client: Client }) {
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to="/applications">Профили приложений</Link><span>/</span><Link to={`/applications/${applicationId}?tab=interactions`}>{item.applicationName}</Link><span>/</span><span aria-current="page">Взаимодействие</span></>}
     title={`${item.sourceComponentName} → ${item.destinationComponentName}`} subtitle={<Link to={`/applications/${applicationId}`}>{item.applicationName}</Link>}
     tabs={[{id:'overview',label:'Ревизии',href:`/applications/${applicationId}/interactions/${interactionId}`}]} activeTab="overview">
-    <EntityTable rows={item.revisions} columns={[{key:'protocol',title:'Протокол',render:revision=>revision.ipProtocol},{key:'ports',title:'Порты: источник → назначение',render:revision=>`${portRange(revision.sourcePortStart,revision.sourcePortEnd)} → ${portRange(revision.destinationPortStart,revision.destinationPortEnd)}`},{key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>}]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
+    {item.purpose && <p><strong>Назначение:</strong> {item.purpose}</p>}
+    <EntityTable rows={item.revisions} columns={[
+      {key:'number',title:'Ревизия',render:revision=>`#${revision.revisionNumber}`},
+      {key:'clauses',title:'TrafficClause (неизменяемые)',render:revision=>
+        <div className="flex flex-col gap-1">{revision.trafficClauses.map(clause=>
+          <span key={clause.clauseIndex}>`#${clause.clauseIndex}` · {clause.ipProtocol} · {portRange(clause.sourcePortStart,clause.sourcePortEnd)} → {portRange(clause.destinationPortStart,clause.destinationPortEnd)}</span>)}</div>},
+      {key:'revision',title:'Revision ID',render:revision=><span className="font-mono">{revision.interactionRevisionId}</span>},
+    ]} getKey={revision=>revision.interactionRevisionId} emptyText="Ревизии отсутствуют." />
+    <RevisionPublisher key={`${interactionId}:${item.revisions.at(-1)?.revisionNumber}`}
+      applicationId={applicationId} interaction={item} client={client} describeError={catalogError}
+      onPublished={updated=>setLoaded({id:interactionId,item:updated})}/>
   </DetailView>
 }
 
