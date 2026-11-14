@@ -182,6 +182,7 @@ function InteractionsTab({ client, application, reloadKey, refresh }: { client: 
         <input aria-label="Назначение взаимодействия" required maxLength={300} value={purpose}
           placeholder="Например, синхронизация времени" onChange={event => setPurpose(event.target.value)} />
       </label>
+      <p className="interaction-initial-label">Ревизия #1 · TrafficClause #1</p>
       <label>Источник<select required value={source} onChange={event=>setSource(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Получатель<select required value={destination} onChange={event=>setDestination(event.target.value)}><option value="">Выберите компонент</option>{components.map(item=><option key={item.componentId} value={item.componentId}>{item.name}</option>)}</select></label>
       <label>Протокол<select value={protocol} onChange={event=>setProtocol(event.target.value as 'TCP'|'UDP')}><option value="TCP">TCP</option><option value="UDP">UDP</option></select></label>
