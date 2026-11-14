@@ -20,8 +20,10 @@ def traffic(protocol: Literal["TCP", "UDP"], start: int, end: int,
             source_start: int | None = None, source_end: int | None = None) -> str:
     if protocol not in ("TCP", "UDP") or not 1 <= start <= end <= 65535:
         raise ValueError("Invalid transport interval")
-    if ((source_start is None) != (source_end is None)
-            or (source_start is not None and not 1 <= source_start <= source_end <= 65535)):
+    if source_start is None:
+        if source_end is not None:
+            raise ValueError("Invalid source transport interval")
+    elif source_end is None or not 1 <= source_start <= source_end <= 65535:
         raise ValueError("Invalid source transport interval")
     destination = str(start) if start == end else f"{start}-{end}"
     if source_start is None:
