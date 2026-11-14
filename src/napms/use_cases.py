@@ -2,6 +2,7 @@
 import ipaddress
 
 from .traffic_clauses import canonical_clauses, snapshot_json, stored_clauses
+from .migrate_interactions import canonical_interaction
 import sqlite3
 from uuid import uuid4
 
@@ -88,9 +89,10 @@ def process_view(row):
 
 def need_view(c, r):
     process = find(c, "processes", r["process_id"])
-    revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number,id LIMIT 1", (r["interaction_id"],)).fetchone()
+    interaction_id = canonical_interaction(c, r["interaction_id"])
+    revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number,id LIMIT 1", (interaction_id,)).fetchone()
     label = (process["name"] or MISSING) + " · " + (interaction_label(c, revision) if revision else MISSING)
-    return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=r["interaction_id"], componentId=r["component_id"])
+    return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=interaction_id, componentId=r["component_id"])
 
 
 def application_view(c, row):
@@ -266,21 +268,14 @@ class Service:
                 raise Problem(400, "INVALID_COMMUNICATION", "Components must share one Application")
             clauses = _clauses_from_command(data)
             purpose = (data.get("purpose") or "").strip()
-            for existing in c.execute(
-                """SELECT i.interaction_id FROM interaction_meta i
-                   WHERE i.application_id=? AND i.source_component_id=?
-                     AND i.destination_component_id=? AND i.purpose=?""",
-                (application_id, source["id"], destination["id"], purpose),
-            ).fetchall():
-                latest = c.execute(
-                    "SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number DESC,id DESC LIMIT 1",
-                    (existing["interaction_id"],),
-                ).fetchone()
-                if purpose:
-                    raise Problem(409, "INTERACTION_PURPOSE_EXISTS",
-                                  "Interaction with these participants and purpose already exists; publish a revision")
-                if latest and canonical_clauses(_plain_clauses(latest)) == clauses:
-                    raise Problem(409, "DUPLICATE_INTERACTION", "Identical Interaction already exists")
+            existing = c.execute(
+                """SELECT interaction_id FROM interaction_meta
+                   WHERE application_id=? AND source_component_id=? AND destination_component_id=?""",
+                (application_id, source["id"], destination["id"]),
+            ).fetchone()
+            if existing:
+                raise Problem(409, "INTERACTION_PAIR_EXISTS",
+                              "Interaction already exists for this directed component pair; publish a revision")
             interaction_id = uid()
             c.execute(
                 """INSERT INTO interaction_meta
@@ -294,6 +289,7 @@ class Service:
     def publish_interaction_revision(self, actor, application_id, interaction_id, clauses):
         with self.db.transaction(write=True) as c:
             self._catalog_create(c, actor)
+            interaction_id = canonical_interaction(c, interaction_id)
             metadata = c.execute(
                 "SELECT * FROM interaction_meta WHERE interaction_id=? AND application_id=?",
                 (interaction_id, application_id),
@@ -331,7 +327,7 @@ class Service:
         with self.db.transaction() as c:
             self._catalog_read(c, actor)
             find(c, "applications", application_id)
-            return interaction_view(c, interaction_id, application_id)
+            return interaction_view(c, canonical_interaction(c, interaction_id), application_id)
 
     def create_deployment(self, actor, component_id, resource_id):
         with self.db.transaction(write=True) as c:
@@ -474,7 +470,10 @@ class Service:
                         self._compatible(c, r)
                     except Problem:
                         continue
-                    if c.execute("SELECT 1 FROM needs WHERE process_id=? AND interaction_id=? AND component_id=?", (pid, r["interaction_id"], r["source_component_id"])).fetchone():
+                    if c.execute("""SELECT 1 FROM needs WHERE process_id=? AND component_id=?
+                        AND (interaction_id=? OR interaction_id IN
+                        (SELECT alias_id FROM interaction_aliases WHERE canonical_id=?))""",
+                        (pid, r["source_component_id"], r["interaction_id"], r["interaction_id"])).fetchone():
                         continue
                     items.append(revision_view(c, r))
             else:
@@ -487,6 +486,11 @@ class Service:
             rev = find(c, "interaction_revisions", revision)
             self._compatible(c, rev)
             nid = uid()
+            if c.execute("""SELECT 1 FROM needs WHERE process_id=? AND component_id=?
+                        AND (interaction_id=? OR interaction_id IN
+                        (SELECT alias_id FROM interaction_aliases WHERE canonical_id=?))""",
+                        (pid, rev["source_component_id"], rev["interaction_id"], rev["interaction_id"])).fetchone():
+                raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists for this Interaction")
             try:
                 c.execute("INSERT INTO needs VALUES (?,?,?,?)", (nid, pid, rev["interaction_id"], rev["source_component_id"]))
             except sqlite3.IntegrityError as error:
@@ -521,7 +525,7 @@ class Service:
                 return items
             items = []
             selected = None
-            for r in c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? AND source_component_id=? ORDER BY revision_number,id", (need["interaction_id"], need["component_id"])).fetchall():
+            for r in c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? AND source_component_id=? ORDER BY revision_number,id", (canonical_interaction(c, need["interaction_id"]), need["component_id"])).fetchall():
                 try:
                     self._compatible(c, r)
                 except Problem:
@@ -561,7 +565,9 @@ class Service:
                 if error.status == 404:
                     raise
                 raise Problem(400, "INVALID_SUBJECT", "Deployments, revision and Need do not correspond") from error
-            subject = validate_subject(source, dest, rev, need,
+            normalised_need = dict(need)
+            normalised_need["interaction_id"] = canonical_interaction(c, need["interaction_id"])
+            subject = validate_subject(source, dest, rev, normalised_need,
                                        find(c, "components", source["component_id"]),
                                        find(c, "components", dest["component_id"]))
             c.execute("INSERT OR IGNORE INTO access_subjects VALUES (?,?,?,?)", (uid(), subject.source, subject.destination, subject.revision))
