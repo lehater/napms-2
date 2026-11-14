@@ -71,7 +71,7 @@ def test_strict_http_and_independent_grants(env):
 def test_conflicting_revisions_fail_closed(env):
     pid = process(env)
     with env[0].transaction(write=True) as c:
-        c.execute('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,destination_component_id,source_component_id,protocol,port_start,port_end FROM interaction_revisions',(str(uuid4()),))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,destination_component_id,source_component_id,protocol,port_start,port_end FROM interaction_revisions',(str(uuid4()),))
     service = env[2].state.service
     assert service.needs(IDS['requester'],pid,20,0,True)['items'] == []
     with pytest.raises(Problem) as e:
@@ -105,7 +105,7 @@ def test_v2_upgrade_preserves_rows_and_unique_constraint(env):
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 5
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 6
         assert [tuple(r) for r in c.execute('SELECT * FROM needs')] == before
         assert not c.execute('PRAGMA foreign_key_check').fetchall()
     with pytest.raises(sqlite3.IntegrityError, match='needs.process_id'):
@@ -119,8 +119,8 @@ def test_options_paging_revision_identity_and_application_validation(env):
     rev2 = str(uuid4())
     interaction2 = str(uuid4())
     with env[0].transaction(write=True) as c:
-        c.execute('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,80,80 FROM interaction_revisions',(rev2,))
-        c.execute('INSERT INTO interaction_revisions SELECT ?,?,application_id,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions LIMIT 1',(str(uuid4()),interaction2))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,80,80 FROM interaction_revisions',(rev2,))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,?,application_id,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions LIMIT 1',(str(uuid4()),interaction2))
     all_options = service.needs(IDS['requester'],pid,100,0,True)['items']
     assert all_options == sorted(all_options,key=lambda r:(r['interactionId'],r['interactionRevisionId']))
     assert len(all_options) == 3
@@ -134,7 +134,7 @@ def test_options_paging_revision_identity_and_application_validation(env):
     app = str(uuid4())
     with env[0].transaction(write=True) as c:
         c.execute('INSERT INTO applications VALUES (?)',(app,))
-        c.execute('INSERT INTO interaction_revisions SELECT ?,?, ?,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions LIMIT 1',(str(uuid4()),str(uuid4()),app))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,?, ?,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions LIMIT 1',(str(uuid4()),str(uuid4()),app))
     assert len(service.needs(IDS['requester'],pid,100,0,True)['items']) == 1
 
 

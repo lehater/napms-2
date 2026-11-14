@@ -37,7 +37,7 @@ def test_v3_upgrade_preserves_history_and_credentials(env):
         ]
     db.initialize()  # Explicit migration alone does not invent any historical names.
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
         assert rows(c) == before
         assert c.execute("SELECT * FROM resource_names").fetchall() == []
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
@@ -117,7 +117,7 @@ def test_v4_actor_names_migration_is_additive_repeatable_and_atomic(env):
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 5
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 6
         assert rows(c) == before
         assert c.execute("SELECT * FROM actor_names").fetchall() == []
         assert {
@@ -229,7 +229,7 @@ def test_semantic_labels_missing_names_and_confidentiality(env):
     revision = str(uuid4())
     change(
         env,
-        "INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',8000,8010 FROM interaction_revisions",
+        "INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,'UDP',8000,8010 FROM interaction_revisions",
         (revision,),
     )
     options = (

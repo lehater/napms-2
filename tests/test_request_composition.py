@@ -27,7 +27,7 @@ def counts(env):
 def test_options_shapes_paging_and_address_independence(env):
     extra = str(uuid4())
     with env[0].transaction(write=True) as c:
-        c.execute('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,80,80 FROM interaction_revisions', (extra,))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,source_component_id,destination_component_id,protocol,80,80 FROM interaction_revisions', (extra,))
         c.execute('UPDATE endpoints SET address=NULL,kind=NULL')
     response = options(env, '?limit=1')
     assert response.status_code == 200
@@ -35,7 +35,7 @@ def test_options_shapes_paging_and_address_independence(env):
     body = response.json()
     assert body['kind'] == 'revisions' and body['hasMore']
     assert body['items'][0]['interactionRevisionId'] == min(extra, IDS['revision'])
-    assert set(body['items'][0]) == {'interactionRevisionId', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'destinationPortStart', 'destinationPortEnd', 'displayLabel', 'trafficLabel'}
+    assert set(body['items'][0]) == {'interactionRevisionId', 'interactionId', 'applicationId', 'sourceComponentId', 'destinationComponentId', 'ipProtocol', 'sourcePortStart', 'sourcePortEnd', 'destinationPortStart', 'destinationPortEnd', 'displayLabel', 'trafficLabel'}
     assert len(options(env, '?offset=1').json()['items']) == 1
     assert options(env, '?offset=' + '9'*60).json()['items'] == []
     for kind, key in [('source-deployments', 'sourceDeployment'), ('destination-deployments', 'destinationDeployment')]:
@@ -135,7 +135,7 @@ def test_submission_neutral_precedence_and_atomic_failure(env):
 
 def test_conflicting_interaction_group_is_not_selectable_or_submittable(env):
     with env[0].transaction(write=True) as c:
-        c.execute('INSERT INTO interaction_revisions SELECT ?,interaction_id,application_id,destination_component_id,source_component_id,protocol,80,80 FROM interaction_revisions', (str(uuid4()),))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,interaction_id,application_id,destination_component_id,source_component_id,protocol,80,80 FROM interaction_revisions', (str(uuid4()),))
     assert options(env).json()['items'] == []
     result = env[3].post('/access-requests',json=DEMO_REQUEST,headers=auth(env,'requester'))
     assert result.status_code == 400 and result.json()['error']['code'] == 'INVALID_SUBJECT'
@@ -164,7 +164,7 @@ def test_read_snapshot_and_seed_upgrade(env):
     init_demo(env[0],env[1])
     assert env[1].read_bytes() == credentials
     with env[0].transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 5
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 6
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
 
 
@@ -189,7 +189,7 @@ def test_other_need_same_subject_and_unrelated_revision(env):
     with env[0].transaction(write=True) as c:
         c.execute('INSERT INTO processes(id,name) VALUES (?,?)',(pid,'Independent justification'))
         c.execute('INSERT INTO needs VALUES (?,?,?,?)',(nid,pid,IDS['interaction'],IDS['sender']))
-        c.execute('INSERT INTO interaction_revisions SELECT ?,?,application_id,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(revision,str(uuid4())))
+        c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,?,application_id,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(revision,str(uuid4())))
     first = submit(env)
     a = decide(env,first)
     second = env[3].post('/access-requests',headers=auth(env,'requester'),json={**DEMO_REQUEST,'connectivityNeedId':nid}).json()
@@ -221,7 +221,7 @@ def test_incompatible_saved_references_have_no_partial_writes(env, mismatch):
         else:
             app,rev = str(uuid4()),str(uuid4())
             c.execute('INSERT INTO applications VALUES (?)',(app,))
-            c.execute('INSERT INTO interaction_revisions SELECT ?,?, ?,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(rev,str(uuid4()),app))
+            c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,?, ?,source_component_id,destination_component_id,protocol,port_start,port_end FROM interaction_revisions',(rev,str(uuid4()),app))
             data['interactionRevisionId'] = rev
     response = env[3].post('/access-requests',json=data,headers=auth(env,'requester'))
     assert response.status_code == 400
