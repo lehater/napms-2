@@ -2,7 +2,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: Directed Interaction with published immutable revisions
+### Requirement: Directed Interaction with initial immutable revision
 
 Each Interaction SHALL identify an Application, directed source and destination Components, and an optional legacy-compatible purpose. Its published revisions SHALL be numbered starting at 1 and contain at least one canonical owned TrafficClause. A TrafficClause SHALL define TCP or UDP and source/destination port intervals with source ANY represented by null/null. Published snapshots SHALL be immutable; editing a draft SHALL not change persisted history. Adding a changed revision SHALL publish a new snapshot under the same Interaction identifier. Exact duplicate clauses within one revision, unchanged replacement revisions, and indistinguishable interactions with identical participants, purpose, and clauses SHALL be rejected.
 
