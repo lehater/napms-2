@@ -64,7 +64,7 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByLabel('Demo actor', { exact: true }).selectOption('requester')
   // Shared REAL collection contract: empty tables retain their headings and context.
   await expect(page.locator('.ux-collection')).toBeVisible()
-  await expect(page.getByRole('table').getByRole('columnheader')).toHaveText(['Название', 'Ответственная организация'])
+  await expect(page.getByRole('table').getByRole('columnheader')).toHaveText(['Название', 'Ответственная организация', 'Статус'])
   await expect(page.locator('.ux-collection')).toContainText('Демонстрационный процесс')
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Заявки на доступ', exact: true }).click()
   await expect(page.locator('.ux-collection')).toBeVisible()
