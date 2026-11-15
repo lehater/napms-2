@@ -108,7 +108,7 @@ def classify_changes(changes):
                 fallback = True
             if path.startswith("web/"):
                 web = True
-            elif path.startswith(("src/", "tests/")) or path == "pyproject.toml":
+            elif path.startswith(("src/", "tests/")):
                 pass
             else:
                 fallback = True
