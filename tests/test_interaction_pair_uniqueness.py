@@ -36,7 +36,7 @@ def test_v7_duplicate_pair_consolidation_preserves_need_and_policy_provenance(en
         c.execute("INSERT INTO processes(id,name) VALUES (?,?)", (process_id, "Legacy purpose"))
     requester, exporter = auth(env, "requester"), auth(env, "exporter")
     need = client.post(f"/business-processes/{process_id}/needs",
-                       json={"interactionRevisionId": revision_id}, headers=requester)
+                       json={"interactionRevisionId": revision_id, "businessBasis": "Duplicate pair test"}, headers=requester)
     assert need.status_code == 201, need.text
     need_id = need.json()["connectivityNeedId"]
     request = client.post("/access-requests", json={
@@ -52,7 +52,7 @@ def test_v7_duplicate_pair_consolidation_preserves_need_and_policy_provenance(en
     db.initialize()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
         assert c.execute("""SELECT COUNT(*) FROM interaction_meta WHERE application_id=?
             AND source_component_id=? AND destination_component_id=?""",

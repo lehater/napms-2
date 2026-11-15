@@ -9,7 +9,14 @@ export type Options = (NeedPage<NeedOption> & {kind: 'revisions'}) | (NeedPage<D
 export type PolicyRuleDisplay = { participantsLabel: string; applicationLabel: string; sourceResourceLabel: string; destinationResourceLabel: string }
 export type Rule = PolicyRuleDisplay & { trafficClauses: TrafficClause[]; displayLabel: string; trafficLabel: string; ipProtocol: 'TCP' | 'UDP'; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number; ruleId: string; subjectId: string; state: 'ACTIVE' | 'INACTIVE'; subject: Omit<AccessInput, 'connectivityNeedId'>; originatingRequest: AccessRequest; originatingDecision: Decision; connectivityNeedId: string; allowances: Decision[] }
 export type RuleSummary = PolicyRuleDisplay & Pick<Rule, 'trafficClauses' | 'ruleId' | 'subjectId' | 'state' | 'subject' | 'displayLabel' | 'trafficLabel' | 'ipProtocol' | 'sourcePortStart' | 'sourcePortEnd' | 'destinationPortStart' | 'destinationPortEnd'> & { sourceResourceId: string; destinationResourceId: string; originatingDecisionId: string; allowanceDecisionIds: string[] }
-export type Need = { displayLabel: string; connectivityNeedId: string; processId: string; interactionId: string; componentId: string }
+export type Need = { displayLabel: string; connectivityNeedId: string; processId: string; interactionId: string; componentId: string; businessBasis: string | null; status: 'ACTIVE' | 'RETIRED' }
+export type NeedRequestSummary = { requestId: string; status: 'PENDING' | 'ALLOWED' | 'DENIED'; submittedAt: string }
+export type NeedDetail = Need & {
+  process: BusinessProcess
+  interaction: { interactionId: string; applicationId: string | null; applicationName: string | null; name: string }
+  participant: Component
+  requests: NeedPage<NeedRequestSummary>
+}
 export type NeedOption = { displayLabel: string; trafficLabel: string; revisionNumber: number; trafficClauses: TrafficClause[]; interactionRevisionId: string; interactionId: string; applicationId: string; sourceComponentId: string; destinationComponentId: string; ipProtocol: string; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number }
 export type NeedPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
 export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null; status: 'ACTIVE' | 'ARCHIVED' }
@@ -86,7 +93,10 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     requestOptions: (pid: string, nid: string, kind: Options['kind'], revision = '', offset = 0) => call<Options>(`/business-processes/${encodeURIComponent(pid)}/needs/${encodeURIComponent(nid)}/access-request-options?kind=${kind}&limit=20&offset=${offset}${revision ? '&interactionRevisionId=' + encodeURIComponent(revision) : ''}`),
     needs: (id: string, offset = 0) => call<NeedPage<Need>>(`/business-processes/${encodeURIComponent(id)}/needs?limit=20&offset=${offset}`),
     needOptions: (id: string, offset = 0) => call<NeedPage<NeedOption>>(`/business-processes/${encodeURIComponent(id)}/need-options?limit=20&offset=${offset}`),
-    createNeed: (id: string, revision: string) => call<Need>(`/business-processes/${encodeURIComponent(id)}/needs`, 'POST', { interactionRevisionId: revision }),
+    createNeed: (id: string, revision: string, businessBasis: string) => call<Need>(`/business-processes/${encodeURIComponent(id)}/needs`, 'POST', { interactionRevisionId: revision, businessBasis }),
+    need: (processId: string, needId: string, offset = 0) => call<NeedDetail>(`/business-processes/${encodeURIComponent(processId)}/needs/${encodeURIComponent(needId)}?limit=20&offset=${offset}`),
+    updateNeed: (processId: string, needId: string, businessBasis: string) => call<Need>(`/business-processes/${encodeURIComponent(processId)}/needs/${encodeURIComponent(needId)}`, 'PATCH', { businessBasis }),
+    setNeedStatus: (processId: string, needId: string, status: Need['status']) => call<Need>(`/business-processes/${encodeURIComponent(processId)}/needs/${encodeURIComponent(needId)}/lifecycle`, 'PATCH', { status }),
     processes: (offset = 0) => call<ProcessCollection>(`/business-processes?limit=20&offset=${offset}`),
     process: (id: string) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`),
     createProcess: (data: ProcessInput) => call<BusinessProcess>('/business-processes', 'POST', data),

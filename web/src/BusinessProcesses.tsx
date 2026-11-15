@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { api, ApiError, message, type BusinessProcess, type Client, type ProcessCollection } from './api'
-import Needs from './Needs'
+import Needs, { NeedDetailScreen } from './Needs'
 import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 import { CollectionView } from './components/real/CollectionView'
@@ -9,6 +9,7 @@ import { DetailView } from './components/real/DetailView'
 import { Badge } from './components/ui/badge'
 import ErrorNotice from './components/ErrorNotice'
 import { useFormDraft } from './FormDrafts'
+import NotFound from './NotFound'
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 422) return 'Проверьте название и допустимую длину полей.'
@@ -21,6 +22,7 @@ export default function BusinessProcesses() {
   const leaf = pathname.split('/').filter(Boolean).slice(1)
   const listQuery = new URLSearchParams(search); listQuery.delete('tab')
   const listPath = '/business-processes' + (listQuery.size ? '?' + listQuery : '')
+  const needDetailPath = leaf.length === 3 && leaf[1] === 'needs'
   const profile = useDemoProfile()
   const [token, setToken] = useState(''), [draft, setDraft] = useState(''), [notice, setNotice] = useState('')
   const credentialSession = useRef(0)
@@ -32,7 +34,6 @@ export default function BusinessProcesses() {
     })
   }, [token])
   const client = profile.client ?? manualClient
-  if (leaf.length > 1) return <section className="ux-panel ux-panel-body"><h1>Страница не найдена</h1><Link to="/">На главную</Link></section>
   return <>
     {(leaf.length === 0 || leaf[0] === 'new') && <nav className="ux-breadcrumbs" aria-label="Breadcrumbs"><Link to="/">NAPMS</Link><span>/</span><Link to={listPath}>Бизнес-процессы</Link>{leaf.length > 0 && <><span>/</span><span aria-current="page">Создание</span></>}</nav>}
     {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
@@ -45,9 +46,10 @@ export default function BusinessProcesses() {
       </form>}
       <p>Credential хранится только в памяти вкладки. После обновления страницы введите его снова.</p>
     </section>}
-    {!token && !profile.enabled ? <p>Введите локальный credential из приватного файла сервера.</p> : <div key={token}><Routes>
+    {leaf.length > 1 && !needDetailPath ? <NotFound /> : !token && !profile.enabled ? <p>Введите локальный credential из приватного файла сервера.</p> : <div key={token}><Routes>
       <Route index element={<ProcessList client={client} />} />
       <Route path="new" element={<NewProcess client={client} />} />
+      <Route path=":processId/needs/:needId" element={<NeedDetailScreen client={client} />} />
       <Route path=":processId" element={<ProcessDetail client={client} />} />
       <Route path="*" element={<h1>Страница не найдена</h1>} />
     </Routes></div>}

@@ -60,7 +60,7 @@ def test_owned_clauses_and_revision_publish_preserve_old_rules(env):
     assert reversed_pair.status_code == 201, reversed_pair.text
 
     need = client.post(f'/business-processes/{IDS["process"]}/needs',
-                       headers=requester, json={"interactionRevisionId": rev1["interactionRevisionId"]})
+                       headers=requester, json={"interactionRevisionId": rev1["interactionRevisionId"], "businessBasis": "Revision test basis"})
     assert need.status_code == 201, need.text
     nid = need.json()["connectivityNeedId"]
     req = client.post('/access-requests', headers=requester, json={
@@ -179,7 +179,7 @@ def test_overlapping_clauses_are_rejected(env):
 def test_legacy_single_clause_and_migration_contract(env):
     db, _, _, client, _ = env
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
         original = c.execute("SELECT * FROM interaction_revisions WHERE id=?", (IDS["revision"],)).fetchone()
         assert original["traffic_clauses_json"] is None
         assert original["revision_number"] == 1

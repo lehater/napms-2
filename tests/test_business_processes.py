@@ -129,7 +129,7 @@ def test_update_and_process_lifecycle_preserve_identity_and_children(env):
     assert archived.status_code == 200 and archived.json()['status'] == 'ARCHIVED'
     assert client.patch(f'/business-processes/{pid}/status', headers=headers, json={'status': 'ARCHIVED'}).json()['status'] == 'ARCHIVED'
     need = client.post(f'/business-processes/{pid}/needs', headers=headers,
-                       json={'interactionRevisionId': IDS['revision']})
+                       json={'interactionRevisionId': IDS['revision'], 'businessBasis': 'Test basis'})
     assert need.status_code == 409
     with db.transaction() as c:
         assert [tuple(row) for row in c.execute('SELECT * FROM needs WHERE process_id=?', (pid,))] == need_rows_before
@@ -176,7 +176,7 @@ def test_v8_process_migration_defaults_active_and_replaces_update_guard(env):
         c.commit()
     db.initialize()
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 9
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 10
         assert c.execute('SELECT status FROM processes WHERE id=?', (IDS['process'],)).fetchone()[0] == 'ACTIVE'
         c.execute("UPDATE processes SET description='Editable' WHERE id=?", (IDS['process'],))
 
@@ -211,14 +211,14 @@ def test_historical_v1_upgrade(env):
     with legacy.transaction() as c:
         before = {r[0]: [tuple(row) for row in c.execute(f'SELECT * FROM {r[0]}')]
                   for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
-        triggers = [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT IN ('immutable_processes_UPDATE','immutable_process_identity') ORDER BY name")]
+        triggers = [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT IN ('immutable_processes_UPDATE','immutable_process_identity','immutable_needs_UPDATE') ORDER BY name")]
     db = Database(legacy.path)
     init_demo(db, env[1])
     init_demo(db, env[1])
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 9
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 10
         assert c.execute('PRAGMA foreign_key_check').fetchall() == []
-        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' AND name != 'valid_source_port_pair' AND name NOT LIKE 'immutable_interaction_meta_%' AND name != 'register_interaction_revision' AND name != 'immutable_process_identity' ORDER BY name")] == triggers
+        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' AND name != 'valid_source_port_pair' AND name NOT LIKE 'immutable_interaction_meta_%' AND name != 'register_interaction_revision' AND name NOT IN ('immutable_process_identity','immutable_need_identity') AND name != 'immutable_needs_UPDATE' ORDER BY name")] == triggers
         assert c.execute("SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='immutable_process_identity'").fetchone()
         for table, rows in before.items():
             actual = [tuple(row) for row in c.execute(f'SELECT * FROM {table}')]
@@ -228,6 +228,8 @@ def test_historical_v1_upgrade(env):
                 assert all(row in actual for row in rows)
             elif table == 'interaction_revisions':
                 assert actual == [(*row, None, None, 1, None) for row in rows]
+            elif table == 'needs':
+                assert actual == [(*row, None, 'ACTIVE') for row in rows]
             else:
                 assert actual == rows
     assert Service(db).process(IDS['requester'], IDS['process'])['name'] is None
@@ -236,7 +238,7 @@ def test_historical_v1_upgrade(env):
     assert Service(Database(db.path)).process(IDS['requester'], item['processId']) == item
     with db.transaction(write=True) as c:
         c.execute("UPDATE processes SET description='editable' WHERE id=?", (IDS['process'],))
-    for sql in ['DELETE FROM processes', "INSERT INTO needs VALUES ('invalid','missing','interaction','component')"]:
+    for sql in ['DELETE FROM processes', "INSERT INTO needs(id,process_id,interaction_id,component_id) VALUES ('invalid','missing','interaction','component')"]:
         with pytest.raises(sqlite3.IntegrityError):
             with db.transaction(write=True) as c:
                 c.execute(sql)

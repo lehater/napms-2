@@ -21,6 +21,8 @@ const paths = [
   { pattern: new RegExp(`^/resources/${uuid}$`), methods: ['GET'] },
   { pattern: new RegExp(`^/resources/${uuid}/endpoint$`), methods: ['GET', 'PUT'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}/access-request-options$`), methods: ['GET'] },
+  { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}$`), methods: ['GET', 'PATCH'] },
+  { pattern: new RegExp(`^/business-processes/${uuid}/needs/${uuid}/lifecycle$`), methods: ['PATCH'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/needs$`), methods: ['GET', 'POST'] },
   { pattern: new RegExp(`^/business-processes/${uuid}/need-options$`), methods: ['GET'] },
   { pattern: new RegExp(`^/business-processes(?:/${uuid})?$`), methods: ['GET', 'POST'] },

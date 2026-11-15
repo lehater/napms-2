@@ -57,7 +57,7 @@ def test_new_deployments_compose_request_and_invalid_relations_fail(env):
                                                     "resourceId": IDS["destinationResource"]}, headers=headers).json()
     revision = interaction["revisions"][0]["interactionRevisionId"]
     process = client.post("/business-processes", json={"name": "Order flow"}, headers=headers).json()
-    need = client.post(f"/business-processes/{process['processId']}/needs", json={"interactionRevisionId": revision}, headers=headers)
+    need = client.post(f"/business-processes/{process['processId']}/needs", json={"interactionRevisionId": revision, "businessBasis": "Deployment test basis"}, headers=headers)
     assert need.status_code == 201
     need_id = need.json()["connectivityNeedId"]
 

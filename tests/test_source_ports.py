@@ -51,7 +51,7 @@ def test_source_ports_any_and_explicit_end_to_end(env):
             data["sourcePortStart"], data["sourcePortEnd"])
 
         need = client.post(f'/business-processes/{IDS["process"]}/needs',
-                           headers=requester, json={"interactionRevisionId": revision["interactionRevisionId"]})
+                           headers=requester, json={"interactionRevisionId": revision["interactionRevisionId"], "businessBasis": "Source ports test basis"})
         assert need.status_code == 201, need.text
         request = client.post('/access-requests', headers=requester, json={
             **DEMO_REQUEST, "sourceDeploymentId": deployment_id,
@@ -149,7 +149,7 @@ def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     db.initialize()
     db.initialize()
     with db.connect() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 10
         row = c.execute("SELECT * FROM interaction_revisions WHERE id='old'").fetchone()
         assert row["source_port_start"] is row["source_port_end"] is None
         assert row["port_start"] == row["port_end"] == 123

@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .domain import Problem
 from .use_cases import Service
@@ -232,6 +232,29 @@ class PublishRevisionInput(Strict):
 
 class NeedInput(Strict):
     interactionRevisionId: UUID
+    businessBasis: str = Field(strict=True, min_length=1, max_length=10000)
+
+    @field_validator("businessBasis")
+    @classmethod
+    def nonblank_basis(cls, value):
+        if not value.strip():
+            raise ValueError("Business basis must not be blank")
+        return value
+
+
+class NeedUpdateInput(Strict):
+    businessBasis: str = Field(strict=True, min_length=1, max_length=10000)
+
+    @field_validator("businessBasis")
+    @classmethod
+    def nonblank_basis(cls, value):
+        if not value.strip():
+            raise ValueError("Business basis must not be blank")
+        return value
+
+
+class NeedLifecycleInput(Strict):
+    status: Literal["ACTIVE", "RETIRED"]
 
 
 class Need(Strict):
@@ -240,6 +263,35 @@ class Need(Strict):
     processId: UUID
     interactionId: UUID
     componentId: UUID
+    businessBasis: str | None
+    status: Literal["ACTIVE", "RETIRED"]
+
+
+class NeedInteraction(Strict):
+    interactionId: UUID
+    applicationId: UUID | None
+    applicationName: str | None
+    name: str
+
+
+class NeedRequestSummary(Strict):
+    requestId: UUID
+    status: Literal["PENDING", "ALLOWED", "DENIED"]
+    submittedAt: str
+
+
+class NeedRequestCollection(Strict):
+    items: list[NeedRequestSummary]
+    limit: int
+    offset: int
+    hasMore: bool
+
+
+class NeedDetail(Need):
+    process: BusinessProcess
+    interaction: NeedInteraction
+    participant: Component
+    requests: NeedRequestCollection
 
 
 class NeedOption(Strict):
@@ -637,7 +689,23 @@ def create_app(db, credentials, *, shared_read=False):
 
     @app.post("/business-processes/{processId}/needs", status_code=201, response_model=Need, dependencies=[Depends(no_query)])
     def create_need(processId: UUID, data: NeedInput, who: Actor):
-        return service.create_need(who, str(processId), str(data.interactionRevisionId))
+        return service.create_need(who, str(processId), str(data.interactionRevisionId), data.businessBasis)
+
+    @app.get("/business-processes/{processId}/needs/{connectivityNeedId}", response_model=NeedDetail)
+    def get_need(processId: UUID, connectivityNeedId: UUID, who: Actor,
+                 query: Annotated[ListQuery, Query()], response: Response):
+        response.headers["Cache-Control"] = "no-store"
+        return service.need(who, str(processId), str(connectivityNeedId), query.limit, query.offset)
+
+    @app.patch("/business-processes/{processId}/needs/{connectivityNeedId}", response_model=Need,
+               dependencies=[Depends(no_query)])
+    def update_need(processId: UUID, connectivityNeedId: UUID, data: NeedUpdateInput, who: Actor):
+        return service.update_need(who, str(processId), str(connectivityNeedId), data.businessBasis)
+
+    @app.patch("/business-processes/{processId}/needs/{connectivityNeedId}/lifecycle", response_model=Need,
+               dependencies=[Depends(no_query)])
+    def set_need_status(processId: UUID, connectivityNeedId: UUID, data: NeedLifecycleInput, who: Actor):
+        return service.set_need_status(who, str(processId), str(connectivityNeedId), data.status)
 
     def unique_options_query(request: Request):
         keys = [key for key, _ in request.query_params.multi_items()]
