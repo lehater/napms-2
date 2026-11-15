@@ -78,6 +78,12 @@ jobs:
               print(f"fallback={str(fallback).lower()}", file=out)
               print(f"opencode_test={str(opencode_test).lower()}", file=out)
           PY
+      - name: Propose impacted tests (SHADOW only; current checks unchanged)
+        if: steps.scope.outcome == 'success'
+        run: |
+          python3 scripts/ci_test_selector.py --base HEAD^1 --head HEAD \
+            --json-output "$RUNNER_TEMP/ci-test-plan.json" \
+            --summary-file "$GITHUB_STEP_SUMMARY"
 
   application:
     name: application
@@ -165,6 +171,8 @@ jobs:
           test -s AGENTS.md
           test -f openspec/config.yaml
           test -f .agents/skills/openspec-propose/SKILL.md
+      - name: Verify CI impact selector contract
+        run: python3 -m unittest discover -s scripts -p 'test_ci_test_selector.py' -v
       - name: Install OpenSpec
         run: npm install --global @fission-ai/openspec@1.16.0
       - name: Validate OpenSpec
