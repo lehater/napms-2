@@ -46,6 +46,8 @@ class ValidateTaskTest(unittest.TestCase):
         for replacement, expected in [
             ("schema_version: [1", "invalid_yaml"),
             ("schema_version: 1\nschema_version: 1", "duplicate_key"),
+            ("schema_version: " + "9" * 5000, "invalid_yaml"),
+            ("schema_version: !!timestamp 2025-01-01x", "invalid_yaml"),
         ]:
             with self.subTest(expected=expected):
                 status, result = self.run_validator(CONTRACT.replace("schema_version: 1", replacement))
@@ -55,6 +57,7 @@ class ValidateTaskTest(unittest.TestCase):
     def test_requires_exactly_one_closed_contract(self):
         for body, expected in [
             ("Task without a contract.", "missing_contract"),
+            ("<!--\n" + CONTRACT + "-->\n", "missing_contract"),
             (CONTRACT + CONTRACT, "multiple_contracts"),
             (CONTRACT[:-4], "unclosed_contract"),
         ]:
