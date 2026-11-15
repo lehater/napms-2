@@ -6,15 +6,13 @@ import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 import { CollectionView } from './components/real/CollectionView'
 import { DetailView } from './components/real/DetailView'
+import ErrorNotice from './components/ErrorNotice'
 import { useFormDraft } from './FormDrafts'
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 422) return 'Проверьте название и допустимую длину полей.'
   if (error instanceof ApiError && error.status === 404) return 'Бизнес-процесс не найден.'
   return message(error)
-}
-function ErrorNotice({ error, retry }: { error: string; retry?: () => void }) {
-  return error && <div><p role="alert">{error}</p>{retry && <Button variant="outline" onClick={retry}>Повторить</Button>}</div>
 }
 export default function BusinessProcesses() {
   const { pathname, search } = useLocation()
@@ -38,7 +36,7 @@ export default function BusinessProcesses() {
     {!profile.enabled && <section className="ux-panel ux-panel-body" aria-label="Demo credentials">
       <strong>Локальный демонстрационный каталог</strong>
       <p>Сервер проверяет отдельные права чтения и создания. Ответственная организация — описание, не полномочие.</p>
-      <ErrorNotice error={notice} />
+      <ErrorNotice text={notice} />
       {token ? <><p role="status">Credential активен</p><Button variant="outline" onClick={() => { credentialSession.current++; setToken(''); setDraft(''); setNotice('') }}>Очистить credential</Button></> : <form onSubmit={e => { e.preventDefault(); credentialSession.current++; setToken(draft.trim()); setDraft(''); setNotice('') }}>
         <label htmlFor="process-token">Bearer token</label><input id="process-token" type="password" autoComplete="off" value={draft} onChange={e => setDraft(e.target.value)} required />
         <Button disabled={!draft.trim()}>Применить token</Button>
@@ -89,7 +87,7 @@ function NewProcess({ client }: { client: Client }) {
     } catch (e) { if (alive.current) setError(errorMessage(e)) }
     finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section className="ux-panel ux-panel-body"><h1>Создать бизнес-процесс</h1><ErrorNotice error={error} />
+  return <section className="ux-panel ux-panel-body"><h1>Создать бизнес-процесс</h1><ErrorNotice text={error} />
     <form className="process-form" onSubmit={submit}><label htmlFor="process-name">Название</label><input ref={nameInput} id="process-name" required maxLength={300} value={name} disabled={busy} aria-invalid={Boolean(nameError)} aria-describedby={nameError ? 'process-name-error' : undefined} onChange={e => { setDraft(d => ({ ...d, name: e.target.value })); setNameError('') }} />
       {nameError && <p id="process-name-error" role="alert" className="ux-field-error">{nameError}</p>}
       <label htmlFor="process-description">Описание</label><textarea id="process-description" maxLength={10000} value={description} disabled={busy} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} />
@@ -108,7 +106,7 @@ function ProcessDetail({ client }: { client: Client }) {
     client.process(processId).then(p => { if (active) setItem(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, processId, reload])
-  if (!item || item.processId !== processId) return <section className="ux-panel ux-panel-body"><ErrorNotice error={error} retry={() => setReload(x => x + 1)} />{!error && <p role="status">Загрузка…</p>}</section>
+  if (!item || item.processId !== processId) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} retry={() => setReload(x => x + 1)} />{!error && <p role="status">Загрузка…</p>}</section>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>Бизнес-процессы</Link><span>/</span><span aria-current="page">{item.name ?? 'Название не задано'}</span></>}
     title={item.name ?? 'Название не задано'}
     tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'needs',label:'Потребности',href:tabPath('needs')}]} activeTab={needs ? 'needs' : 'overview'}>

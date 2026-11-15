@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiError, message, type Client, type Need, type NeedOption, type NeedPage } from './api'
 import ComposeRequest from './ComposeRequest'
 import { Button } from './components/ui/button'
@@ -46,25 +47,35 @@ export default function Needs({ client, processId }: { client: Client; processId
       if (alive.current) { setFeedback(explain(e)); if (e instanceof ApiError && e.status === 409) { setOptionOffset(0); setReload(x => x + 1) } }
     } finally { submitting.current = false; if (alive.current) setBusy(false) }
   }
-  return <section aria-label="Потребности процесса"><h2>Потребности</h2>
-    <p>Потребность обосновывает коммуникацию и не разрешает доступ.</p>
-    <section aria-label="Сохранённые потребности"><EntityTable<Need> rows={needs?.items ?? []} columns={[
+  return <div className="ux-tab-content"><section aria-label="Потребности процесса" className="space-y-3">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h2 className="flex-1">Сохранённые потребности</h2>
+      <Button variant="outline" disabled={busy} onClick={() => setReload(x => x + 1)}>Обновить потребности</Button>
+    </div>
+    <p className="ux-note">Потребность обосновывает коммуникацию и не разрешает доступ. Выберите сохранённую потребность, чтобы оформить заявку.</p>
+    <EntityTable<Need> rows={needs?.items ?? []} columns={[
       {key:'need',title:'Потребность',render:n=><button aria-pressed={selected?.connectivityNeedId === n.connectivityNeedId} onClick={() => setSelected(n)}>{n.displayLabel}<small>{n.connectivityNeedId}</small></button>},
-      {key:'interaction',title:'Interaction',render:n=>n.interactionId},
-      {key:'component',title:'Исходный Component',render:n=>n.componentId},
-    ]} getKey={n=>n.connectivityNeedId} emptyText="На этой странице нет потребностей" loading={!needs && !error} error={error} />
-    {needs && <>
-      <Button variant="outline" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button><Button variant="outline" disabled={!needs.hasMore} onClick={() => setOffset(offset + 20)}>Следующие потребности</Button></>}
+      {key:'interaction',title:'Взаимодействие',render:n=>n.interactionId},
+      {key:'component',title:'Исходный компонент',render:n=>n.componentId},
+    ]} getKey={n=>n.connectivityNeedId} emptyText="Для этого бизнес-процесса пока нет потребностей." loading={!needs && !error} error={error} />
+    {needs && (offset > 0 || needs.hasMore) && <div className="flex flex-wrap gap-2">
+      {offset > 0 && <Button variant="outline" onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button>}
+      {needs.hasMore && <Button variant="outline" onClick={() => setOffset(offset + 20)}>Следующие потребности</Button>}
+    </div>}
     {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
-    </section><section aria-label="Создание потребности"><h3>Создать потребность</h3>
+    </section><section aria-label="Создание потребности" className="space-y-3"><h2>Создание потребности</h2>
     <ErrorNotice text={optionError} />
     {!options && !optionError && <p role="status">Загрузка коммуникаций…</p>}
     {options && <>{options.items.length ? <form className="process-form" onSubmit={submit}><label htmlFor="need-communication">Коммуникация</label><select id="need-communication" value={revision} disabled={busy} onChange={e => setRevision(e.target.value)} required><option value="">Выберите коммуникацию</option>{options.items.map(o => <option key={o.interactionRevisionId} value={o.interactionRevisionId}>{o.displayLabel} · {o.trafficLabel} · Revision {o.interactionRevisionId}</option>)}</select>
       {selectedOption && <dl className="ux-properties ux-choice-facts">{Object.entries({ 'Коммуникация': selectedOption.displayLabel, 'Трафик выбранной ревизии': selectedOption.trafficLabel, 'Исходный Component': selectedOption.sourceComponentId, 'Целевой Component': selectedOption.destinationComponentId }).map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>}
-      <Button disabled={busy || !revision}>Создать потребность</Button></form> : <p>На этой странице нет доступных коммуникаций.</p>}
-      <Button variant="outline" disabled={!optionOffset || busy} onClick={() => setOptionOffset(Math.max(0, optionOffset - 20))}>Предыдущие коммуникации</Button><Button variant="outline" disabled={!options.hasMore || busy} onClick={() => setOptionOffset(optionOffset + 20)}>Следующие коммуникации</Button></>}
+      <Button disabled={busy || !revision}>Создать потребность</Button></form> : <div className="ux-callout" role="status">
+        <p>На этой странице нет доступных коммуникаций.</p>
+        <p>Проверьте взаимодействия и ревизии в <Link to="/applications">профилях приложений</Link>. После изменений обновите список потребностей.</p>
+      </div>}
+      {(optionOffset > 0 || options.hasMore) && <div className="flex flex-wrap gap-2">
+        {optionOffset > 0 && <Button variant="outline" disabled={busy} onClick={() => setOptionOffset(Math.max(0, optionOffset - 20))}>Предыдущие коммуникации</Button>}
+        {options.hasMore && <Button variant="outline" disabled={busy} onClick={() => setOptionOffset(optionOffset + 20)}>Следующие коммуникации</Button>}
+      </div>}</>}
     {feedback && <p role="status">{feedback}</p>}
-    </section>
-    <Button variant="outline" disabled={busy} onClick={() => setReload(x => x + 1)}>Обновить потребности</Button>
-  </section>
+    </section></div>
 }
