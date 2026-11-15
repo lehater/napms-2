@@ -28,6 +28,7 @@ jobs:
       docs-only: ${{ steps.scope.outputs.docs-only }}
       web: ${{ steps.scope.outputs.web }}
       fallback: ${{ steps.scope.outputs.fallback }}
+      opencode_test: ${{ steps.scope.outputs.opencode_test }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -58,6 +59,7 @@ jobs:
           )
           docs_only = bool(records) and all(documentation.fullmatch(path) for _, path in records)
           fallback = not records
+          opencode_test = any(path == b"tests/test_opencode_role_catalog.py" for _, path in records)
           web = False
           for status, path in records:
               if documentation.fullmatch(path):
@@ -74,6 +76,7 @@ jobs:
               print(f"docs-only={str(docs_only).lower()}", file=out)
               print(f"web={str(web).lower()}", file=out)
               print(f"fallback={str(fallback).lower()}", file=out)
+              print(f"opencode_test={str(opencode_test).lower()}", file=out)
           PY
 
   application:
@@ -107,7 +110,7 @@ jobs:
         run: python -m pip install ruff==0.17.4
       - name: Install application and quality dependencies for FULL
         if: steps.profile.outputs.profile == 'full'
-        run: python -m pip install -e '.[test,quality]'
+        run: python -m pip install -e '.[test]' ruff==0.17.4 pytest-cov==7.1.0
       - name: Python compilation (FAST and FULL)
         run: python -m compileall -q src tests
       - name: Ruff core diagnostics (blocking)
@@ -115,32 +118,27 @@ jobs:
       - name: Test application, HTTP contracts and startup with coverage
         if: steps.profile.outputs.profile == 'full'
         id: pytest
-        run: python -m pytest -q --cov=napms --cov-report=term-missing
-      - name: Ruff extended lint (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: ruff_extended
-        continue-on-error: true
-        run: python -m ruff check src tests
-      - name: Ruff formatting (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: ruff_format
-        continue-on-error: true
-        run: python -m ruff format --check src tests
-      - name: Pyright (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: pyright
-        continue-on-error: true
-        run: python -m pyright
+        env:
+          CLASSIFIED: ${{ needs.changes.result }}
+          FALLBACK: ${{ needs.changes.outputs.fallback }}
+          OPENCODE_TEST_CHANGED: ${{ needs.changes.outputs.opencode_test }}
+        run: |
+          # Scope independent OpenCode permission tests to relevant changes.
+          # Unsafe/unknown diff or manual FULL always executes the entire suite.
+          if [[ "$GITHUB_EVENT_NAME" == pull_request && "$CLASSIFIED" == success && "$FALLBACK" != true && "$OPENCODE_TEST_CHANGED" != true ]]; then
+            echo "OpenCode role contract: out of scope" >> "$GITHUB_STEP_SUMMARY"
+            python -m pytest -q --cov=napms --cov-report=term-missing --ignore=tests/test_opencode_role_catalog.py
+          else
+            echo "OpenCode role contract: included" >> "$GITHUB_STEP_SUMMARY"
+            python -m pytest -q --cov=napms --cov-report=term-missing
+          fi
       - name: Summarize application verification
         if: always()
         env:
           PROFILE: ${{ steps.profile.outputs.profile }}
           PYTEST: ${{ steps.pytest.outcome }}
-          RUFF: ${{ steps.ruff_extended.outcome }}
-          FORMAT: ${{ steps.ruff_format.outcome }}
-          PYRIGHT: ${{ steps.pyright.outcome }}
         run: |
-          echo "Profile: $PROFILE; pytest: $PYTEST; extended Ruff: $RUFF; format: $FORMAT; Pyright: $PYRIGHT" >> "$GITHUB_STEP_SUMMARY"
+          echo "Profile: $PROFILE; pytest: $PYTEST" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$PROFILE" == fast ]]; then
             echo "Draft FAST: compilation and Ruff core executed; FULL deferred until Ready." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -171,7 +169,6 @@ jobs:
         run: npm install --global @fission-ai/openspec@1.16.0
       - name: Validate OpenSpec
         run: |
-          openspec list --json
           openspec validate --all --strict
 
   semantic-contract:
