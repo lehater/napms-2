@@ -84,7 +84,7 @@ def request_view(c, r, actor, at, shared_read=False):
 
 def process_view(row):
     return dict(processId=row["id"], name=row["name"], description=row["description"],
-                responsibleOrganization=row["responsible_organization"])
+                responsibleOrganization=row["responsible_organization"], status=row["status"])
 
 
 def need_view(c, r):
@@ -442,6 +442,31 @@ class Service:
                 grant(c, actor, "business.process.read", "demo-business", self.clock())
             return process_view(find(c, "processes", pid))
 
+    def update_process(self, actor, pid, data):
+        with self.db.transaction(write=True) as c:
+            at = self.clock()
+            grant(c, actor, "business.process.read", "demo-business", at)
+            grant(c, actor, "business.process.update", "demo-business", at)
+            row = find(c, "processes", pid)
+            values = {"name": row["name"], "description": row["description"],
+                      "responsibleOrganization": row["responsible_organization"]}
+            values.update(data)
+            validate_process_name(values["name"])
+            c.execute("UPDATE processes SET name=?,description=?,responsible_organization=? WHERE id=?",
+                      (values["name"], values["description"], values["responsibleOrganization"], pid))
+            return process_view(find(c, "processes", pid))
+
+    def set_process_status(self, actor, pid, status):
+        with self.db.transaction(write=True) as c:
+            at = self.clock()
+            grant(c, actor, "business.process.read", "demo-business", at)
+            grant(c, actor, "business.process.lifecycle", "demo-business", at)
+            find(c, "processes", pid)
+            if status not in ("ACTIVE", "ARCHIVED"):
+                raise Problem(422, "INVALID_INPUT", "Unsupported Process status")
+            c.execute("UPDATE processes SET status=? WHERE id=?", (status, pid))
+            return process_view(find(c, "processes", pid))
+
     def _need_access(self, c, actor, pid, action, visibility_only=False):
         c.execute("SELECT id FROM actors LIMIT 1").fetchone()
         at = self.clock()
@@ -483,6 +508,8 @@ class Service:
     def create_need(self, actor, pid, revision):
         with self.db.transaction(write=True) as c:
             self._need_access(c, actor, pid, "create")
+            if find(c, "processes", pid)["status"] != "ACTIVE":
+                raise Problem(409, "PROCESS_ARCHIVED", "Archived Process cannot receive a new Need")
             rev = find(c, "interaction_revisions", revision)
             self._compatible(c, rev)
             nid = uid()
@@ -556,7 +583,7 @@ class Service:
             dest = find(c, "deployments", data["destinationDeploymentId"])
             rev = find(c, "interaction_revisions", data["interactionRevisionId"])
             need = find(c, "needs", data["connectivityNeedId"])
-            find(c, "processes", need["process_id"])
+            process = find(c, "processes", need["process_id"])
             for resource in (source["resource_id"], dest["resource_id"]):
                 find(c, "resources", resource)
             try:
@@ -570,6 +597,8 @@ class Service:
             subject = validate_subject(source, dest, rev, normalised_need,
                                        find(c, "components", source["component_id"]),
                                        find(c, "components", dest["component_id"]))
+            if "status" in process.keys() and process["status"] != "ACTIVE":
+                raise Problem(409, "PROCESS_ARCHIVED", "Archived Process cannot receive a new AccessRequest")
             c.execute("INSERT OR IGNORE INTO access_subjects VALUES (?,?,?,?)", (uid(), subject.source, subject.destination, subject.revision))
             sid = c.execute("SELECT id FROM access_subjects WHERE source_deployment_id=? AND destination_deployment_id=? AND interaction_revision_id=?", (subject.source, subject.destination, subject.revision)).fetchone()[0]
             rid = uid()

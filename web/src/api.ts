@@ -12,8 +12,9 @@ export type RuleSummary = PolicyRuleDisplay & Pick<Rule, 'trafficClauses' | 'rul
 export type Need = { displayLabel: string; connectivityNeedId: string; processId: string; interactionId: string; componentId: string }
 export type NeedOption = { displayLabel: string; trafficLabel: string; revisionNumber: number; trafficClauses: TrafficClause[]; interactionRevisionId: string; interactionId: string; applicationId: string; sourceComponentId: string; destinationComponentId: string; ipProtocol: string; sourcePortStart: number | null; sourcePortEnd: number | null; destinationPortStart: number; destinationPortEnd: number }
 export type NeedPage<T> = { items: T[]; limit: number; offset: number; hasMore: boolean }
-export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null }
+export type BusinessProcess = { processId: string; name: string | null; description: string | null; responsibleOrganization: string | null; status: 'ACTIVE' | 'ARCHIVED' }
 export type ProcessInput = { name: string; description: string | null; responsibleOrganization: string | null }
+export type ProcessUpdate = Partial<ProcessInput>
 export type ProcessCollection = { items: BusinessProcess[]; limit: number; offset: number; hasMore: boolean }
 export type Application = { applicationId: string; name: string }
 export type Component = { componentId: string; applicationId: string; applicationName: string; name: string }
@@ -89,6 +90,8 @@ export function api(token: string, unauthenticated: () => void, demoActor?: stri
     processes: (offset = 0) => call<ProcessCollection>(`/business-processes?limit=20&offset=${offset}`),
     process: (id: string) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`),
     createProcess: (data: ProcessInput) => call<BusinessProcess>('/business-processes', 'POST', data),
+    updateProcess: (id: string, data: ProcessUpdate) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}`, 'PATCH', data),
+    setProcessStatus: (id: string, status: BusinessProcess['status']) => call<BusinessProcess>(`/business-processes/${encodeURIComponent(id)}/status`, 'PATCH', { status }),
     applications: (offset = 0, limit = 20) => call<CatalogPage<Application>>(`/applications?limit=${limit}&offset=${offset}`),
     application: (id: string) => call<Application>(`/applications/${encodeURIComponent(id)}`),
     createApplication: (name: string) => call<Application>('/applications', 'POST', { name }),

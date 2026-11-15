@@ -137,6 +137,7 @@ def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     with db.connect() as c:
         c.execute("CREATE TABLE applications(id TEXT PRIMARY KEY)")
         c.execute("CREATE TABLE components(id TEXT PRIMARY KEY, application_id TEXT REFERENCES applications(id))")
+        c.execute("CREATE TABLE processes(id TEXT PRIMARY KEY, name TEXT, description TEXT, responsible_organization TEXT)")
         c.execute("INSERT INTO applications VALUES('app')")
         c.execute("INSERT INTO components VALUES('src','app'),('dst','app')")
         c.execute("""CREATE TABLE interaction_revisions(
@@ -148,7 +149,7 @@ def test_v5_source_port_migration_is_additive_and_repeatable(tmp_path):
     db.initialize()
     db.initialize()
     with db.connect() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 8
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
         row = c.execute("SELECT * FROM interaction_revisions WHERE id='old'").fetchone()
         assert row["source_port_start"] is row["source_port_end"] is None
         assert row["port_start"] == row["port_end"] == 123
