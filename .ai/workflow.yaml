@@ -107,6 +107,9 @@ execution:
     manual_location: "<primary-checkout-parent>/.worktrees/<repository>/issue-<number>"
     owner: coordinator
     create: "python3 scripts/task_worktree.py create --issue <number> --branch <branch>"
+    shared_environment: "Default: python3 scripts/task_worktree.py link-env --issue <number> --branch <branch> --path <absolute-worktree-path> --base-sha <full-creation-base-sha> --scope <git|python|web|mixed>; reuses primary .venv and web/node_modules when manifests match, without installing dependencies."
+    isolated_environment: "Use separate local .venv/node_modules only when dependency manifests differ or isolation is required; never write through shared symlinks."
+    source_isolation: "Makefile exports PYTHONPATH for the active checkout and NAPMS_PYTHON for Web E2E; preflight validates exact import origin."
     preflight: "python3 scripts/task_worktree.py preflight --issue <number> --branch <branch> --path <absolute-worktree-path> --base-sha <full-creation-base-sha> --scope <git|python|web|mixed>"
     handoff: "Pass the absolute path, branch, base commit and preflight result to the Worker."
     cleanup: "Only after acceptance/merge and a clean Git status; git worktree remove without --force."
