@@ -82,22 +82,31 @@ lifecycle:
     - from: Review
       to: Running
       when: The executor can fix the implementation within the current contract.
+    - from: Review
+      to: Preparing
+      when: Review identifies a required decision or a material change to the execution contract.
     - from: Ready
       to: Preparing
       when: The contract is stale or a new decision is required.
     - from: Preparing
       to: Done
-      when: A planning-only parent has all required child outcomes accepted, meets its own acceptance criteria, and is closed as completed.
+      when: &planning_parent_accepted A planning-only parent has all required child outcomes accepted, meets its own acceptance criteria, and is closed as completed.
+    - from: Running
+      to: Done
+      when: *planning_parent_accepted
   blocked:
     derived_from: github.blocked_by
-    rule: An issue is blocked while any blocking dependency lacks an accepted outcome.
+    dependency_completion:
+      state: closed
+      state_reason: completed
+    rule: Keep the issue blocked if any listed dependency fails the completion criteria or if the dependency list or a dependency's completion cannot be verified.
 
 execution:
   assignment: manual
   require_all:
     R1: The issue is open and its Project Status is Ready.
     R2: The issue contains a sufficient execution contract.
-    R3: Every blocking dependency has an accepted outcome.
+    R3: The issue is unblocked according to lifecycle.blocked.
     R4: The context and contract still match the current project state.
     R5: The chosen executor has the required tools and reasoning capability.
     R6: No other executor is working on the issue.
