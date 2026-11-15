@@ -96,8 +96,30 @@ class WorktreeContractTests(unittest.TestCase):
         with self.assertRaises(worktree.WorktreeError):
             worktree.check_web(path)
         with patch.object(worktree.socket, "socket", side_effect=PermissionError("blocked")):
-            with self.assertRaisesRegex(worktree.WorktreeError, "loopback bind unavailable"):
+            with self.assertRaisesRegex(worktree.WorktreeError, "loopback bind/listen unavailable"):
                 worktree.check_loopback()
+
+    def test_bind_succeeds_but_listen_denied(self):
+        from unittest.mock import MagicMock
+
+        sock = MagicMock()
+        sock.__enter__.return_value = sock
+        sock.listen.side_effect = PermissionError("listen EPERM")
+        with patch.object(worktree.socket, "socket", return_value=sock):
+            with self.assertRaisesRegex(worktree.WorktreeError, "listen EPERM"):
+                worktree.check_loopback()
+        sock.bind.assert_called_once_with(("127.0.0.1", 0))
+        sock.listen.assert_called_once_with(1)
+
+    def test_git_only_preflight_does_not_require_python_or_web(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        with patch.object(sys, "argv", [
+            "task_worktree.py", "preflight", "--issue", "42",
+            "--branch", "feat/issue-42", "--path", str(path), "--scope", "git",
+        ]), patch.object(worktree, "check_python", side_effect=AssertionError("unexpected Python check")), \
+                patch.object(worktree, "check_web", side_effect=AssertionError("unexpected Web check")):
+            self.assertEqual(worktree.main(), 0)
+
 
 
 class BoundedChecksTests(unittest.TestCase):
