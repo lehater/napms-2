@@ -107,7 +107,7 @@ execution:
     manual_location: "<primary-checkout-parent>/.worktrees/<repository>/issue-<number>"
     owner: coordinator
     create: "python3 scripts/task_worktree.py create --issue <number> --branch <branch>"
-    preflight: "python3 scripts/task_worktree.py preflight --issue <number> --branch <branch> --path <absolute-worktree-path> --scope <python|web|mixed>"
+    preflight: "python3 scripts/task_worktree.py preflight --issue <number> --branch <branch> --path <absolute-worktree-path> --scope <git|python|web|mixed>"
     handoff: "Pass the absolute path, branch, base commit and preflight result to the Worker."
     cleanup: "Only after acceptance/merge and a clean Git status; git worktree remove without --force."
     codex_managed: "Codex --worktree uses its own managed location; do not relocate it implicitly."
