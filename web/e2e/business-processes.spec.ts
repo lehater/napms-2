@@ -1,5 +1,5 @@
 import { test as base, expect, type Page } from '@playwright/test'
-import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve, join } from 'node:path'
 import { spawn, spawnSync } from 'node:child_process'
@@ -46,16 +46,8 @@ const test = base.extend<{}, { backend: { credentials: Credentials; stop: () => 
     try {
       await start()
       await use({ credentials, stop, start })
-      // Compare booleans only: failure output must never print a credential.
-      const tracked = spawnSync('git', ['ls-files', '-z'], { cwd: root }).stdout.toString().split('\0').filter(Boolean)
-      const assets = await readdir(join(root, 'web/dist/assets'))
-      const paths = [...tracked.map(p => join(root, p)), ...assets.map(p => join(root, 'web/dist/assets', p))]
-      let staticLeak = false
-      for (const path of paths) {
-        const contents = await readFile(path)
-        staticLeak ||= Object.values(credentials).some(c => contents.includes(c.token))
-      }
-      expect(staticLeak, 'Tracked files and production bundle must exclude credentials').toBe(false)
+      // Tracked files and production assets are scanned once by requests.spec.ts.
+      // This fixture independently enforces the backend log secrecy contract.
     } finally {
       await stop()
       const leaked = Object.values(credentials).some(c => logs.includes(c.token))
