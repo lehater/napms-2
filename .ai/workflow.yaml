@@ -21,9 +21,10 @@ github:
       source: issue_field
       name: Effort
       values:
-        S: Small, localized result.
-        M: Several related changes.
-        L: Substantial volume of work.
+        Low: Small, localized result.
+        Medium: Several related changes.
+        High: Substantial volume of work.
+      size_equivalents: {S: Low, M: Medium, L: High}
     area:
       source: label
       pattern: '^area:[a-z0-9]+(?:-[a-z0-9]+)*$'
@@ -32,7 +33,7 @@ github:
       name: Product Structure
       layout: table
       hierarchy: true
-      fields: [Parent issue, Sub-issue progress]
+      fields: [Parent issue, Sub-issues progress]
     ready_queue:
       name: Ready Queue
       layout: table
