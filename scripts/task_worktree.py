@@ -66,7 +66,7 @@ def create_worktree(primary: Path, issue: int, branch: str) -> Path:
     return target
 
 
-def check_identity(primary: Path, location: Path, issue: int, branch: str) -> None:
+def check_identity(primary: Path, location: Path, issue: int, branch: str, base_sha: str) -> None:
     validate_branch(primary, branch)
     expected = issue_path(primary, issue).resolve()
     location = location.resolve()
@@ -78,8 +78,11 @@ def check_identity(primary: Path, location: Path, issue: int, branch: str) -> No
     checked_out = git(location, "symbolic-ref", "--quiet", "--short", "HEAD", check=False)
     if checked_out.returncode or checked_out.stdout.strip() != branch:
         raise WorktreeError(f"wrong branch: {checked_out.stdout.strip() or '(detached)'}; expected {branch}")
-    if git(location, "merge-base", "origin/main", "HEAD", check=False).returncode:
+    base = git(location, "merge-base", "origin/main", "HEAD", check=False)
+    if base.returncode:
         raise WorktreeError("branch and origin/main have no shared base")
+    if base.stdout.strip() != base_sha:
+        raise WorktreeError(f"wrong base SHA: {base.stdout.strip()}; expected {base_sha}")
     print(f"PASS git: {location} [{branch}]")
 
 
@@ -135,6 +138,7 @@ def main() -> int:
         command.add_argument("--branch", required=True)
         if name == "preflight":
             command.add_argument("--path", type=Path, default=Path.cwd())
+            command.add_argument("--base-sha", required=True, help="full commit SHA captured when creating the worktree")
             command.add_argument("--scope", choices=("git", "python", "web", "mixed"), default="mixed")
     args = parser.parse_args()
     try:
@@ -145,7 +149,7 @@ def main() -> int:
             print(f"CREATED: {target} [{args.branch}]")
             print("Set up dependencies in that worktree; then run preflight before assignment.")
         else:
-            check_identity(primary, location, args.issue, args.branch)
+            check_identity(primary, location, args.issue, args.branch, args.base_sha)
             if args.scope != "git":
                 check_python(location)
             if args.scope in ("web", "mixed"):
