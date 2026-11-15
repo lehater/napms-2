@@ -20,6 +20,13 @@ Before writing a new REAL screen structure, find the existing shared component a
 | Error with optional retry | `web/src/components/ErrorNotice.tsx` | `web/src/Needs.tsx` |
 | Actions and status labels | `web/src/components/ui/button.tsx`, `web/src/components/ui/badge.tsx` | `web/src/App.tsx` |
 
-Use a new shared abstraction only when existing components cannot express a demonstrated repeated need.
+## Component selection
+
+1. Define the required behavior, domain semantics, interaction states, and accessibility before choosing a component.
+2. Search existing REAL and domain components, `web/src/components/ui/`, and their working callers. Reuse when the behavior and contract fit; prefer composition over copying or adding a wrapper.
+3. If the capability is missing, choose the simplest suitable foundation: semantic native HTML for ordinary controls; an installed UI primitive or a suitable component from the configured shadcn/ui catalog for richer interaction. A shadcn/ui catalog entry is not installed until added to this project.
+4. Consider a maintained external library only when existing options are insufficient and the saved implementation/maintenance cost justifies a dependency. Otherwise implement a feature-local component with domain-specific behavior.
+5. Promote a local component to shared when a stable, independently useful contract is demonstrated, including repeat use or substantial isolated complexity. Appearance alone is not a reuse contract; do not generalize for hypothetical consumers.
+6. Verify actual behavior on REAL data, keyboard/accessibility, empty/loading/error states, established styling, and a desktop render. Add a working example to this lookup when a new shared component becomes canonical.
 
 This contract is mandatory before owner handoff. A deviation must be justified in the PR report.
