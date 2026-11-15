@@ -60,7 +60,9 @@ def create_worktree(primary: Path, issue: int, branch: str) -> Path:
     ).returncode:
         raise WorktreeError("origin/main missing; run git fetch origin --prune first")
     target.parent.mkdir(parents=True, exist_ok=True)
-    git(primary, "worktree", "add", "-b", branch, str(target), "origin/main")
+    base_sha = git(primary, "rev-parse", "origin/main").stdout.strip()
+    git(primary, "worktree", "add", "-b", branch, str(target), base_sha)
+    print(f"BASE_SHA: {base_sha}")
     return target
 
 
