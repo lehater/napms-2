@@ -19,7 +19,7 @@ def test_reset_demo_keeps_only_schema_and_private_credentials(env):
     reset_demo(db, credentials)
     assert credentials.read_bytes() == original_tokens
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 8
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
         assert c.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         assert c.execute("PRAGMA foreign_key_check").fetchall() == []
         tables = [r["name"] for r in c.execute(
@@ -90,7 +90,7 @@ def test_reset_refuses_unrecognized_sqlite_database(tmp_path):
     path = tmp_path / "other.sqlite3"
     with sqlite3.connect(path) as c:
         c.execute("CREATE TABLE unrelated(id INTEGER)")
-        c.execute("PRAGMA user_version=8")
+        c.execute("PRAGMA user_version=10")
         c.execute("INSERT INTO unrelated VALUES (7)")
     with pytest.raises(RuntimeError, match="unrecognized"):
         reset_demo(Database(path), tmp_path / "credentials.json")
@@ -105,7 +105,7 @@ def test_reset_rejects_symlink_and_preserves_original_database(env, tmp_path):
     with pytest.raises(RuntimeError, match="symlinks"):
         reset_demo(Database(alias), credentials)
     with db.transaction() as c:
-        assert c.execute("PRAGMA user_version").fetchone()[0] == 8
+        assert c.execute("PRAGMA user_version").fetchone()[0] == 9
 
 
 def test_reset_requires_stopped_services(env, monkeypatch):

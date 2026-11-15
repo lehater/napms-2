@@ -6,12 +6,14 @@ import { useDemoProfile } from './DemoProfile'
 import { Button } from './components/ui/button'
 import { CollectionView } from './components/real/CollectionView'
 import { DetailView } from './components/real/DetailView'
+import { Badge } from './components/ui/badge'
 import ErrorNotice from './components/ErrorNotice'
 import { useFormDraft } from './FormDrafts'
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError && error.status === 422) return 'Проверьте название и допустимую длину полей.'
   if (error instanceof ApiError && error.status === 404) return 'Бизнес-процесс не найден.'
+  if (error instanceof ApiError && error.status === 409) return 'Архивированный процесс не принимает новые потребности или заявки.'
   return message(error)
 }
 export default function BusinessProcesses() {
@@ -67,6 +69,7 @@ function ProcessList({ client }: { client: Client }) {
     rows={page?.items ?? []} columns={[
       {key:'name',title:'Название',render:p=><Link to={'/business-processes/' + p.processId + (offset ? '?offset=' + offset : '')}>{p.name ?? 'Название не задано'}</Link>},
       {key:'organization',title:'Ответственная организация',render:p=>p.responsibleOrganization ?? 'Не указана'},
+      {key:'status',title:'Статус',render:p=><Badge variant="outline">{p.status === 'ACTIVE' ? 'Активен' : 'Архивирован'}</Badge>},
     ]} getKey={p=>p.processId} emptyText="На этой странице нет бизнес-процессов" loading={!page && !error} error={error} offset={offset} limit={page?.limit ?? 20} hasMore={page?.hasMore} onPrevious={()=>setOffset(Math.max(0,offset-(page?.limit ?? 20)))} onNext={()=>setOffset(offset+(page?.limit ?? 20))} onRefresh={()=>setReload(x=>x+1)} />
 }
 function NewProcess({ client }: { client: Client }) {
@@ -101,15 +104,50 @@ function ProcessDetail({ client }: { client: Client }) {
   const tabPath = (tab: string) => { const next = new URLSearchParams(params); next.set('tab', tab); return '?' + next }
   const needs = params.get('tab') === 'needs'
   const [item, setItem] = useState<BusinessProcess | null>(null), [error, setError] = useState(''), [reload, setReload] = useState(0)
+  const [editing, setEditing] = useState(false), [busy, setBusy] = useState(false), [actionError, setActionError] = useState('')
   useEffect(() => {
     let active = true; setItem(null); setError('')
     client.process(processId).then(p => { if (active) setItem(p) }).catch(e => { if (active) setError(errorMessage(e)) })
     return () => { active = false }
   }, [client, processId, reload])
   if (!item || item.processId !== processId) return <section className="ux-panel ux-panel-body"><ErrorNotice text={error} retry={() => setReload(x => x + 1)} />{!error && <p role="status">Загрузка…</p>}</section>
+  const process = item
+  async function saveProcess(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); if (busy) return
+    const form = new FormData(e.currentTarget); setBusy(true); setActionError('')
+    try {
+      const updated = await client.updateProcess(process.processId, {
+        name: String(form.get('name') ?? ''),
+        description: String(form.get('description') ?? '') || null,
+        responsibleOrganization: String(form.get('organization') ?? '') || null,
+      })
+      setItem(updated); setEditing(false)
+    } catch (e) { setActionError(errorMessage(e)) } finally { setBusy(false) }
+  }
+  async function changeStatus(status: BusinessProcess['status']) {
+    if (busy) return
+    const verb = status === 'ARCHIVED' ? 'Архивировать' : 'Восстановить'
+    if (!window.confirm(`${verb} бизнес-процесс «${process.name ?? 'Название не задано'}»?`)) return
+    setBusy(true); setActionError('')
+    try { setItem(await client.setProcessStatus(process.processId, status)) }
+    catch (e) { setActionError(errorMessage(e)) } finally { setBusy(false) }
+  }
+  const actions = <>
+    <Button variant="outline" disabled={busy} onClick={() => { setEditing(v => !v); setActionError('') }}>{editing ? 'Отменить редактирование' : 'Изменить сведения'}</Button>
+    {item.status === 'ACTIVE'
+      ? <Button variant="outline" disabled={busy} onClick={() => void changeStatus('ARCHIVED')}>Архивировать</Button>
+      : <Button disabled={busy} onClick={() => void changeStatus('ACTIVE')}>Восстановить</Button>}
+  </>
   return <DetailView breadcrumbs={<><Link to="/">NAPMS</Link><span>/</span><Link to={'/business-processes' + (params.has('offset') ? '?offset=' + params.get('offset') : '')}>Бизнес-процессы</Link><span>/</span><span aria-current="page">{item.name ?? 'Название не задано'}</span></>}
     title={item.name ?? 'Название не задано'}
+    state={item.status === 'ACTIVE' ? 'Активен' : 'Архивирован'} actions={actions}
     tabs={[{id:'overview',label:'Обзор',href:tabPath('overview')},{id:'needs',label:'Потребности',href:tabPath('needs')}]} activeTab={needs ? 'needs' : 'overview'}>
-    {!needs ? <dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не задано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl> : <Needs key={processId} client={client} processId={processId} />}
+    <ErrorNotice text={actionError} />
+    {!needs ? <>{editing && <form className="process-form" onSubmit={saveProcess}>
+      <label htmlFor="edit-process-name">Название</label><input id="edit-process-name" name="name" required maxLength={300} defaultValue={item.name ?? ''} disabled={busy} />
+      <label htmlFor="edit-process-description">Описание</label><textarea id="edit-process-description" name="description" maxLength={10000} defaultValue={item.description ?? ''} disabled={busy} />
+      <label htmlFor="edit-process-organization">Ответственная организация</label><input id="edit-process-organization" name="organization" maxLength={300} defaultValue={item.responsibleOrganization ?? ''} disabled={busy} />
+      <Button disabled={busy}>{busy ? 'Сохранение…' : 'Сохранить изменения'}</Button>
+    </form>}<dl className="ux-properties">{Object.entries({'Идентификатор': item.processId, 'Название': item.name ?? 'Название не задано', 'Описание': item.description ?? 'Не указано', 'Ответственная организация': item.responsibleOrganization ?? 'Не указана'}).map(([k,v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></> : <Needs key={processId} client={client} processId={processId} archived={item.status === 'ARCHIVED'} />}
   </DetailView>
 }
