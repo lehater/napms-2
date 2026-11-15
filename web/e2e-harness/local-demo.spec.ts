@@ -776,6 +776,13 @@ test('REAL Resources create a stable Endpoint and feed a new destination through
   const destinationDeploymentId = page.url().split('/').pop()!
   await page.goto(`/resources/${resourceId}`)
   await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+  const resourceTabs = page.getByRole('navigation',{name:'Разделы объекта'})
+  await expect(resourceTabs.getByRole('link',{name:'Обзор',exact:true})).toHaveAttribute('aria-current','page')
+  await expect(page.getByRole('table')).toHaveCount(0)
+  await expect(page.getByRole('link',{name:/Просмотреть связанные развёртывания/})).toContainText('1')
+  await resourceTabs.getByRole('link',{name:'Развёртывания',exact:true}).click()
+  await expect(page).toHaveURL(`/resources/${resourceId}?tab=deployments`)
+  await expect(resourceTabs.getByRole('link',{name:'Развёртывания',exact:true})).toHaveAttribute('aria-current','page')
   const relatedDeployment = page.getByRole('table').getByRole('link',{name:/Получатель/})
   await expect(relatedDeployment).toBeVisible()
   await relatedDeployment.click()
