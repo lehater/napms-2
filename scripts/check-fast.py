@@ -127,14 +127,17 @@ def run_bounded(argv: tuple[str, ...], cwd: Path, timeout: int) -> tuple[int, bo
         try:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
-            try:
-                if os.name == "posix":
-                    os.killpg(proc.pid, signal.SIGKILL)
-                else:
-                    proc.kill()
-            except ProcessLookupError:
-                pass
-            proc.wait()
+            pass
+        # The leader can exit after SIGTERM while descendants remain alive.
+        # Always send SIGKILL to the process group on POSIX.
+        try:
+            if os.name == "posix":
+                os.killpg(proc.pid, signal.SIGKILL)
+            elif proc.poll() is None:
+                proc.kill()
+        except ProcessLookupError:
+            pass
+        proc.wait()
         return 124, True
 
 
