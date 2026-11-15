@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Check GitHub admission conditions without changing the issue or project."""
+
+import argparse
+import json
+import subprocess
+
+PROJECT = "https://github.com/users/lehater/projects/6"
+QUERY = """
+query($number: Int!) {
+  repository(owner: "lehater", name: "napms-2") {
+    issue(number: $number) {
+      state
+      assignees(first: 1) { totalCount }
+      projectItems(first: 100, includeArchived: false) {
+        pageInfo { hasNextPage }
+        nodes {
+          project { url }
+          status: fieldValueByName(name: "Status") {
+            ... on ProjectV2ItemFieldSingleSelectValue { name }
+          }
+        }
+      }
+      issueDependenciesSummary { totalBlockedBy }
+      blockedBy(first: 100) {
+        pageInfo { hasNextPage }
+        nodes { url state stateReason }
+      }
+    }
+  }
+}
+"""
+
+
+def complete_nodes(connection):
+    nodes = connection["nodes"]
+    if connection["pageInfo"]["hasNextPage"] is not False or not isinstance(nodes, list):
+        raise ValueError("incomplete GitHub connection")
+    return nodes
+
+
+def admission_reasons(issue):
+    if issue["state"] != "OPEN":
+        return ["R1: Issue is not open."]
+
+    projects = complete_nodes(issue["projectItems"])
+    matches = [item for item in projects if item["project"]["url"] == PROJECT]
+    if len(matches) != 1:
+        return ["R1: No unique active item in Project #6."]
+    status = matches[0]["status"]
+    if not status or status["name"] != "Ready":
+        name = status["name"] if status else "unset"
+        return [f"R1: Project #6 Status is {name}, expected Ready."]
+
+    reasons = []
+    assignees = issue["assignees"]["totalCount"]
+    if type(assignees) is not int or assignees < 0:
+        raise ValueError("invalid assignee count")
+    if assignees:
+        reasons.append("R6: Issue already has an assignee.")
+
+    blockers = complete_nodes(issue["blockedBy"])
+    urls = {blocker["url"] for blocker in blockers}
+    total = issue["issueDependenciesSummary"]["totalBlockedBy"]
+    if type(total) is not int or len(blockers) != len(urls) or len(blockers) != total:
+        reasons.append("R3: GitHub did not return all blocking issues.")
+        return reasons
+    for blocker in blockers:
+        state, reason = blocker["state"], blocker["stateReason"]
+        if (state, reason) != ("CLOSED", "COMPLETED"):
+            reasons.append(f"R3: {blocker['url']} is {state}/{reason or 'unset'}.")
+    return reasons
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("issue", type=int, help="NAPMS 2.0 issue number")
+    args = parser.parse_args()
+    if args.issue < 1:
+        parser.error("issue must be a positive integer")
+
+    try:
+        result = subprocess.run(
+            ["gh", "api", "graphql", "--hostname", "github.com", "-f", f"query={QUERY}",
+             "-F", f"number={args.issue}"],
+            capture_output=True, text=True, check=True, timeout=30,
+        )
+        response = json.loads(result.stdout)
+        if response.get("errors"):
+            raise ValueError("GitHub GraphQL returned errors")
+        issue = response["data"]["repository"]["issue"]
+        reasons = admission_reasons(issue)
+    except subprocess.CalledProcessError as exc:
+        detail = exc.stderr.strip() or f"gh exited with code {exc.returncode}"
+        reasons = [f"GitHub data unavailable: {detail}"]
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, TypeError, AttributeError) as exc:
+        reasons = [f"GitHub data unavailable or incomplete: {exc}"]
+
+    print(json.dumps({"decision": "DENY" if reasons else "ALLOW", "reasons": reasons}))
+    return int(bool(reasons))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
