@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import socket
 import subprocess
@@ -86,16 +87,63 @@ def check_identity(primary: Path, location: Path, issue: int, branch: str, base_
     print(f"PASS git: {location} [{branch}]")
 
 
-def check_python(location: Path) -> None:
+def matching_manifest(primary: Path, location: Path, name: str) -> None:
+    """Shared dependencies are safe only for identical manifests."""
+    left, right = primary / name, location / name
+    if not left.is_file() or not right.is_file() or left.read_bytes() != right.read_bytes():
+        raise WorktreeError(f"{name} differs from primary; use an isolated environment")
+
+
+def check_shared_link(primary: Path, location: Path, name: str, manifests: tuple[str, ...]) -> None:
+    link = location / name
+    if not link.is_symlink():
+        return  # An explicit, locally installed environment is also supported.
+    if link.resolve() != (primary / name).resolve():
+        raise WorktreeError(f"{name} links outside the primary environment")
+    for manifest in manifests:
+        matching_manifest(primary, location, manifest)
+
+
+def link_shared_env(primary: Path, location: Path, scope: str) -> None:
+    """Link existing shared dependencies; never install, replace or delete them."""
+    if location.resolve() == primary.resolve():
+        raise WorktreeError("link-env requires a separate worktree, not the primary checkout")
+    links = []
+    if scope != "git":
+        links.append((".venv", ("pyproject.toml",), (".venv/bin/python",)))
+    if scope in ("web", "mixed"):
+        links.append(("web/node_modules", ("web/package.json", "web/package-lock.json"),
+                      ("web/node_modules/.bin/vite", "web/node_modules/.bin/playwright")))
+    # Validate every input before mutating any destination.
+    for name, manifests, executables in links:
+        dest = location / name
+        if dest.exists() or dest.is_symlink():
+            raise WorktreeError(f"{name} already exists in worktree; inspect it, do not overwrite")
+        for manifest in manifests:
+            matching_manifest(primary, location, manifest)
+        for executable in executables:
+            if not (primary / executable).is_file():
+                raise WorktreeError(f"primary dependency missing: {executable}; set up primary first")
+    for name, _, _ in links:
+        target, link = (primary / name).resolve(), location / name
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(target, target_is_directory=True)
+        print(f"LINKED: {link} -> {target}")
+
+
+def check_python(location: Path, primary: Path | None = None) -> None:
+    if primary is not None:
+        check_shared_link(primary, location, ".venv", ("pyproject.toml",))
     interpreter = location / ".venv" / "bin" / "python"
     if not interpreter.is_file():
         raise WorktreeError(
-            "missing worktree .venv; run python3 -m venv .venv && "
-            ".venv/bin/python -m pip install -e '.[test,quality]'"
+            "missing .venv; link shared dependencies with task_worktree.py link-env "
+            "or create an isolated environment when dependencies differ"
         )
     result = subprocess.run(
         [str(interpreter), "-c", "import napms; print(napms.__file__)"],
-        cwd=location, text=True, capture_output=True, check=False,
+        cwd=location, env={**os.environ, "PYTHONPATH": str(location / "src")},
+        text=True, capture_output=True, check=False,
     )
     if result.returncode:
         raise WorktreeError(f"Python cannot import napms: {result.stderr.strip()}")
@@ -106,7 +154,10 @@ def check_python(location: Path) -> None:
     print(f"PASS Python: {origin}")
 
 
-def check_web(location: Path) -> None:
+def check_web(location: Path, primary: Path | None = None) -> None:
+    if primary is not None:
+        check_shared_link(primary, location, "web/node_modules",
+                          ("web/package.json", "web/package-lock.json"))
     for command in ("node", "npm"):
         if not shutil.which(command):
             raise WorktreeError(f"missing {command} executable")
@@ -132,30 +183,34 @@ def check_loopback() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="action", required=True)
-    for name in ("create", "preflight"):
+    for name in ("create", "link-env", "preflight"):
         command = subparsers.add_parser(name)
         command.add_argument("--issue", type=int, required=True)
         command.add_argument("--branch", required=True)
-        if name == "preflight":
+        if name != "create":
             command.add_argument("--path", type=Path, default=Path.cwd())
             command.add_argument("--base-sha", required=True, help="full commit SHA captured when creating the worktree")
             command.add_argument("--scope", choices=("git", "python", "web", "mixed"), default="mixed")
     args = parser.parse_args()
     try:
-        location = args.path if args.action == "preflight" else Path.cwd()
+        location = args.path if args.action != "create" else Path.cwd()
         primary = primary_checkout(location)
         if args.action == "create":
             target = create_worktree(primary, args.issue, args.branch)
             print(f"CREATED: {target} [{args.branch}]")
-            print("Set up dependencies in that worktree; then run preflight before assignment.")
+            print("Use link-env for shared dependencies (default), or isolated setup when needed.")
         else:
             check_identity(primary, location, args.issue, args.branch, args.base_sha)
-            if args.scope != "git":
-                check_python(location)
-            if args.scope in ("web", "mixed"):
-                check_web(location)
-                check_loopback()
-            print("PREFLIGHT PASS")
+            if args.action == "link-env":
+                link_shared_env(primary, location, args.scope)
+                print("SHARED ENV LINKS READY")
+            else:
+                if args.scope != "git":
+                    check_python(location, primary)
+                if args.scope in ("web", "mixed"):
+                    check_web(location, primary)
+                    check_loopback()
+                print("PREFLIGHT PASS")
     except (WorktreeError, OSError) as exc:
         print(f"PREFLIGHT DENY: {exc}", file=sys.stderr)
         return 2
