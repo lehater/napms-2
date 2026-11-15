@@ -31,7 +31,7 @@ opencode --standalone run --agent orchestrator --model ollama/qwen3-coder:30b \
 git status --short
 ```
 
-Успех: правильные agent IDs и modes, читается `AGENTS.md` и Skill, Orchestrator реально делегирует нужным агентам, ни один файл не меняется. Если `debug agents` возвращает `UnsupportedContentType`, повторить с `--print-logs`; записать фактический workaround.
+Успех: правильные agent IDs и modes, `AGENTS.md` прочитан, а workflow Skill загружается только если он нужен выбранной задаче; если нужен — подтверждена его фактическая загрузка. Orchestrator реально делегирует только нужным агентам, ни один файл не меняется. Если `debug agents` возвращает `UnsupportedContentType`, повторить с `--print-logs`; записать фактический workaround.
 
 ## Bounded write + test + review: **пока отдельный gate**
 
