@@ -31,11 +31,28 @@ class ProcessInput(Strict):
     responsibleOrganization: str | None = Field(default=None, strict=True, max_length=300)
 
 
+class ProcessUpdateInput(Strict):
+    name: str | None = Field(default=None, strict=True, min_length=1, max_length=300)
+    description: str | None = Field(default=None, strict=True, max_length=10000)
+    responsibleOrganization: str | None = Field(default=None, strict=True, max_length=300)
+
+    @model_validator(mode="after")
+    def has_fields(self):
+        if not self.model_fields_set:
+            raise ValueError("At least one field is required")
+        return self
+
+
+class ProcessLifecycleInput(Strict):
+    status: Literal["ACTIVE", "ARCHIVED"]
+
+
 class BusinessProcess(Strict):
     processId: UUID
     name: str | None
     description: str | None
     responsibleOrganization: str | None
+    status: Literal["ACTIVE", "ARCHIVED"]
 
 
 class ProcessCollection(Strict):
@@ -599,6 +616,14 @@ def create_app(db, credentials, *, shared_read=False):
     def get_process(processId: UUID, who: Actor, response: Response):
         response.headers["Cache-Control"] = "no-store"
         return service.process(who, str(processId))
+
+    @app.patch("/business-processes/{processId}", response_model=BusinessProcess, dependencies=[Depends(no_query)])
+    def update_process(processId: UUID, data: ProcessUpdateInput, who: Actor):
+        return service.update_process(who, str(processId), data.model_dump(exclude_unset=True))
+
+    @app.patch("/business-processes/{processId}/status", response_model=BusinessProcess, dependencies=[Depends(no_query)])
+    def set_process_status(processId: UUID, data: ProcessLifecycleInput, who: Actor):
+        return service.set_process_status(who, str(processId), data.status)
 
     @app.get("/business-processes/{processId}/needs", response_model=NeedCollection)
     def needs(processId: UUID, who: Actor, query: Annotated[ListQuery, Query()], response: Response):
