@@ -140,7 +140,8 @@ def select(changes, mapping, sha="unknown", mapping_sha="unknown", target_exists
                         if not target_exists(target):
                             reasons.add("Missing test target: " + name + " / " + target)
     except (ValueError, TypeError, KeyError, AttributeError) as exc:
-        groups = mapping.get("groups") if isinstance(mapping.get("groups"), dict) else {}
+        # Malformed group definitions must not crash the fail-closed fallback.
+        groups = {"ALL": {"kind": "fallback", "targets": []}}
         required = set()
         reasons.add("Invalid mapping: " + type(exc).__name__)
     mode = "SELECTED"
