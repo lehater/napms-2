@@ -115,12 +115,13 @@ def check_loopback() -> None:
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             server.bind(("127.0.0.1", 0))
+            server.listen(1)
     except OSError as exc:
         raise WorktreeError(
-            f"loopback bind unavailable ({exc}); run E2E in an approved environment "
+            f"loopback bind/listen unavailable ({exc}); run E2E in an approved environment "
             "with server-start permission, not by silently retrying"
         ) from exc
-    print("PASS loopback bind")
+    print("PASS loopback bind/listen")
 
 
 def main() -> int:
@@ -132,7 +133,7 @@ def main() -> int:
         command.add_argument("--branch", required=True)
         if name == "preflight":
             command.add_argument("--path", type=Path, default=Path.cwd())
-            command.add_argument("--scope", choices=("python", "web", "mixed"), default="mixed")
+            command.add_argument("--scope", choices=("git", "python", "web", "mixed"), default="mixed")
     args = parser.parse_args()
     try:
         location = args.path if args.action == "preflight" else Path.cwd()
@@ -143,7 +144,8 @@ def main() -> int:
             print("Set up dependencies in that worktree; then run preflight before assignment.")
         else:
             check_identity(primary, location, args.issue, args.branch)
-            check_python(location)
+            if args.scope != "git":
+                check_python(location)
             if args.scope in ("web", "mixed"):
                 check_web(location)
                 check_loopback()
