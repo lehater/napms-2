@@ -40,7 +40,7 @@ def reset_demo(db, credentials):
             tables = {item["name"] for item in objects if item["type"] == "table"}
             if version == 0 and not tables:
                 pass  # Empty SQLite file is already a clean bootstrap target.
-            elif version not in range(1, 9) or not {
+            elif version not in range(1, 10) or not {
                 "resources", "applications", "interaction_revisions"
             }.issubset(tables):
                 raise RuntimeError("Refusing to reset an unrecognized SQLite schema")

@@ -14,7 +14,7 @@ function explain(e: unknown) {
   }
   return message(e)
 }
-export default function Needs({ client, processId }: { client: Client; processId: string }) {
+export default function Needs({ client, processId, archived = false }: { client: Client; processId: string; archived?: boolean }) {
   const [selected, setSelected] = useState<Need | null>(null)
   const [needs, setNeeds] = useState<NeedPage<Need> | null>(null)
   const [options, setOptions] = useState<NeedPage<NeedOption> | null>(null)
@@ -62,8 +62,9 @@ export default function Needs({ client, processId }: { client: Client; processId
       {offset > 0 && <Button variant="outline" onClick={() => setOffset(Math.max(0, offset - 20))}>Предыдущие потребности</Button>}
       {needs.hasMore && <Button variant="outline" onClick={() => setOffset(offset + 20)}>Следующие потребности</Button>}
     </div>}
-    {selected && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
-    </section><section aria-label="Создание потребности" className="space-y-3"><h2>Создание потребности</h2>
+    {selected && !archived && <ComposeRequest key={selected.connectivityNeedId} client={client} need={selected} />}
+    {selected && archived && <p className="ux-note" role="status">Процесс архивирован: новые заявки недоступны.</p>}
+    </section>{archived ? <p className="ux-callout" role="status">Процесс архивирован. Существующие потребности доступны для просмотра; новые создавать нельзя.</p> : <section aria-label="Создание потребности" className="space-y-3"><h2>Создание потребности</h2>
     <ErrorNotice text={optionError} />
     {!options && !optionError && <p role="status">Загрузка коммуникаций…</p>}
     {options && <>{options.items.length ? <form className="process-form" onSubmit={submit}><label htmlFor="need-communication">Коммуникация</label><select id="need-communication" value={revision} disabled={busy} onChange={e => setRevision(e.target.value)} required><option value="">Выберите коммуникацию</option>{options.items.map(o => <option key={o.interactionRevisionId} value={o.interactionRevisionId}>{o.displayLabel} · {o.trafficLabel} · Revision {o.interactionRevisionId}</option>)}</select>
@@ -77,5 +78,5 @@ export default function Needs({ client, processId }: { client: Client; processId
         {options.hasMore && <Button variant="outline" disabled={busy} onClick={() => setOptionOffset(optionOffset + 20)}>Следующие коммуникации</Button>}
       </div>}</>}
     {feedback && <p role="status">{feedback}</p>}
-    </section></div>
+    </section>}</div>
 }
