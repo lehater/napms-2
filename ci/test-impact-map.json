@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "groups": {
+    "checks:validate": {
+      "kind": "job",
+      "targets": [],
+      "responsibility": "OpenSpec strict and repository structure"
+    },
+    "checks:semantic": {
+      "kind": "job",
+      "targets": [],
+      "responsibility": "Deterministic UI/architecture boundaries"
+    },
+    "python:all": {
+      "kind": "pytest",
+      "targets": [
+        "tests"
+      ],
+      "responsibility": "Backend and CLI regression"
+    },
+    "python:opencode": {
+      "kind": "pytest",
+      "targets": [
+        "tests/test_opencode_role_catalog.py"
+      ],
+      "responsibility": "OpenCode role/permission configuration"
+    },
+    "web:build": {
+      "kind": "command",
+      "targets": [
+        "npm --prefix web run build"
+      ],
+      "responsibility": "TypeScript typecheck and production build"
+    },
+    "web:all": {
+      "kind": "playwright",
+      "targets": [
+        "web/e2e",
+        "web/e2e-harness"
+      ],
+      "responsibility": "All REAL and local-demo browser cases"
+    },
+    "web:business": {
+      "kind": "playwright",
+      "targets": [
+        "web/e2e/business-processes.spec.ts"
+      ],
+      "responsibility": "BusinessProcess browser persistence and errors"
+    },
+    "web:catalog": {
+      "kind": "playwright",
+      "targets": [
+        "web/e2e/catalog-journey.spec.ts"
+      ],
+      "responsibility": "Catalog to active-policy user journey"
+    },
+    "web:harness": {
+      "kind": "playwright",
+      "targets": [
+        "web/e2e-harness/local-demo.spec.ts"
+      ],
+      "responsibility": "Local-demo browser/proxy integration"
+    },
+    "web:proxy": {
+      "kind": "node",
+      "targets": [
+        "web/dev/local-demo.test.ts"
+      ],
+      "responsibility": "Local-demo proxy boundary tests"
+    }
+  },
+  "always": [
+    "checks:validate",
+    "checks:semantic"
+  ],
+  "rules": [
+    {
+      "paths": [
+        "opencode.jsonc",
+        "tests/test_opencode_role_catalog.py"
+      ],
+      "contracts": [
+        "agent-permissions"
+      ],
+      "groups": [
+        "python:opencode"
+      ]
+    },
+    {
+      "paths": [
+        "web/src/navigation.ts"
+      ],
+      "contracts": [
+        "real-navigation"
+      ],
+      "groups": [
+        "web:build",
+        "web:harness"
+      ]
+    },
+    {
+      "paths": [
+        "web/src/BusinessProcesses.tsx"
+      ],
+      "contracts": [
+        "business-process-ui",
+        "need-ui"
+      ],
+      "groups": [
+        "web:build",
+        "web:business",
+        "web:harness"
+      ]
+    },
+    {
+      "paths": [
+        "web/src/Catalogs.tsx",
+        "web/src/InteractionScreens.tsx",
+        "web/src/Needs.tsx",
+        "web/src/ComposeRequest.tsx"
+      ],
+      "contracts": [
+        "catalog-ui",
+        "interaction-ui",
+        "request-composition-ui"
+      ],
+      "groups": [
+        "web:build",
+        "web:catalog",
+        "web:harness"
+      ]
+    },
+    {
+      "paths": [
+        "web/src/PolicyRule.tsx",
+        "web/src/PolicyRules.tsx"
+      ],
+      "contracts": [
+        "policy-ui",
+        "policy-export-ui"
+      ],
+      "groups": [
+        "web:build",
+        "web:harness"
+      ]
+    },
+    {
+      "paths": [
+        "web/src/NotFound.tsx"
+      ],
+      "contracts": [
+        "navigation-error-ui"
+      ],
+      "groups": [
+        "web:build",
+        "web:harness"
+      ]
+    }
+  ]
+}
