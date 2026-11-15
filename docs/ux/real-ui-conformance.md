@@ -38,4 +38,17 @@ Before writing a new REAL screen structure, find the existing shared component a
 5. Promote a local component to shared when a stable, independently useful contract is demonstrated, including repeat use or substantial isolated complexity. Appearance alone is not a reuse contract; do not generalize for hypothetical consumers.
 6. Verify actual behavior on REAL data, keyboard/accessibility, empty/loading/error states, established styling, and a desktop render. Add a working example to this lookup when a new shared component becomes canonical.
 
+## Lightweight UI acceptance (manual, not a CI gate)
+
+The implementation agent owns a quick structural self-check against the rules above and reports **evidence**, not just passing tests. For each changed REAL screen, report the route and the meaningful states affected (especially empty data, populated data, and any changed actions). Inspect one actual desktop render of the changed path when a browser is available; include a screenshot or reproduction link only when useful. A saved screenshot that nobody reviewed is **not** visual acceptance.
+
+Before owner handoff, check these observable points on the affected screen:
+- The primary entity and Overview information are identifiable; subordinate/related objects live in the appropriate tabs and have usable links.
+- Empty, loading and error states are truthful and actionable; controls such as pagination and submit do not appear usable when there is nothing to act on.
+- Layout and action hierarchy are readable in the normal desktop viewport (1920 × 1080 baseline); inspect other widths only when the change affects responsive behavior.
+
+In the existing PR description, record **UI review: PASS / PENDING / DEVIATION** with route/state, reviewer (agent or human), and short evidence or reproduction steps. The agent may inspect the screen itself, or ask the owner to inspect it manually when browser access is missing or visual judgment is more efficient. Mark **PENDING** until somebody actually reviews the rendered result. A reported deviation needs a fix or explicit owner acceptance; it cannot be hidden behind green CI. The owner makes the final acceptance decision before squash.
+
+Keep verification proportional: reuse existing targeted tests where behavior changed; **do not** add screenshot diff jobs, new mandatory CI checks, new Skills, or full regression solely for layout review. Rely on the repository's existing Ready-PR integration checks when the change is otherwise accepted.
+
 This contract is mandatory before owner handoff. A deviation must be justified in the PR report.
