@@ -127,6 +127,82 @@ class WorktreeContractTests(unittest.TestCase):
             self.assertEqual(worktree.main(), 0)
 
 
+    def seed_dependency_configs(self, path: Path):
+        for name in ("pyproject.toml", "web/package.json", "web/package-lock.json"):
+            for repo in (self.primary, path):
+                f = repo / name
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text(f"identical {name}", encoding="utf-8")
+        interpreter = self.primary / ".venv/bin/python"
+        interpreter.parent.mkdir(parents=True, exist_ok=True)
+        interpreter.symlink_to(sys.executable)
+        for executable in ("vite", "playwright"):
+            binary = self.primary / "web/node_modules/.bin" / executable
+            binary.parent.mkdir(parents=True, exist_ok=True)
+            binary.write_text("fixture", encoding="utf-8")
+        (path / "src/napms").mkdir(parents=True)
+        (path / "src/napms/__init__.py").write_text("from_branch = True", encoding="utf-8")
+
+    def test_shared_env_symlinks_and_correct_python_import(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        worktree.link_shared_env(self.primary, path, "mixed")
+        self.assertTrue((path / ".venv").is_symlink())
+        self.assertTrue((path / "web/node_modules").is_symlink())
+        with patch.dict(os.environ, {"PYTHONPATH": "/other/checkout/src"}):
+            worktree.check_python(path, self.primary)
+        with patch.object(worktree.shutil, "which", return_value="/usr/bin/example"):
+            worktree.check_web(path, self.primary)
+        self.assertEqual((path / ".venv").resolve(), (self.primary / ".venv").resolve())
+
+    def test_changed_manifests_fail_before_any_link_creation(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        (path / "web/package-lock.json").write_text("different", encoding="utf-8")
+        with self.assertRaisesRegex(worktree.WorktreeError, "package-lock.json differs"):
+            worktree.link_shared_env(self.primary, path, "mixed")
+        self.assertFalse((path / ".venv").exists())
+        self.assertFalse((path / "web/node_modules").exists())
+
+    def test_shared_manifest_change_after_link_fails_preflight(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        worktree.link_shared_env(self.primary, path, "mixed")
+        (path / "pyproject.toml").write_text("changed dependencies", encoding="utf-8")
+        with self.assertRaisesRegex(worktree.WorktreeError, "pyproject.toml differs"):
+            worktree.check_python(path, self.primary)
+        (path / "pyproject.toml").write_text("identical pyproject.toml", encoding="utf-8")
+        (path / "web/package.json").write_text("changed web dependencies", encoding="utf-8")
+        with self.assertRaisesRegex(worktree.WorktreeError, "package.json differs"):
+            worktree.check_web(path, self.primary)
+
+    def test_shared_link_never_overwrites_isolated_environment(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        (path / ".venv").mkdir()
+        with self.assertRaisesRegex(worktree.WorktreeError, "already exists"):
+            worktree.link_shared_env(self.primary, path, "mixed")
+        self.assertTrue((path / ".venv").is_dir())
+        self.assertFalse((path / "web/node_modules").exists())
+
+    def test_link_rejects_missing_primary_dependencies(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        (self.primary / "web/node_modules/.bin/vite").unlink()
+        with self.assertRaisesRegex(worktree.WorktreeError, "primary dependency missing"):
+            worktree.link_shared_env(self.primary, path, "mixed")
+        self.assertFalse((path / ".venv").exists())
+
+    def test_link_rejects_symlink_to_foreign_env(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        self.seed_dependency_configs(path)
+        other = Path(self.tmp.name) / "other"
+        other.mkdir()
+        (path / ".venv").symlink_to(other, target_is_directory=True)
+        with self.assertRaisesRegex(worktree.WorktreeError, "links outside"):
+            worktree.check_python(path, self.primary)
+
+
 
 class BoundedChecksTests(unittest.TestCase):
     def test_short_command_succeeds(self):
