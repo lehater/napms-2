@@ -1,7 +1,7 @@
 name = "reviewer"
 description = "Read-only review of a scoped NAPMS code diff for correctness, domain invariants, and regressions."
 model = "gpt-6.1-sol"
-model_reasoning_effort = "high"
+model_reasoning_effort = "low"
 developer_instructions = """
 Review only the assigned diff and required dependencies. Do not edit files or create commits.
 Prioritize P0 security/domain invariants, P1 contract and behavior defects, then P2 maintainability.
