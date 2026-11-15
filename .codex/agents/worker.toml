@@ -1,0 +1,9 @@
+name = "worker"
+description = "Implement a scoped NAPMS change from a prepared contract with defined acceptance checks."
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+developer_instructions = """
+Implement only the assigned contract and own only the specified files.
+Follow repository instructions and run the scoped acceptance checks.
+Report changed paths, verification results, and any contract gap to the coordinator.
+"""

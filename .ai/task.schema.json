@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NAPMS execution contract",
+  "type": "object",
+  "required": ["schema_version", "goal", "context", "scope", "acceptance", "verification"],
+  "additionalProperties": false,
+  "$defs": {
+    "text": { "type": "string", "pattern": "\\S" },
+    "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+  },
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "goal": { "$ref": "#/$defs/text", "description": "Expected outcome." },
+    "context": { "$ref": "#/$defs/items", "description": "Issue, specification, or repository references needed to start." },
+    "scope": { "$ref": "#/$defs/items", "description": "Allowed change boundaries." },
+    "acceptance": { "$ref": "#/$defs/items", "description": "Verifiable acceptance criteria." },
+    "verification": { "$ref": "#/$defs/items", "description": "Required checks and expected evidence." },
+    "decisions": { "$ref": "#/$defs/items", "description": "Decisions already made." },
+    "constraints": { "$ref": "#/$defs/items", "description": "Mandatory limits to observe." },
+    "capabilities": { "$ref": "#/$defs/items", "description": "Required tools or execution conditions." },
+    "escalation": { "$ref": "#/$defs/items", "description": "Conditions that require a return to preparation." }
+  }
+}
