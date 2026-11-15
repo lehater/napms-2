@@ -4,7 +4,7 @@ import json
 import unittest
 from pathlib import Path
 
-from ci_test_selector import Change, MAP, docs_path, parse_diff, select
+from ci_test_selector import Change, MAP, classify_changes, docs_path, parse_diff, select
 
 
 class ImpactSelectorTests(unittest.TestCase):
@@ -120,6 +120,76 @@ class ImpactSelectorTests(unittest.TestCase):
         self.assertEqual(a, b)
         self.assertEqual([g["id"] for g in a["selected_groups"]],
                          sorted(g["id"] for g in a["selected_groups"]))
+
+
+class SharedClassificationTests(unittest.TestCase):
+    def scope(self, *paths, status="M"):
+        return classify_changes(tuple(Change(status, (path,)) for path in paths))
+
+    def test_code_and_web_classification(self):
+        py = self.scope("src/napms/use_cases.py")
+        self.assertEqual((py.docs_only, py.fallback, py.web, py.local_profile),
+                         (False, False, False, "python"))
+        web = self.scope("web/src/BusinessProcesses.tsx")
+        self.assertEqual((web.docs_only, web.fallback, web.web, web.local_profile),
+                         (False, False, True, "web"))
+
+    def test_docs_only_and_openspec(self):
+        docs = self.scope("README.md", "docs/architecture.md")
+        self.assertTrue(docs.docs_only)
+        self.assertEqual(docs.local_profile, "docs")
+        spec = self.scope("openspec/changes/test/proposal.md", status="A")
+        self.assertTrue(spec.docs_only)
+        self.assertEqual(spec.local_profile, "docs-spec")
+
+    def test_opencode_test_and_unknown_configuration(self):
+        role = self.scope("tests/test_opencode_role_catalog.py")
+        self.assertTrue(role.opencode_test)
+        self.assertFalse(role.fallback)
+        self.assertEqual(role.local_profile, "python")
+        config = self.scope("opencode.jsonc")
+        self.assertTrue(config.fallback)
+        self.assertEqual(config.local_profile, "full")
+
+    def test_ci_dependency_or_selector_files_are_full(self):
+        for path in (".github/workflows/verify.yml", "pyproject.toml",
+                     "ci/test-impact-map.json", "scripts/ci_test_selector.py"):
+            with self.subTest(path=path):
+                scope = self.scope(path)
+                self.assertTrue(scope.fallback)
+                self.assertEqual(scope.local_profile, "full")
+
+    def test_addition_unknown_or_rename_fail_safe(self):
+        added = self.scope("web/src/Needs.tsx", status="A")
+        self.assertTrue(added.fallback)
+        self.assertEqual(added.local_profile, "web")
+        removed = self.scope("src/napms/http.py", status="D")
+        self.assertTrue(removed.fallback)
+        self.assertEqual(removed.local_profile, "full")
+        renamed = classify_changes((Change("R100", ("old.py", "new.py")),))
+        self.assertTrue(renamed.fallback)
+        self.assertEqual(renamed.local_profile, "full")
+
+    def test_mixed_and_test_infrastructure(self):
+        mixed = self.scope("src/napms/use_cases.py", "web/src/api.ts")
+        self.assertEqual(mixed.local_profile, "mixed")
+        self.assertTrue(mixed.web)
+        tests = self.scope("web/e2e/requests.spec.ts")
+        self.assertEqual(tests.local_profile, "full")
+        self.assertFalse(tests.fallback)  # A changed E2E file still gets FULL in Ready.
+
+    def test_untracked_is_safe_locally(self):
+        scope = self.scope("tests/test_new.py", status="??")
+        self.assertEqual(scope.local_profile, "python")
+        self.assertTrue(scope.fallback)
+
+    def test_empty_scope_and_invalid_paths(self):
+        empty = classify_changes(())
+        self.assertTrue(empty.fallback)
+        self.assertEqual(empty.local_profile, "full")
+        for path in ("../escape.py", "/root.py", "docs/a\nb.md"):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                self.scope(path)
 
 
 if __name__ == "__main__":

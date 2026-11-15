@@ -29,59 +29,19 @@ jobs:
       web: ${{ steps.scope.outputs.web }}
       fallback: ${{ steps.scope.outputs.fallback }}
       opencode_test: ${{ steps.scope.outputs.opencode_test }}
+      candidate_sha: ${{ steps.scope.outputs.candidate_sha }}
+      plan_mode: ${{ steps.scope.outputs.plan_mode }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 2
           persist-credentials: false
-      - name: Classify the cumulative PR merge diff
+      - name: Classify PR and propose shadow test impact plan
         id: scope
         run: |
           git rev-parse --verify HEAD^2 >/dev/null
-          python3 - <<'PY'
-          import os
-          import re
-          import subprocess
-
-          raw = subprocess.check_output(
-              ["git", "diff", "--name-status", "--no-renames", "-z", "HEAD^1", "HEAD", "--"]
-          )
-          fields = raw.split(b"\0")
-          if fields[-1] != b"":
-              raise ValueError("non-terminated PR diff")
-          fields.pop()
-          if len(fields) % 2:
-              raise ValueError("incomplete status/path record")
-          records = list(zip(fields[0::2], fields[1::2]))
-          documentation = re.compile(
-              rb"(?:README\.md|(?:docs|openspec/(?:changes|specs))/.+\.md"
-              rb"|openspec/changes/(?:[^/]+/)+\.openspec\.yaml)"
-          )
-          docs_only = bool(records) and all(documentation.fullmatch(path) for _, path in records)
-          fallback = not records
-          opencode_test = any(path == b"tests/test_opencode_role_catalog.py" for _, path in records)
-          web = False
-          for status, path in records:
-              if documentation.fullmatch(path):
-                  continue
-              if status != b"M":
-                  fallback = True
-              if path.startswith(b"web/"):
-                  web = True
-              elif path.startswith((b"src/", b"tests/")) or path == b"pyproject.toml":
-                  pass
-              else:
-                  fallback = True
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
-              print(f"docs-only={str(docs_only).lower()}", file=out)
-              print(f"web={str(web).lower()}", file=out)
-              print(f"fallback={str(fallback).lower()}", file=out)
-              print(f"opencode_test={str(opencode_test).lower()}", file=out)
-          PY
-      - name: Propose impacted tests (SHADOW only; current checks unchanged)
-        if: steps.scope.outcome == 'success'
-        run: |
           python3 scripts/ci_test_selector.py --base HEAD^1 --head HEAD \
+            --scope-output "$GITHUB_OUTPUT" \
             --json-output "$RUNNER_TEMP/ci-test-plan.json" \
             --summary-file "$GITHUB_STEP_SUMMARY"
 
@@ -172,7 +132,7 @@ jobs:
           test -f openspec/config.yaml
           test -f .agents/skills/openspec-propose/SKILL.md
       - name: Verify CI impact selector contract
-        run: python3 -m unittest discover -s scripts -p 'test_ci_test_selector.py' -v
+        run: python3 -m unittest discover -s scripts -p 'test_ci_*.py' -v
       - name: Install OpenSpec
         run: npm install --global @fission-ai/openspec@1.16.0
       - name: Validate OpenSpec
@@ -266,3 +226,30 @@ jobs:
         run: |
           echo 'EXPECTED in Draft: FAST results are informational; web required FULL is not yet satisfied.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+  # Additive until separately validated and selected in the GitHub main Ruleset.
+  # Never treat an unexpected skipped, failed or cancelled prerequisite as success.
+  ci-required:
+    name: ci-required
+    if: ${{ always() }}
+    needs: [changes, application, validate, semantic-contract, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Evaluate results for this exact merge candidate
+        env:
+          EVENT: ${{ github.event_name }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          CHANGES: ${{ needs.changes.result }}
+          DOCS_ONLY: ${{ needs.changes.outputs.docs-only }}
+          PLAN_MODE: ${{ needs.changes.outputs.plan_mode }}
+          CANDIDATE_SHA: ${{ needs.changes.outputs.candidate_sha }}
+          APPLICATION: ${{ needs.application.result }}
+          WEB: ${{ needs.web.result }}
+          VALIDATE: ${{ needs.validate.result }}
+          SEMANTIC: ${{ needs.semantic-contract.result }}
+        run: python3 scripts/ci_required.py

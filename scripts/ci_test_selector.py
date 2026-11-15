@@ -59,6 +59,93 @@ def docs_path(path):
     return False
 
 
+@dataclass(frozen=True)
+class ChangeScope:
+    """One classification contract for PR routing and local fast checks."""
+
+    docs_only: bool
+    web: bool
+    fallback: bool
+    opencode_test: bool
+    local_profile: str
+    local_reason: str
+
+
+def classify_changes(changes):
+    """Classify the same normalized change records for every caller.
+
+    CI retains its existing conservative M-only rule for executable files;
+    local fast checks retain an additional policy for selecting quick commands.
+    Both decisions derive from the same path and status interpretation.
+    """
+    if not changes:
+        return ChangeScope(False, False, True, False, "full", "empty diff")
+
+    for change in changes:
+        if not change.paths:
+            raise ValueError("change without path")
+        for path in change.paths:
+            safe_path(path)
+
+    docs_only = all(
+        len(change.paths) == 1 and docs_path(change.paths[0])
+        and change.status in {"M", "A", "D"}
+        for change in changes
+    )
+    fallback = False
+    web = False
+    opencode_test = False
+    paths = set()
+
+    for change in changes:
+        for path in change.paths:
+            paths.add(path)
+            if path == "tests/test_opencode_role_catalog.py":
+                opencode_test = True
+            if docs_path(path):
+                continue
+            if change.status != "M" or len(change.paths) != 1:
+                fallback = True
+            if path.startswith("web/"):
+                web = True
+            elif path.startswith(("src/", "tests/")):
+                pass
+            else:
+                fallback = True
+
+    if any(c.status not in {"M", "A", "??"} or len(c.paths) != 1 for c in changes):
+        profile, reason = "full", "rename/delete/unknown change status"
+    elif any(
+        p.startswith((".github/", "ci/", "scripts/", "web/e2e/", "web/e2e-harness/", "web/dev/"))
+        or p.startswith("web/playwright")
+        or p in {"pyproject.toml", "web/package.json", "web/package-lock.json"}
+        for p in paths
+    ):
+        profile, reason = "full", "CI, test infrastructure or dependencies"
+    elif any(
+        not (p.startswith(("src/", "tests/", "web/"))
+             or docs_path(p)
+             or p.startswith("openspec/") and p.endswith((".md", ".yaml"))
+             or p == "AGENTS.md")
+        for p in paths
+    ):
+        profile, reason = "full", "unknown change scope"
+    else:
+        python_changed = any(p.startswith(("src/", "tests/")) for p in paths)
+        web_changed = any(p.startswith("web/") for p in paths)
+        spec_changed = any(p.startswith("openspec/") for p in paths)
+        if python_changed and web_changed:
+            profile, reason = "mixed", "Python and Web"
+        elif python_changed:
+            profile, reason = "python", "Python"
+        elif web_changed:
+            profile, reason = "web", "Web"
+        else:
+            profile, reason = ("docs-spec" if spec_changed else "docs"), "documentation"
+
+    return ChangeScope(docs_only, web, fallback, opencode_test, profile, reason)
+
+
 def index_map(mapping):
     if mapping.get("schema_version") != 1:
         raise ValueError("unsupported mapping version")
@@ -201,6 +288,7 @@ def main():
     ap.add_argument("--mapping", type=Path, default=MAP)
     ap.add_argument("--json-output", type=Path)
     ap.add_argument("--summary-file", type=Path)
+    ap.add_argument("--scope-output", type=Path, help="GitHub Actions GITHUB_OUTPUT file")
     args = ap.parse_args()
     try:
         sha = subprocess.check_output(
@@ -218,11 +306,14 @@ def main():
             ["git", "diff", "--name-status", "--find-renames", "-z",
              args.base, args.head, "--"], cwd=ROOT, stderr=subprocess.PIPE,
         )
-        plan = select(parse_diff(change_data), mapping, sha=sha,
+        changes = parse_diff(change_data)
+        scope = classify_changes(changes)
+        plan = select(changes, mapping, sha=sha,
                       mapping_sha=hashlib.sha256(raw).hexdigest(),
                       target_exists=lambda p: (ROOT / p).exists())
     except (OSError, ValueError, UnicodeError, subprocess.CalledProcessError) as exc:
         plan = fail_plan("Untrusted selector input: " + type(exc).__name__, sha)
+        scope = ChangeScope(False, True, True, True, "full", "invalid classifier input")
     encoded = json.dumps(plan, indent=2, sort_keys=True, ensure_ascii=True) + "\n"
     print(encoded)
     if args.json_output:
@@ -230,6 +321,18 @@ def main():
     if args.summary_file:
         with args.summary_file.open("a", encoding="utf-8") as output:
             output.write(markdown(plan))
+    if args.scope_output:
+        values = {
+            "docs-only": scope.docs_only,
+            "web": scope.web,
+            "fallback": scope.fallback,
+            "opencode_test": scope.opencode_test,
+        }
+        with args.scope_output.open("a", encoding="utf-8") as output:
+            for key, value in values.items():
+                output.write(f"{key}={str(value).lower()}\n")
+            output.write(f"candidate_sha={sha}\n")
+            output.write(f"plan_mode={plan['mode']}\n")
     return 0
 
 
