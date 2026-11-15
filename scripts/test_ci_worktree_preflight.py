@@ -86,7 +86,7 @@ class WorktreeContractTests(unittest.TestCase):
 
     def test_missing_python_and_foreign_python_import(self):
         path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
-        with self.assertRaisesRegex(worktree.WorktreeError, "missing worktree .venv"):
+        with self.assertRaisesRegex(worktree.WorktreeError, "missing \\.venv"):
             worktree.check_python(path)
         interpreter = path / ".venv" / "bin" / "python"
         interpreter.parent.mkdir(parents=True)
