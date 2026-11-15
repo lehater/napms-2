@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import shlex
+import signal
 import shutil
 import subprocess
 import sys
@@ -110,11 +111,42 @@ def prerequisites(root: Path, checks: tuple[Check, ...]) -> list[str]:
     return missing
 
 
+def run_bounded(argv: tuple[str, ...], cwd: Path, timeout: int) -> tuple[int, bool]:
+    """Run a check with a hard limit; terminate its process group on POSIX."""
+    proc = subprocess.Popen(argv, cwd=cwd, start_new_session=(os.name == "posix"))
+    try:
+        return proc.wait(timeout=timeout), False
+    except subprocess.TimeoutExpired:
+        try:
+            if os.name == "posix":
+                os.killpg(proc.pid, signal.SIGTERM)
+            else:
+                proc.terminate()
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:
+                if os.name == "posix":
+                    os.killpg(proc.pid, signal.SIGKILL)
+                else:
+                    proc.kill()
+            except ProcessLookupError:
+                pass
+            proc.wait()
+        return 124, True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="print profile and commands without running them")
     parser.add_argument("--full", action="store_true", help="force all regression checks")
+    parser.add_argument("--timeout-seconds", type=int, default=600,
+                        help="maximum seconds per check (default: 600)")
     args = parser.parse_args()
+    if args.timeout_seconds <= 0:
+        parser.error("--timeout-seconds must be positive")
     root = Path(__file__).resolve().parent.parent
     try:
         head = git(root, "rev-parse", "HEAD").decode().strip()
@@ -129,6 +161,7 @@ def main() -> int:
         profile, reason = "full", "explicit --full"
     checks = checks_for(root, profile, entries, base)
     print(f"BASE={base or 'unavailable'} HEAD={head} PROFILE={profile.upper()} REASON={reason}")
+    print(f"PER_CHECK_TIMEOUT={args.timeout_seconds}s")
     for change in entries:
         print("CHANGE", change.status, *change.paths)
     for check in checks:
@@ -143,9 +176,18 @@ def main() -> int:
     for check in checks:
         print("RUN:", check.label, flush=True)
         start = time.monotonic()
-        result = subprocess.run(check.argv, cwd=root / check.cwd, check=False)
-        print(f"RESULT: {result.returncode} ({time.monotonic()-start:.1f}s)", flush=True)
-        if result.returncode:
+        try:
+            returncode, timed_out = run_bounded(check.argv, root / check.cwd, args.timeout_seconds)
+        except OSError as exc:
+            print(f"START FAILURE: {check.label}: {exc}", flush=True)
+            failures.append(check.label)
+            break
+        print(f"RESULT: {returncode} ({time.monotonic()-start:.1f}s)", flush=True)
+        if timed_out:
+            print(f"TIMEOUT: {check.label} exceeded {args.timeout_seconds}s; diagnose before retrying")
+            failures.append(check.label)
+            break
+        if returncode:
             if check.advisory:
                 print("ADVISORY failure:", check.label)
             else:
