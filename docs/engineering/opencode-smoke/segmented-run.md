@@ -21,8 +21,10 @@
 NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
   opencode --standalone run --agent orchestrator \
   --model openai/gpt-6.1-sol --format json \
-  'PR70-SEGMENT, READ ONLY. Immutable contract: {"task_id":"PR70-SEGMENT","allowed_paths":["role-smoke.txt"],"expected_lines":["# Role smoke","","Bounded Worker write."],"expected_final_newline":true}. Call subagent explore to read AGENTS.md and load openspec-explore. Wait for completion. Then call planner with actual Explorer observations and unchanged immutable contract to return a bounded plan. No Worker, shell, edit, publish or merge. Stop after Planner and report observed child session IDs.'
+  'PR70-SEGMENT, READ ONLY. Immutable contract: {"task_id":"PR70-SEGMENT","allowed_paths":["role-smoke.txt"],"expected_lines":["# Role smoke","","Bounded Worker write."],"expected_final_newline":true}. Call subagent explore to read AGENTS.md and any applicable nested instructions. This smoke has no OpenSpec work; do not load an OpenSpec Skill or inspect OpenSpec artifacts. Load a Skill only if the task requires its workflow. Wait for Explorer to finish, then call planner with its relevant observations and the unchanged contract to return a bounded plan. No Worker, shell, edit, publish or merge. Stop after Planner and report child session IDs.'
 ```
+
+The OpenSpec Skill is intentionally omitted here: this smoke has no specification or implementation work. For tasks that do use OpenSpec, load only the Skill for the selected workflow and inspect only the artifacts it identifies as relevant.
 
 Продолжать только если actual tool/session events подтверждают `explore → planner`, оба завершены и нет write/shell, actual model Sol. Записать root/child IDs в **частный** evidence-файл вне репозитория. Не публиковать сырые логи с auth metadata.
 
