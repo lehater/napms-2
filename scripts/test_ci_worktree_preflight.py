@@ -57,7 +57,7 @@ class WorktreeContractTests(unittest.TestCase):
         self.assertEqual(path, self.primary.parent / ".worktrees" / "napms-2" / "issue-42")
         self.assertEqual(worktree.primary_checkout(path), self.primary)
         self.assertEqual(run_git(path, "branch", "--show-current"), "feat/issue-42")
-        worktree.check_identity(self.primary, path, 42, "feat/issue-42")
+        worktree.check_identity(self.primary, path, 42, "feat/issue-42", run_git(self.primary, "rev-parse", "origin/main"))
 
     def test_create_refuses_existing_worktree_and_bad_branch(self):
         path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
@@ -75,9 +75,14 @@ class WorktreeContractTests(unittest.TestCase):
     def test_wrong_path_and_branch_fail_closed(self):
         path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
         with self.assertRaisesRegex(worktree.WorktreeError, "wrong worktree path"):
-            worktree.check_identity(self.primary, path, 41, "feat/issue-42")
+            worktree.check_identity(self.primary, path, 41, "feat/issue-42", run_git(self.primary, "rev-parse", "origin/main"))
         with self.assertRaisesRegex(worktree.WorktreeError, "wrong branch"):
-            worktree.check_identity(self.primary, path, 42, "feat/issue-41")
+            worktree.check_identity(self.primary, path, 42, "feat/issue-41", run_git(self.primary, "rev-parse", "origin/main"))
+
+    def test_wrong_base_sha_denied(self):
+        path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
+        with self.assertRaisesRegex(worktree.WorktreeError, "wrong base SHA"):
+            worktree.check_identity(self.primary, path, 42, "feat/issue-42", "0" * 40)
 
     def test_missing_python_and_foreign_python_import(self):
         path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
@@ -115,7 +120,8 @@ class WorktreeContractTests(unittest.TestCase):
         path = worktree.create_worktree(self.primary, 42, "feat/issue-42")
         with patch.object(sys, "argv", [
             "task_worktree.py", "preflight", "--issue", "42",
-            "--branch", "feat/issue-42", "--path", str(path), "--scope", "git",
+            "--branch", "feat/issue-42", "--path", str(path), "--base-sha",
+            run_git(self.primary, "rev-parse", "origin/main"), "--scope", "git",
         ]), patch.object(worktree, "check_python", side_effect=AssertionError("unexpected Python check")), \
                 patch.object(worktree, "check_web", side_effect=AssertionError("unexpected Web check")):
             self.assertEqual(worktree.main(), 0)
