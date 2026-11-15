@@ -1,6 +1,15 @@
 name: Verify
 
 on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - converted_to_draft
   workflow_dispatch:
 
 concurrency:
@@ -19,53 +28,22 @@ jobs:
       docs-only: ${{ steps.scope.outputs.docs-only }}
       web: ${{ steps.scope.outputs.web }}
       fallback: ${{ steps.scope.outputs.fallback }}
+      opencode_test: ${{ steps.scope.outputs.opencode_test }}
+      candidate_sha: ${{ steps.scope.outputs.candidate_sha }}
+      plan_mode: ${{ steps.scope.outputs.plan_mode }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 2
           persist-credentials: false
-      - name: Classify the cumulative PR merge diff
+      - name: Classify PR and propose shadow test impact plan
         id: scope
         run: |
           git rev-parse --verify HEAD^2 >/dev/null
-          python3 - <<'PY'
-          import os
-          import re
-          import subprocess
-
-          raw = subprocess.check_output(
-              ["git", "diff", "--name-status", "--no-renames", "-z", "HEAD^1", "HEAD", "--"]
-          )
-          fields = raw.split(b"\0")
-          if fields[-1] != b"":
-              raise ValueError("non-terminated PR diff")
-          fields.pop()
-          if len(fields) % 2:
-              raise ValueError("incomplete status/path record")
-          records = list(zip(fields[0::2], fields[1::2]))
-          documentation = re.compile(
-              rb"(?:README\.md|(?:docs|openspec/(?:changes|specs))/.+\.md"
-              rb"|openspec/changes/(?:[^/]+/)+\.openspec\.yaml)"
-          )
-          docs_only = bool(records) and all(documentation.fullmatch(path) for _, path in records)
-          fallback = not records
-          web = False
-          for status, path in records:
-              if documentation.fullmatch(path):
-                  continue
-              if status != b"M":
-                  fallback = True
-              if path.startswith(b"web/"):
-                  web = True
-              elif path.startswith((b"src/", b"tests/")) or path == b"pyproject.toml":
-                  pass
-              else:
-                  fallback = True
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
-              print(f"docs-only={str(docs_only).lower()}", file=out)
-              print(f"web={str(web).lower()}", file=out)
-              print(f"fallback={str(fallback).lower()}", file=out)
-          PY
+          python3 scripts/ci_test_selector.py --base HEAD^1 --head HEAD \
+            --scope-output "$GITHUB_OUTPUT" \
+            --json-output "$RUNNER_TEMP/ci-test-plan.json" \
+            --summary-file "$GITHUB_STEP_SUMMARY"
 
   application:
     name: application
@@ -98,7 +76,7 @@ jobs:
         run: python -m pip install ruff==0.17.4
       - name: Install application and quality dependencies for FULL
         if: steps.profile.outputs.profile == 'full'
-        run: python -m pip install -e '.[test,quality]'
+        run: python -m pip install -e '.[test]' ruff==0.17.4 pytest-cov==7.1.0
       - name: Python compilation (FAST and FULL)
         run: python -m compileall -q src tests
       - name: Ruff core diagnostics (blocking)
@@ -106,32 +84,27 @@ jobs:
       - name: Test application, HTTP contracts and startup with coverage
         if: steps.profile.outputs.profile == 'full'
         id: pytest
-        run: python -m pytest -q --cov=napms --cov-report=term-missing
-      - name: Ruff extended lint (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: ruff_extended
-        continue-on-error: true
-        run: python -m ruff check src tests
-      - name: Ruff formatting (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: ruff_format
-        continue-on-error: true
-        run: python -m ruff format --check src tests
-      - name: Pyright (advisory)
-        if: steps.profile.outputs.profile == 'full'
-        id: pyright
-        continue-on-error: true
-        run: python -m pyright
+        env:
+          CLASSIFIED: ${{ needs.changes.result }}
+          FALLBACK: ${{ needs.changes.outputs.fallback }}
+          OPENCODE_TEST_CHANGED: ${{ needs.changes.outputs.opencode_test }}
+        run: |
+          # Scope independent OpenCode permission tests to relevant changes.
+          # Unsafe/unknown diff or manual FULL always executes the entire suite.
+          if [[ "$GITHUB_EVENT_NAME" == pull_request && "$CLASSIFIED" == success && "$FALLBACK" != true && "$OPENCODE_TEST_CHANGED" != true ]]; then
+            echo "OpenCode role contract: out of scope" >> "$GITHUB_STEP_SUMMARY"
+            python -m pytest -q --cov=napms --cov-report=term-missing --ignore=tests/test_opencode_role_catalog.py
+          else
+            echo "OpenCode role contract: included" >> "$GITHUB_STEP_SUMMARY"
+            python -m pytest -q --cov=napms --cov-report=term-missing
+          fi
       - name: Summarize application verification
         if: always()
         env:
           PROFILE: ${{ steps.profile.outputs.profile }}
           PYTEST: ${{ steps.pytest.outcome }}
-          RUFF: ${{ steps.ruff_extended.outcome }}
-          FORMAT: ${{ steps.ruff_format.outcome }}
-          PYRIGHT: ${{ steps.pyright.outcome }}
         run: |
-          echo "Profile: $PROFILE; pytest: $PYTEST; extended Ruff: $RUFF; format: $FORMAT; Pyright: $PYRIGHT" >> "$GITHUB_STEP_SUMMARY"
+          echo "Profile: $PROFILE; pytest: $PYTEST" >> "$GITHUB_STEP_SUMMARY"
           if [[ "$PROFILE" == fast ]]; then
             echo "Draft FAST: compilation and Ruff core executed; FULL deferred until Ready." >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -158,11 +131,20 @@ jobs:
           test -s AGENTS.md
           test -f openspec/config.yaml
           test -f .agents/skills/openspec-propose/SKILL.md
+      - name: Verify CI impact selector contract
+        run: python3 -m unittest discover -s scripts -p 'test_ci_*.py' -v
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify AI task workflow
+        run: |
+          python -m pip install -e '.[workflow]'
+          python -m unittest discover -s scripts -p 'test_validate_task.py' -v
+          python -m unittest discover -s scripts -p 'test_check_task_admission.py' -v
       - name: Install OpenSpec
         run: npm install --global @fission-ai/openspec@1.16.0
       - name: Validate OpenSpec
         run: |
-          openspec list --json
           openspec validate --all --strict
 
   semantic-contract:
@@ -252,3 +234,30 @@ jobs:
         run: |
           echo 'EXPECTED in Draft: FAST results are informational; web required FULL is not yet satisfied.' >> "$GITHUB_STEP_SUMMARY"
           exit 1
+
+  # Additive until separately validated and selected in the GitHub main Ruleset.
+  # Never treat an unexpected skipped, failed or cancelled prerequisite as success.
+  ci-required:
+    name: ci-required
+    if: ${{ always() }}
+    needs: [changes, application, validate, semantic-contract, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Evaluate results for this exact merge candidate
+        env:
+          EVENT: ${{ github.event_name }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          CHANGES: ${{ needs.changes.result }}
+          DOCS_ONLY: ${{ needs.changes.outputs.docs-only }}
+          PLAN_MODE: ${{ needs.changes.outputs.plan_mode }}
+          CANDIDATE_SHA: ${{ needs.changes.outputs.candidate_sha }}
+          APPLICATION: ${{ needs.application.result }}
+          WEB: ${{ needs.web.result }}
+          VALIDATE: ${{ needs.validate.result }}
+          SEMANTIC: ${{ needs.semantic-contract.result }}
+        run: python3 scripts/ci_required.py

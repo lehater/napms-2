@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""Validate the single fenced YAML execution contract in a GitHub Issue body."""
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+import yaml
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
+
+
+SCHEMA = Path(__file__).resolve().parents[1] / ".ai" / "task.schema.json"
+FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
+class ContractError(ValueError):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
+class ContractLoader(yaml.SafeLoader):
+    """Reject ambiguous keys before the schema sees the contract."""
+
+    def construct_mapping(self, node, deep=False):
+        keys = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node)
+            if not isinstance(key, str):
+                raise ContractError("invalid_key", f"Expected a string key at line {key_node.start_mark.line + 1}.")
+            if key in keys:
+                raise ContractError("duplicate_key", f"Duplicate key {key!r} at line {key_node.start_mark.line + 1}.")
+            keys.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def extract_contract(body):
+    """Recognize top-level Markdown fences without reading examples as nested contracts."""
+    blocks = []
+    opening = ""
+    is_yaml = False
+    comment = False
+    lines = []
+    for line in body.splitlines():
+        if not opening and (comment or line.lstrip(" ").startswith("<!--")):
+            comment = "-->" not in line
+            continue
+        match = FENCE.match(line)
+        if opening:
+            if match and match[1][0] == opening[0] and len(match[1]) >= len(opening) and not match[2].strip():
+                if is_yaml:
+                    blocks.append("\n".join(lines))
+                opening = ""
+                lines = []
+            elif is_yaml:
+                lines.append(line)
+        elif match and (match[1][0] == "~" or "`" not in match[2]):
+            opening = match[1]
+            is_yaml = match[2].strip().lower() == "yaml"
+
+    if opening and is_yaml:
+        raise ContractError("unclosed_contract", "Close the YAML contract fence.")
+    if not blocks:
+        raise ContractError("missing_contract", "Provide one fenced YAML execution contract.")
+    if len(blocks) != 1:
+        raise ContractError("multiple_contracts", "Provide exactly one fenced YAML execution contract.")
+    return blocks[0]
+
+
+def error(code, message, path=()):
+    return {"code": code, "path": list(path), "message": message}
+
+
+def validate(body, validator):
+    try:
+        document = yaml.load(extract_contract(body), Loader=ContractLoader)
+    except ContractError as exc:
+        return [error(exc.code, str(exc))]
+    except (yaml.YAMLError, ValueError, TypeError, AttributeError, OverflowError, RecursionError) as exc:
+        return [error("invalid_yaml", str(exc))]
+
+    violations = sorted(
+        validator.iter_errors(document),
+        key=lambda exc: (tuple(map(str, exc.absolute_path)), exc.validator, exc.message),
+    )
+    return [error(exc.validator, exc.message, exc.absolute_path) for exc in violations]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("issue_body", nargs="?", default="-", help="UTF-8 Markdown file, or - for standard input")
+    args = parser.parse_args()
+    try:
+        body = sys.stdin.read() if args.issue_body == "-" else Path(args.issue_body).read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        errors = [error("input_error", str(exc))]
+        status = 2
+    else:
+        try:
+            schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+        except (OSError, UnicodeError, ValueError, SchemaError) as exc:
+            errors = [error("schema_error", str(exc))]
+            status = 2
+        else:
+            errors = validate(body, Draft202012Validator(schema))
+            status = int(bool(errors))
+
+    print(json.dumps({"valid": not errors, "errors": errors}))
+    return status
+
+
+if __name__ == "__main__":
+    sys.exit(main())

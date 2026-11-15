@@ -63,7 +63,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8):
+            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -177,11 +177,30 @@ class Database:
                     c.rollback()
                     raise
 
+            # v8 -> v9: BusinessProcess has an explicit lifecycle. Existing rows
+            # become ACTIVE; only descriptive fields and status are mutable.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 8:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    columns = {r["name"] for r in c.execute("PRAGMA table_info(processes)")}
+                    if "status" not in columns:
+                        c.execute("ALTER TABLE processes ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE','ARCHIVED'))")
+                    c.execute("DROP TRIGGER IF EXISTS immutable_processes_UPDATE")
+                    c.execute("DROP TRIGGER IF EXISTS immutable_process_identity")
+                    c.execute("""CREATE TRIGGER immutable_process_identity
+                        BEFORE UPDATE OF id ON processes WHEN NEW.id != OLD.id
+                        BEGIN SELECT RAISE(ABORT,'immutable process identity'); END""")
+                    c.execute("PRAGMA user_version=9")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
     @contextmanager
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 8:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 9:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c

@@ -159,3 +159,27 @@ def test_ac08_inactive_not_reactivated(env):
     assert details['state'] == 'INACTIVE'
     assert details['originatingDecision']['outcome'] == 'ALLOWED'
     assert len(details['allowances']) == 2
+
+
+def test_ac09_archived_process_blocks_new_requests_without_rewriting_history(env):
+    request = submit(env)
+    decision = decide(env, request)
+    archive = env[3].patch(f'/business-processes/{IDS["process"]}/status',
+                            json={'status': 'ARCHIVED'}, headers=auth(env, 'requester'))
+    assert archive.status_code == 200 and archive.json()['status'] == 'ARCHIVED'
+    before = env[3].get(f'/access-requests/{request["requestId"]}', headers=auth(env, 'requester'))
+    assert before.status_code == 200 and before.json()['decision'] == decision
+    before_rule = export(env, decision['policyRuleId']).json()['rows']
+    with env[0].transaction() as c:
+        count = c.execute('SELECT count(*) FROM access_requests').fetchone()[0]
+    blocked = env[3].post('/access-requests', json=DEMO_REQUEST, headers=auth(env, 'requester'))
+    assert blocked.status_code == 409
+    with env[0].transaction() as c:
+        assert c.execute('SELECT count(*) FROM access_requests').fetchone()[0] == count
+    assert env[3].get(f'/access-requests/{request["requestId"]}', headers=auth(env, 'requester')).json() == before.json()
+    after_rule = export(env, decision['policyRuleId']).json()['rows']
+    assert [{k: v for k, v in row.items() if k != 'evaluationAt'} for row in after_rule] == [
+        {k: v for k, v in row.items() if k != 'evaluationAt'} for row in before_rule]
+    restore = env[3].patch(f'/business-processes/{IDS["process"]}/status',
+                           json={'status': 'ACTIVE'}, headers=auth(env, 'requester'))
+    assert restore.status_code == 200 and restore.json()['status'] == 'ACTIVE'

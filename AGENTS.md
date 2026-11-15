@@ -4,6 +4,8 @@
 - GitHub `main` is the accepted project state. Use separate branches, PRs and squash merge; never push directly to `main`.
 - Use `lehater/napms` only as a knowledge source. Do not copy its code, history or Harness.
 - Prefer KISS, YAGNI, and minimal, verifiable changes.
+- When preparing, selecting, or updating tasks under the AI task workflow, read [the workflow policy](.ai/workflow.yaml) first and verify the relevant Issue and Project data in GitHub. Use `decompose` for preparation and `execute-task` for a Ready issue.
+- When asked what to do next without an issue number, start in [GitHub Project #6](https://github.com/users/lehater/projects/6). For planning, filter **Product Structure** by `is:open status:Preparing` and inspect the native blockers in the requested workstream or parent issue. Use `decompose` for the open prerequisite that must be resolved first. For execution, start from **Ready Queue** and use `execute-task` to check eligibility before assignment. Use recorded priorities to choose among candidates in scope. If scope or priority is unclear, report the candidates and their blockers so the owner can choose.
 - Do not add tools, processes, dependencies or product architecture without a demonstrated need.
 - For SDLC-improvement work, follow `docs/engineering/sdlc-improvement-roadmap.md`; keep execution bounded to the assigned Issue and record evidence in GitHub. Do not invent agent cost/trace data or automatically change the Harness.
 - For local iterations, inspect and run the selected profile with `python3 scripts/check-fast.py --dry-run` and `python3 scripts/check-fast.py`; use `--full` for diagnosis. Draft PR checks are FAST where safe, while Ready PR runs FULL on the merge candidate. Refer to `docs/engineering/quality-gates-baseline.md` §7.
@@ -16,7 +18,7 @@
 ## Codex subagents
 
 - Use one executor by default for short tasks.
-- For substantial independent work, the main agent may delegate up to three scoped tasks to built-in `explorer` (fact gathering), built-in `worker` (implementation), and project `reviewer` (diff review). Use only the agents needed; exploration and review may run in parallel, while review of implementation follows the changes.
+- For substantial independent work, the main agent may delegate up to three scoped tasks. Choose `explorer` for fact gathering and predefined checks, `worker` for implementation under a prepared contract, and `reviewer` for independent diff review of behavior, contracts, or invariants. Use only the agents needed. Review implementation after the changes are available.
 - Give each subagent its inputs, file boundary, and expected concise response. Share only the history it needs; the coordinator combines results into one handoff.
 - Assign one owner to edit each file because agents may share a working directory. Do not promise file or database isolation between agents.
 - Subagents do not decide architecture, merge, or run optional expensive checks. They return questions to the coordinator when requirements are unclear.

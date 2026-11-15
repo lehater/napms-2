@@ -136,7 +136,7 @@ def test_seed_repeat_and_restart(env):
         assert response.json()['rows'][0]['destinationAddress'] == '203.0.113.7'
         assert client.post('/access-requests', json=DEMO_REQUEST, headers=auth(env, 'requester')).status_code == 403
     with env[0].transaction() as c:
-        for table, count in [('resources', 2), ('actors', 3), ('grants', 12), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
+        for table, count in [('resources', 2), ('actors', 3), ('grants', 14), ('access_requests', 1), ('decisions', 1), ('policy_rules', 1)]:
             assert c.execute(f'SELECT count(*) FROM {table}').fetchone()[0] == count
 
 

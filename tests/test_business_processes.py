@@ -26,7 +26,7 @@ def test_create_list_get_restart(env):
     assert response.status_code == 201
     item = response.json()
     assert UUID(item['processId']).version == 4
-    assert item == dict(processId=item['processId'], **data)
+    assert item == dict(processId=item['processId'], **data, status='ACTIVE')
     assert counts(db) == {**before, 'processes': before['processes'] + 1}
     init_demo(db, path)
     with TestClient(create_app(Database(db.path), load_credentials(path))) as restarted:
@@ -102,6 +102,85 @@ def test_application_nonblank_validation(env):
     assert error.value.status == 422
 
 
+@pytest.mark.parametrize('body', [{}, {'name': ''}, {'name': '  '}, {'name': None}, {'unsupported': 'x'}])
+def test_invalid_process_update_has_no_writes(env, body):
+    client, headers = env[3], auth(env, 'requester')
+    before = client.get(f'/business-processes/{IDS["process"]}', headers=headers).json()
+    counts_before = counts(env[0])
+    response = client.patch(f'/business-processes/{IDS["process"]}', headers=headers, json=body)
+    assert response.status_code == 422
+    assert client.get(f'/business-processes/{IDS["process"]}', headers=headers).json() == before
+    assert counts(env[0]) == counts_before
+
+
+def test_update_and_process_lifecycle_preserve_identity_and_children(env):
+    db, client, headers = env[0], env[3], auth(env, 'requester')
+    pid = IDS['process']
+    before_need = client.get(f'/business-processes/{pid}/needs', headers=headers).json()['items']
+    with db.transaction() as c:
+        need_rows_before = [tuple(row) for row in c.execute('SELECT * FROM needs WHERE process_id=?', (pid,))]
+    updated = client.patch(f'/business-processes/{pid}', headers=headers,
+                           json={'name': 'Обновлённый процесс', 'description': 'Новое описание',
+                                 'responsibleOrganization': 'Подразделение'} )
+    assert updated.status_code == 200
+    assert updated.json() == dict(processId=pid, name='Обновлённый процесс', description='Новое описание',
+                                  responsibleOrganization='Подразделение', status='ACTIVE')
+    archived = client.patch(f'/business-processes/{pid}/status', headers=headers, json={'status': 'ARCHIVED'})
+    assert archived.status_code == 200 and archived.json()['status'] == 'ARCHIVED'
+    assert client.patch(f'/business-processes/{pid}/status', headers=headers, json={'status': 'ARCHIVED'}).json()['status'] == 'ARCHIVED'
+    need = client.post(f'/business-processes/{pid}/needs', headers=headers,
+                       json={'interactionRevisionId': IDS['revision']})
+    assert need.status_code == 409
+    with db.transaction() as c:
+        assert [tuple(row) for row in c.execute('SELECT * FROM needs WHERE process_id=?', (pid,))] == need_rows_before
+    assert [row['connectivityNeedId'] for row in client.get(f'/business-processes/{pid}/needs', headers=headers).json()['items']] == [row['connectivityNeedId'] for row in before_need]
+    request_count = counts(db)['access_requests']
+    assert client.post('/access-requests', headers=headers, json=DEMO_REQUEST).status_code == 409
+    assert counts(db)['access_requests'] == request_count
+    assert client.patch(f'/business-processes/{pid}/status', headers=headers, json={'status': 'ACTIVE'}).json()['status'] == 'ACTIVE'
+    with db.transaction(write=True) as c:
+        with pytest.raises(sqlite3.IntegrityError, match='immutable process identity'):
+            c.execute("UPDATE processes SET id='changed' WHERE id=?", (pid,))
+        with pytest.raises(sqlite3.IntegrityError, match='immutable record'):
+            c.execute('DELETE FROM processes WHERE id=?', (pid,))
+
+
+@pytest.mark.parametrize('action', ['update', 'lifecycle'])
+def test_process_update_and_lifecycle_require_separate_grants(env, action):
+    client, headers = env[3], auth(env, 'requester')
+    with env[0].transaction(write=True) as c:
+        c.execute('DELETE FROM grants WHERE actor_id=? AND action=?', (IDS['requester'], 'business.process.' + action))
+    before = env[3].get(f'/business-processes/{IDS["process"]}', headers=headers).json()
+    response = client.patch(
+        f'/business-processes/{IDS["process"]}' + ('/status' if action == 'lifecycle' else ''),
+        headers=headers, json={'status': 'ARCHIVED'} if action == 'lifecycle' else {'description': 'unauthorized'})
+    assert response.status_code == 403
+    assert client.get(f'/business-processes/{IDS["process"]}', headers=headers).json() == before
+
+
+def test_shared_read_does_not_authorize_process_writes(env):
+    with TestClient(create_app(Database(env[0].path), load_credentials(env[1]), shared_read=True)) as client:
+        response = client.patch(f'/business-processes/{IDS["process"]}/status',
+                                headers=auth(env, 'decider'), json={'status': 'ARCHIVED'})
+    assert response.status_code == 403
+
+
+def test_v8_process_migration_defaults_active_and_replaces_update_guard(env):
+    db = env[0]
+    with db.connect() as c:
+        c.execute('BEGIN IMMEDIATE')
+        c.execute('DROP TRIGGER immutable_process_identity')
+        c.execute('CREATE TRIGGER immutable_processes_UPDATE BEFORE UPDATE ON processes BEGIN SELECT RAISE(ABORT,\'immutable record\'); END')
+        c.execute('ALTER TABLE processes DROP COLUMN status')
+        c.execute('PRAGMA user_version=8')
+        c.commit()
+    db.initialize()
+    with db.transaction() as c:
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 9
+        assert c.execute('SELECT status FROM processes WHERE id=?', (IDS['process'],)).fetchone()[0] == 'ACTIVE'
+        c.execute("UPDATE processes SET description='Editable' WHERE id=?", (IDS['process'],))
+
+
 def test_historical_v1_upgrade(env):
     # Build a historical database with the schema and initializer from accepted main,
     # independently of the current v2 schema.
@@ -132,18 +211,19 @@ def test_historical_v1_upgrade(env):
     with legacy.transaction() as c:
         before = {r[0]: [tuple(row) for row in c.execute(f'SELECT * FROM {r[0]}')]
                   for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
-        triggers = [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' ORDER BY name")]
+        triggers = [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT IN ('immutable_processes_UPDATE','immutable_process_identity') ORDER BY name")]
     db = Database(legacy.path)
     init_demo(db, env[1])
     init_demo(db, env[1])
     with db.transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 8
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 9
         assert c.execute('PRAGMA foreign_key_check').fetchall() == []
-        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' AND name != 'valid_source_port_pair' AND name NOT LIKE 'immutable_interaction_meta_%' AND name != 'register_interaction_revision' ORDER BY name")] == triggers
+        assert [tuple(row) for row in c.execute("SELECT name,sql FROM sqlite_master WHERE type='trigger' AND name NOT LIKE 'unique_component_name_%' AND name != 'valid_source_port_pair' AND name NOT LIKE 'immutable_interaction_meta_%' AND name != 'register_interaction_revision' AND name != 'immutable_process_identity' ORDER BY name")] == triggers
+        assert c.execute("SELECT 1 FROM sqlite_master WHERE type='trigger' AND name='immutable_process_identity'").fetchone()
         for table, rows in before.items():
             actual = [tuple(row) for row in c.execute(f'SELECT * FROM {table}')]
             if table == 'processes':
-                assert actual == [(*row, None, None, None) for row in rows]
+                assert actual == [(*row, None, None, None, 'ACTIVE') for row in rows]
             elif table == 'grants':
                 assert all(row in actual for row in rows)
             elif table == 'interaction_revisions':
@@ -154,8 +234,9 @@ def test_historical_v1_upgrade(env):
     assert Service(db).export(IDS['exporter'], decision['policyRuleId'])['rows']
     item = Service(db).create_process(IDS['requester'], {'name': 'После миграции'})
     assert Service(Database(db.path)).process(IDS['requester'], item['processId']) == item
-    for sql in ["UPDATE processes SET name='changed'", 'DELETE FROM processes',
-                "INSERT INTO needs VALUES ('invalid','missing','interaction','component')"]:
+    with db.transaction(write=True) as c:
+        c.execute("UPDATE processes SET description='editable' WHERE id=?", (IDS['process'],))
+    for sql in ['DELETE FROM processes', "INSERT INTO needs VALUES ('invalid','missing','interaction','component')"]:
         with pytest.raises(sqlite3.IntegrityError):
             with db.transaction(write=True) as c:
                 c.execute(sql)
