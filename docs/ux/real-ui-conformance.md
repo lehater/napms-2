@@ -8,6 +8,15 @@ This is the required structural contract for REAL screens before owner handoff.
 - Reuse the established `ux-*` classes from `web/src/baseline.css` and the existing `Button` and `Badge` components. Keep domain-specific columns, tabs, and links in their screen callers.
 - Do not add search or filters when the REAL API does not support them. Do not import MOCK fixtures or prototype components into REAL screens.
 
+## Screen composition: default and exceptions
+
+- Default object-browsing path: a user-facing Sidebar collection → a `CollectionView` with one row per entity identity → a URL-addressable `DetailView` with breadcrumbs and a meaningful return path → Overview plus applicable domain tabs. A subordinate entity may have its own Detail without a separate Sidebar collection.
+- Before implementing a screen, identify its list columns, essential Overview facts, applicable tabs, relation types and the REAL data source for each. Navigation groups and entries follow `docs/ux/real-navigation.md`; historical v0.2 prototype navigation is not the current REAL menu.
+- Overview owns identity, purpose, primary properties, and concise summaries or links to related records. Full subordinate/related collections, revisions, history and provenance belong on appropriate domain tabs, using `EntityTable` when tabular. Distinguish containment, independent relations and historical facts; navigation links do not imply new persisted relationships.
+- Show a tab only when the type of content is meaningful for this entity and supported by the REAL UI/API. An empty valid collection can show an honest empty state; do not create placeholder tabs, rows, filters, pagination, or actions.
+- Preserve navigable related-object links, direct tab URLs and useful list context (including filters/page when supported); keep Overview readable on desktop rather than stacking every relationship below its properties.
+- Use a specialized workspace or interaction instead of Collection → Detail when the **user task** warrants it (for example, creation flow, comparison, graph exploration or reconciliation). Briefly justify the alternative and its navigation/data behavior in the PR; reuse the existing Shell and primitives wherever suitable.
+
 ## Reuse lookup for REAL screens
 
 Before writing a new REAL screen structure, find the existing shared component and inspect one working caller. Keep domain-specific content in the caller. Native semantic HTML for domain forms and content is valid; do not introduce a wrapper solely to avoid HTML.
