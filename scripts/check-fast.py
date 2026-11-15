@@ -13,6 +13,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from ci_test_selector import Change, classify_changes, parse_diff
+
 
 @dataclass(frozen=True)
 class Check:
@@ -20,12 +22,6 @@ class Check:
     argv: tuple[str, ...]
     cwd: str = "."
     advisory: bool = False
-
-
-@dataclass(frozen=True)
-class Change:
-    status: str
-    paths: tuple[str, ...]
 
 
 PY_FAST = (
@@ -51,55 +47,16 @@ def git(root: Path, *args: str) -> bytes:
     return subprocess.check_output(("git", *args), cwd=root, stderr=subprocess.PIPE)
 
 
-def parse_diff(raw: bytes) -> list[Change]:
-    if not raw:
-        return []
-    if not raw.endswith(b"\0"):
-        raise ValueError("git diff result was not NUL terminated")
-    fields = raw.split(b"\0")[:-1]
-    result: list[Change] = []
-    pos = 0
-    while pos < len(fields):
-        status = os.fsdecode(fields[pos])
-        pos += 1
-        count = 2 if status.startswith(("R", "C")) else 1
-        if pos + count > len(fields):
-            raise ValueError("incomplete git diff status/path record")
-        result.append(Change(status, tuple(os.fsdecode(p) for p in fields[pos:pos + count])))
-        pos += count
-    return result
-
-
 def changed_entries(root: Path, base: str) -> list[Change]:
-    entries = parse_diff(git(root, "diff", "--cached", "--name-status", "-z", "--find-renames", base, "--"))
-    entries += parse_diff(git(root, "diff", "--name-status", "-z", "--find-renames", "--"))
+    staged = git(root, "diff", "--cached", "--name-status", "-z", "--find-renames", base, "--")
+    unstaged = git(root, "diff", "--name-status", "-z", "--find-renames", "--")
+    entries = list(parse_diff(staged)) if staged else []
+    entries.extend(parse_diff(unstaged) if unstaged else ())
     untracked = git(root, "ls-files", "--others", "--exclude-standard", "-z")
     if untracked and not untracked.endswith(b"\0"):
         raise ValueError("untracked entries are not NUL terminated")
     entries += [Change("??", (os.fsdecode(p),)) for p in untracked.split(b"\0")[:-1]]
     return entries
-
-
-def choose(entries: list[Change]) -> tuple[str, str]:
-    if not entries:
-        return "full", "empty diff"
-    if any(c.status not in {"M", "A", "??"} or len(c.paths) != 1 for c in entries):
-        return "full", "rename/delete/unknown change status"
-    paths = {p for c in entries for p in c.paths}
-    if any(p.startswith((".github/", "web/e2e/", "web/e2e-harness/", "web/dev/")) or p.startswith("web/playwright") or p in {"pyproject.toml", "web/package.json", "web/package-lock.json"} for p in paths):
-        return "full", "CI or dependency configuration"
-    if any(not (p.startswith(("web/", "src/", "tests/", "docs/", "openspec/")) or p in {"README.md", "AGENTS.md"}) for p in paths):
-        return "full", "unknown change scope"
-    py = any(p.startswith(("src/", "tests/")) for p in paths)
-    web = any(p.startswith("web/") for p in paths)
-    spec = any(p.startswith("openspec/") for p in paths)
-    if py and web:
-        return "mixed", "Python and Web"
-    if py:
-        return "python", "Python"
-    if web:
-        return "web", "Web"
-    return ("docs-spec" if spec else "docs"), "documentation"
 
 
 def checks_for(root: Path, profile: str, entries: list[Change], base: str | None) -> tuple[Check, ...]:
@@ -163,7 +120,8 @@ def main() -> int:
         head = git(root, "rev-parse", "HEAD").decode().strip()
         base = git(root, "merge-base", "origin/main", "HEAD").decode().strip()
         entries = changed_entries(root, base)
-        profile, reason = choose(entries)
+        scope = classify_changes(entries)
+        profile, reason = scope.local_profile, scope.local_reason
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         head, base, entries = "unknown", None, []
         profile, reason = "full", f"failed to classify diff: {exc}"
