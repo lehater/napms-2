@@ -1,0 +1,103 @@
+version: '0.1'
+
+github:
+  project: https://github.com/users/lehater/projects/6
+  work_item: issue
+  hierarchy: sub_issues
+  blockers: blocked_by
+  result: linked_pull_request
+  classification:
+    type:
+      source: issue_type
+      values: [Feature, Task, Bug]
+    reasoning:
+      source: issue_field
+      name: Reasoning
+      values:
+        Low: Known approach with few design decisions.
+        Medium: Requires local analysis or an implementation choice.
+        High: Requires architectural decisions or resolving substantial uncertainty.
+    effort:
+      source: issue_field
+      name: Effort
+      values:
+        S: Small, localized result.
+        M: Several related changes.
+        L: Substantial volume of work.
+    area:
+      source: label
+      pattern: '^area:[a-z0-9]+(?:-[a-z0-9]+)*$'
+  views:
+    hierarchy:
+      name: Product Structure
+      layout: table
+      hierarchy: true
+      fields: [Parent issue, Sub-issue progress]
+    ready_queue:
+      name: Ready Queue
+      layout: table
+      filter: 'repo:lehater/napms-2 is:issue is:open status:Ready'
+      fields: [Status, Type, Reasoning, Effort, Labels]
+
+hierarchy:
+  levels: [Initiative, Capability or Workstream, Feature, Task]
+  allow_skipped_levels: true
+  decomposition:
+    D1: Give each child a distinct, verifiable result.
+    D2: Keep tightly coupled changes in the same executable issue and branch where practical.
+    D3: Minimize dependencies and coordination between children.
+    D4: Ensure child results cover the parent outcome without duplication.
+    D5: Record genuine blockers as GitHub issue dependencies.
+    D6: Decompose recursively where needed.
+    D7: Stop when the task suits the intended executor, has a verifiable outcome, and further splitting adds little value.
+    D8: Keep work together when a safe split is unavailable and route it to a suitable executor.
+
+lifecycle:
+  source: project_status
+  field: Status
+  initial: Preparing
+  states:
+    Preparing: Research, decompose, and prepare the contract.
+    Ready: The contract is prepared. Dependencies may still block assignment.
+    Running: The assigned executor is working in an isolated branch or worktree.
+    Review: The result and evidence are available for review and integration.
+    Done: The result was accepted, any required changes were integrated, and the issue was closed as completed.
+  transitions:
+    - from: Preparing
+      to: Ready
+      when: The executable issue is classified and its execution contract is sufficient.
+    - from: Ready
+      to: Running
+      when: All execution eligibility rules pass at assignment time.
+    - from: Running
+      to: Review
+      when: The executor links the result and provides verification evidence.
+    - from: Review
+      to: Done
+      when: The acceptance criteria pass, required changes are integrated, and the issue is closed as completed.
+    - from: Running
+      to: Preparing
+      when: An unresolved decision or material contract change requires preparation.
+    - from: Review
+      to: Running
+      when: The executor can fix the implementation within the current contract.
+    - from: Ready
+      to: Preparing
+      when: The contract is stale or a new decision is required.
+    - from: Preparing
+      to: Done
+      when: A planning-only parent has all required child outcomes accepted, meets its own acceptance criteria, and is closed as completed.
+  blocked:
+    derived_from: github.blocked_by
+    rule: An issue is blocked while any blocking dependency lacks an accepted outcome.
+
+execution:
+  assignment: manual
+  require_all:
+    R1: The issue is open and its Project Status is Ready.
+    R2: The issue contains a sufficient execution contract.
+    R3: Every blocking dependency has an accepted outcome.
+    R4: The context and contract still match the current project state.
+    R5: The chosen executor has the required tools and reasoning capability.
+    R6: No other executor is working on the issue.
+    R7: Work can begin without resolving substantial unknowns.
