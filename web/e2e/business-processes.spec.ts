@@ -88,6 +88,7 @@ test('REAL Process persists through refresh and actual backend restart', async (
   const saved = (await (await page.request.get(needsPath, { headers })).json()).items[0]
   const replay = await page.request.post(needsPath, { headers, data: { interactionRevisionId: '00000000-0000-0000-0000-000000000009' } })
   expect(replay.status()).toBe(409)
+  await page.getByRole('link', { name: 'Обзор', exact: true }).click()
   await page.getByRole('button', { name: 'Изменить сведения', exact: true }).click()
   await page.getByLabel('Название', { exact: true }).fill('Приёмка SQLite — обновлено')
   await page.getByLabel('Описание', { exact: true }).fill('Изменено перед архивированием')
@@ -126,6 +127,7 @@ test('REAL Process persists through refresh and actual backend restart', async (
   await login(page, credentials.requester.token)
   await expect(page.getByRole('heading', { name: 'Приёмка SQLite — обновлено', exact: true })).toBeVisible()
   await expect(page.getByText('Операции', { exact: true })).toBeVisible()
+  expect((await page.request.get('/access-requests/' + requestRecord.requestId, { headers })).status()).toBe(200)
   await page.getByRole('link', { name: 'Потребности', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Потребности процесса' }).locator('tbody')).toContainText(saved.connectivityNeedId)
   const second = await page.request.post('/business-processes', { headers, data: { name: 'Повторное использование' } })
