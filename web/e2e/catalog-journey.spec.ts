@@ -347,7 +347,8 @@ test('REAL catalogs create an active policy from a new application profile', asy
   await expect(page.getByRole('button', { name: 'Создать', exact: true })).toBeDisabled()
   await page.getByRole('alert').getByRole('link', { name: 'Order fulfillment traffic' }).click()
   await expect(page).toHaveURL(interactionUrl)
-  const afterAttempt = await (await page.request.get(`/applications/${applicationId}/interactions`,
+  // Query all records: the original pair may fall off the default 20-item page.
+  const afterAttempt = await (await page.request.get(`/applications/${applicationId}/interactions?limit=100`,
     { headers: requester })).json()
   const sameDirectedPair = afterAttempt.items.filter((item: { sourceComponentId: string; destinationComponentId: string }) =>
     item.sourceComponentId === senderComponentId && item.destinationComponentId === receiverComponentId)
