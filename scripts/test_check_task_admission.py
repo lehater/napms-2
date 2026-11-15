@@ -63,6 +63,12 @@ class CheckTaskAdmissionTest(unittest.TestCase):
                            "R3:" if expected == "DENY" else "")
         self.check(snapshot(), "ALLOW")
 
+    def test_one_unfinished_blocker_denies_admission(self):
+        self.check(snapshot([
+            ("CLOSED", "COMPLETED"),
+            ("CLOSED", "NOT_PLANNED"),
+        ]), "DENY", "/issues/2 is CLOSED/NOT_PLANNED")
+
     def test_rejects_unavailable_or_partial_github_data(self):
         self.check(snapshot(), "DENY", "HTTP 404", error=subprocess.CalledProcessError(
             1, ["gh"], stderr="gh: HTTP 404",
