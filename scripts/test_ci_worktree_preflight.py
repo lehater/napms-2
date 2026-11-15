@@ -119,6 +119,33 @@ class BoundedChecksTests(unittest.TestCase):
         self.assertEqual((code, timed_out), (124, True))
         self.assertLess(elapsed, 6)
 
+    @unittest.skipUnless(os.name == "posix", "process groups require POSIX")
+    def test_timeout_kills_surviving_child_in_same_group(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            location = Path(tmp)
+            ready = location / "child-ready"
+            marker = location / "child-survived"
+            child = (
+                "import pathlib,signal,sys,time;"
+                "signal.signal(signal.SIGTERM, signal.SIG_IGN);"
+                "pathlib.Path(sys.argv[1]).write_text('ready');"
+                "time.sleep(2);"
+                "pathlib.Path(sys.argv[2]).write_text('survived')"
+            )
+            parent = (
+                "import subprocess,sys,time;"
+                f"subprocess.Popen([sys.executable,'-c',{child!r},sys.argv[1],sys.argv[2]]);"
+                "time.sleep(30)"
+            )
+            result = check_fast.run_bounded(
+                (sys.executable, "-c", parent, str(ready), str(marker)),
+                location, 1,
+            )
+            self.assertEqual(result, (124, True))
+            self.assertTrue(ready.exists(), "child must start before the group is killed")
+            time.sleep(2.5)
+            self.assertFalse(marker.exists(), "timeout left a live descendant")
+
 
 if __name__ == "__main__":
     unittest.main()
