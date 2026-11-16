@@ -93,6 +93,8 @@ Before implementing either boundary: short ADR delta/owner review must select th
 
 ### Reproduction of the bounded diagnostic
 
+The command below records the historical diagnostic request, including its unnecessary Skill load while OpenSpec was N/A. Keep it as evidence of the tested prompt; for new runs, follow the scoped loading rule in [the current runbook](opencode-smoke/segmented-run.md).
+
 On the PR70 worktree, use the existing host account without auth export:
 
 ```sh

@@ -2,6 +2,8 @@
 
 **Статус:** candidate implementation; owner acceptance ещё требуется. Описывает минимальный reusable режим A; [архитектура PR #68](https://github.com/lehater/napms-2/pull/68), [принятый изолированный pilot #69](https://github.com/lehater/napms-2/pull/69).
 
+PR #70 сообщает о двух вручную координированных A2 E2E-прогонах со статусом COMPLETE/PASS на fixture: оба сформировали ожидаемые 36 байт с завершающим LF, прошли пять проверок байтов, а независимый Sol Reviewer прочитал и оценил handoff. Результат записан в [финальном PR #70](https://github.com/lehater/napms-2/pull/70) и [отчёте о повторных прогонах](opencode-a2-rerun-evidence-2026-11-14.md); пометка `BLOCKED` в конце инструкции A2 — историческая для этих прогонов. Проверка на fixture не подтверждает E2E небольшой реальной продуктовой задачи, которая остаётся экспериментальной. Изолированный смешанный маршрут Sol/Qwen в одной root-сессии также не подтверждён: запуск вернул `provider.no-route`, причина отдельно не установлена. Для небольших реальных задач, требующих локального исполнения, используйте маршрут Codex CLI из [SDLC roadmap](sdlc-improvement-roadmap.md#маршрутизация-задач-и-стоимость-исполнения).
+
 ## Назначение и границы
 
 Вход: принятая ограниченная задача NAPMS с base SHA, scope, allowed paths и acceptance. Выход: только проверенные факты, план, разрешённое изменение, реальные tool/test results, независимое P0–P3 review. Постоянные роли задаёт корневой `opencode.jsonc` в формате V2. В отличие от `pilot/opencode.jsonc` они не привязаны к `pilot/output.md`.
@@ -31,7 +33,7 @@ opencode --standalone run --agent orchestrator --model ollama/qwen3-coder:30b \
 git status --short
 ```
 
-Успех: правильные agent IDs и modes, читается `AGENTS.md` и Skill, Orchestrator реально делегирует нужным агентам, ни один файл не меняется. Если `debug agents` возвращает `UnsupportedContentType`, повторить с `--print-logs`; записать фактический workaround.
+Успех: правильные agent IDs и modes, `AGENTS.md` прочитан, а workflow Skill загружается только если он нужен выбранной задаче; если нужен — подтверждена его фактическая загрузка. Orchestrator реально делегирует только нужным агентам, ни один файл не меняется. Если `debug agents` возвращает `UnsupportedContentType`, повторить с `--print-logs`; записать фактический workaround.
 
 ## Bounded write + test + review: **пока отдельный gate**
 

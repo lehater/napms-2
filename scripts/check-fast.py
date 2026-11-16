@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import shlex
+import signal
 import shutil
 import subprocess
 import sys
@@ -13,7 +14,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from ci_test_selector import Change, classify_changes, parse_diff
+from ci_test_selector import Change, classify_changes, parse_diff, targeted_web_e2e
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,18 @@ def checks_for(root: Path, profile: str, entries: list[Change], base: str | None
             checks.append(Check("Changed Python tests", ("python", "-m", "pytest", "-q", *targeted_tests)))
     if profile in {"web", "mixed"}:
         checks.extend(WEB_FAST)
+        specs = sorted({
+            change.paths[0].removeprefix("web/") for change in entries
+            if targeted_web_e2e(change)
+        })
+        if specs:
+            if not all((root / "web" / spec).is_file() for spec in specs):
+                return FULL  # Never silently skip a missing or deleted test target.
+            checks.append(Check(
+                "Changed Playwright E2E specs",
+                ("npm", "exec", "--", "playwright", "test", *specs),
+                cwd="web",
+            ))
     if profile in {"docs", "docs-spec"}:
         checks.append(Check("Changed documentation whitespace", ("git", "diff", "--check", base or "HEAD")))
     if profile == "docs-spec":
@@ -101,7 +114,7 @@ def prerequisites(root: Path, checks: tuple[Check, ...]) -> list[str]:
     if any(c.argv[:2] == ("npm", "--prefix") for c in checks):
         if not (root / "web/node_modules/.bin/vite").exists():
             missing.append("web dependencies (cd web && npm ci)")
-    if any("test:e2e" in c.argv for c in checks):
+    if any("test:e2e" in c.argv or "playwright" in c.argv for c in checks):
         if not (root / "web/node_modules/.bin/playwright").exists():
             missing.append("Playwright dependency (cd web && npm ci)")
         demo_python = os.environ.get("NAPMS_PYTHON") or str(root / ".venv/bin/python")
@@ -110,11 +123,45 @@ def prerequisites(root: Path, checks: tuple[Check, ...]) -> list[str]:
     return missing
 
 
+def run_bounded(argv: tuple[str, ...], cwd: Path, timeout: int) -> tuple[int, bool]:
+    """Run a check with a hard limit; terminate its process group on POSIX."""
+    proc = subprocess.Popen(argv, cwd=cwd, start_new_session=(os.name == "posix"))
+    try:
+        return proc.wait(timeout=timeout), False
+    except subprocess.TimeoutExpired:
+        try:
+            if os.name == "posix":
+                os.killpg(proc.pid, signal.SIGTERM)
+            else:
+                proc.terminate()
+        except ProcessLookupError:
+            pass
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+        # The leader can exit after SIGTERM while descendants remain alive.
+        # Always send SIGKILL to the process group on POSIX.
+        try:
+            if os.name == "posix":
+                os.killpg(proc.pid, signal.SIGKILL)
+            elif proc.poll() is None:
+                proc.kill()
+        except ProcessLookupError:
+            pass
+        proc.wait()
+        return 124, True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="print profile and commands without running them")
     parser.add_argument("--full", action="store_true", help="force all regression checks")
+    parser.add_argument("--timeout-seconds", type=int, default=600,
+                        help="maximum seconds per check (default: 600)")
     args = parser.parse_args()
+    if args.timeout_seconds <= 0:
+        parser.error("--timeout-seconds must be positive")
     root = Path(__file__).resolve().parent.parent
     try:
         head = git(root, "rev-parse", "HEAD").decode().strip()
@@ -129,6 +176,7 @@ def main() -> int:
         profile, reason = "full", "explicit --full"
     checks = checks_for(root, profile, entries, base)
     print(f"BASE={base or 'unavailable'} HEAD={head} PROFILE={profile.upper()} REASON={reason}")
+    print(f"PER_CHECK_TIMEOUT={args.timeout_seconds}s")
     for change in entries:
         print("CHANGE", change.status, *change.paths)
     for check in checks:
@@ -143,9 +191,18 @@ def main() -> int:
     for check in checks:
         print("RUN:", check.label, flush=True)
         start = time.monotonic()
-        result = subprocess.run(check.argv, cwd=root / check.cwd, check=False)
-        print(f"RESULT: {result.returncode} ({time.monotonic()-start:.1f}s)", flush=True)
-        if result.returncode:
+        try:
+            returncode, timed_out = run_bounded(check.argv, root / check.cwd, args.timeout_seconds)
+        except OSError as exc:
+            print(f"START FAILURE: {check.label}: {exc}", flush=True)
+            failures.append(check.label)
+            break
+        print(f"RESULT: {returncode} ({time.monotonic()-start:.1f}s)", flush=True)
+        if timed_out:
+            print(f"TIMEOUT: {check.label} exceeded {args.timeout_seconds}s; diagnose before retrying")
+            failures.append(check.label)
+            break
+        if returncode:
             if check.advisory:
                 print("ADVISORY failure:", check.label)
             else:
