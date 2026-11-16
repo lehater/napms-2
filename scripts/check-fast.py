@@ -14,7 +14,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from ci_test_selector import Change, classify_changes, parse_diff
+from ci_test_selector import Change, classify_changes, parse_diff, targeted_web_e2e
 
 
 @dataclass(frozen=True)
@@ -74,6 +74,18 @@ def checks_for(root: Path, profile: str, entries: list[Change], base: str | None
             checks.append(Check("Changed Python tests", ("python", "-m", "pytest", "-q", *targeted_tests)))
     if profile in {"web", "mixed"}:
         checks.extend(WEB_FAST)
+        specs = sorted({
+            change.paths[0].removeprefix("web/") for change in entries
+            if targeted_web_e2e(change)
+        })
+        if specs:
+            if not all((root / "web" / spec).is_file() for spec in specs):
+                return FULL  # Never silently skip a missing or deleted test target.
+            checks.append(Check(
+                "Changed Playwright E2E specs",
+                ("npm", "exec", "--", "playwright", "test", *specs),
+                cwd="web",
+            ))
     if profile in {"docs", "docs-spec"}:
         checks.append(Check("Changed documentation whitespace", ("git", "diff", "--check", base or "HEAD")))
     if profile == "docs-spec":
@@ -102,7 +114,7 @@ def prerequisites(root: Path, checks: tuple[Check, ...]) -> list[str]:
     if any(c.argv[:2] == ("npm", "--prefix") for c in checks):
         if not (root / "web/node_modules/.bin/vite").exists():
             missing.append("web dependencies (cd web && npm ci)")
-    if any("test:e2e" in c.argv for c in checks):
+    if any("test:e2e" in c.argv or "playwright" in c.argv for c in checks):
         if not (root / "web/node_modules/.bin/playwright").exists():
             missing.append("Playwright dependency (cd web && npm ci)")
         demo_python = os.environ.get("NAPMS_PYTHON") or str(root / ".venv/bin/python")
