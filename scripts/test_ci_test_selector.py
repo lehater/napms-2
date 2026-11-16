@@ -175,8 +175,31 @@ class SharedClassificationTests(unittest.TestCase):
         self.assertEqual(mixed.local_profile, "mixed")
         self.assertTrue(mixed.web)
         tests = self.scope("web/e2e/requests.spec.ts")
-        self.assertEqual(tests.local_profile, "full")
-        self.assertFalse(tests.fallback)  # A changed E2E file still gets FULL in Ready.
+        self.assertEqual(tests.local_profile, "web")
+        self.assertFalse(tests.fallback)  # Ready CI stays FULL; only local feedback changes.
+
+    def test_modified_web_e2e_and_ui_select_targeted_local_web(self):
+        for paths in [
+            ("web/e2e/requests.spec.ts",),
+            ("web/src/App.tsx", "web/e2e/requests.spec.ts"),
+        ]:
+            with self.subTest(paths=paths):
+                scope = self.scope(*paths)
+                self.assertEqual(scope.local_profile, "web")
+                self.assertFalse(scope.fallback)
+
+    def test_unsafe_e2e_changes_remain_full_locally(self):
+        for path, status in [
+            ("web/e2e/requests.spec.ts", "A"),
+            ("web/e2e/requests.spec.ts", "D"),
+            ("web/e2e/helpers.ts", "M"),
+            ("web/e2e/nested/requests.spec.ts", "M"),
+            ("web/e2e-harness/permissions.spec.ts", "M"),
+            ("web/playwright.config.ts", "M"),
+            ("web/package-lock.json", "M"),
+        ]:
+            with self.subTest(path=path, status=status):
+                self.assertEqual(self.scope(path, status=status).local_profile, "full")
 
     def test_untracked_is_safe_locally(self):
         scope = self.scope("tests/test_new.py", status="??")
