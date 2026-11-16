@@ -66,5 +66,48 @@ class BoundedChecksTests(unittest.TestCase):
             self.assertFalse(marker.exists(), "timeout left a live descendant")
 
 
+class TargetedPlaywrightChecksTests(unittest.TestCase):
+    def test_existing_modified_spec_selects_exact_playwright_target(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            spec = root / "web/e2e/requests.spec.ts"
+            spec.parent.mkdir(parents=True)
+            spec.write_text("// existing spec", encoding="utf-8")
+            entries = [check_fast.Change("M", ("web/e2e/requests.spec.ts",))]
+            checks = check_fast.checks_for(root, "web", entries, "HEAD")
+            self.assertEqual([c.label for c in checks], [
+                "TypeScript and production build",
+                "Web semantic boundary",
+                "Changed Playwright E2E specs",
+            ])
+            self.assertEqual(checks[-1].cwd, "web")
+            self.assertEqual(checks[-1].argv, (
+                "npm", "exec", "--", "playwright", "test", "e2e/requests.spec.ts",
+            ))
+
+    def test_modified_web_ui_and_two_specs_target_only_both_specs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ("requests", "rules"):
+                path = root / f"web/e2e/{name}.spec.ts"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("// existing spec", encoding="utf-8")
+            entries = [
+                check_fast.Change("M", ("web/src/App.tsx",)),
+                check_fast.Change("M", ("web/e2e/rules.spec.ts",)),
+                check_fast.Change("M", ("web/e2e/requests.spec.ts",)),
+            ]
+            checks = check_fast.checks_for(root, "web", entries, "HEAD")
+            self.assertEqual(checks[-1].argv[-2:], ("e2e/requests.spec.ts", "e2e/rules.spec.ts"))
+
+    def test_missing_target_never_skips_browser_tests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            entries = [check_fast.Change("M", ("web/e2e/requests.spec.ts",))]
+            self.assertEqual(check_fast.checks_for(root, "web", entries, "HEAD"), check_fast.FULL)
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
