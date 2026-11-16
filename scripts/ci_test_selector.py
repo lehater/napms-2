@@ -59,6 +59,12 @@ def docs_path(path):
     return False
 
 
+def targeted_web_e2e(change):
+    """Only modified existing top-level specs are safe for local targeted E2E."""
+    return (change.status == "M" and len(change.paths) == 1
+            and re.fullmatch(r"web/e2e/[^/]+\.spec\.ts", change.paths[0]) is not None)
+
+
 @dataclass(frozen=True)
 class ChangeScope:
     """One classification contract for PR routing and local fast checks."""
@@ -116,10 +122,13 @@ def classify_changes(changes):
     if any(c.status not in {"M", "A", "??"} or len(c.paths) != 1 for c in changes):
         profile, reason = "full", "rename/delete/unknown change status"
     elif any(
-        p.startswith((".github/", "ci/", "scripts/", "web/e2e/", "web/e2e-harness/", "web/dev/"))
+        p.startswith((".github/", "ci/", "scripts/", "web/e2e-harness/", "web/dev/"))
         or p.startswith("web/playwright")
         or p in {"pyproject.toml", "web/package.json", "web/package-lock.json"}
         for p in paths
+    ) or any(
+        path.startswith("web/e2e/") and not targeted_web_e2e(change)
+        for change in changes for path in change.paths
     ):
         profile, reason = "full", "CI, test infrastructure or dependencies"
     elif any(
