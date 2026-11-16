@@ -142,8 +142,12 @@ export function NeedDetailScreen({ client }: { client: Client }) {
     ? `/applications/${encodeURIComponent(item.interaction.applicationId)}/interactions/${encodeURIComponent(item.interaction.interactionId)}`
     : null
   const actions = <>
-    <Button variant="outline" disabled={busy} onClick={() => { setEditing(value => !value); setActionError('') }}>
-      {editing ? 'Отменить редактирование' : 'Изменить обоснование'}
+    <Button variant="outline" disabled={busy} onClick={() => {
+      if (requestsTab) { setParams({}); setEditing(true) }
+      else setEditing(value => !value)
+      setActionError('')
+    }}>
+      {!requestsTab && editing ? 'Отменить редактирование' : 'Изменить обоснование'}
     </Button>
     {item.status === 'ACTIVE'
       ? <Button variant="outline" disabled={busy} onClick={() => void changeStatus('RETIRED')}>Вывести из действия</Button>
@@ -169,7 +173,7 @@ export function NeedDetailScreen({ client }: { client: Client }) {
       <dl className="ux-properties">
         <div><dt>Бизнес-процесс</dt><dd><Link to={processPath}>{item.process.name ?? item.process.processId}</Link><small>{item.process.status === 'ACTIVE' ? 'Активен' : 'Архивирован'}</small></dd></div>
         <div><dt>Взаимодействие</dt><dd>{interactionPath ? <Link to={interactionPath}>{item.interaction.name}</Link> : item.interaction.name}<small>{item.interaction.interactionId}</small></dd></div>
-        <div><dt>Участник · исходный компонент</dt><dd>{item.participant.name}<small>{item.participant.componentId}</small></dd></div>
+        <div><dt>Участник · исходный компонент</dt><dd><Link to={`/applications/${encodeURIComponent(item.participant.applicationId)}/components/${encodeURIComponent(item.participant.componentId)}`}>{item.participant.name}</Link><small>{item.participant.componentId}</small></dd></div>
         <div><dt>Обоснование</dt><dd>{item.businessBasis ?? 'Не заполнено для исторической потребности'}</dd></div>
         <div><dt>Статус потребности</dt><dd>{item.status === 'ACTIVE' ? 'Активна' : 'Выведена из действия'}</dd></div>
       </dl>
