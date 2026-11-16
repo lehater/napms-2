@@ -129,7 +129,10 @@ function ProcessDetail({ client }: { client: Client }) {
   async function changeStatus(status: BusinessProcess['status']) {
     if (busy) return
     const verb = status === 'ARCHIVED' ? 'Архивировать' : 'Восстановить'
-    if (!window.confirm(`${verb} бизнес-процесс «${process.name ?? 'Название не задано'}»?`)) return
+    const warning = status === 'ARCHIVED'
+      ? ' Новые потребности и заявки будут запрещены. Существующие правила доступа не изменяются и не отзываются автоматически.'
+      : ''
+    if (!window.confirm(`${verb} бизнес-процесс «${process.name ?? 'Название не задано'}»?${warning}`)) return
     setBusy(true); setActionError('')
     try { setItem(await client.setProcessStatus(process.processId, status)) }
     catch (e) { setActionError(errorMessage(e)) } finally { setBusy(false) }

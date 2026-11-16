@@ -125,7 +125,10 @@ export function NeedDetailScreen({ client }: { client: Client }) {
   async function changeStatus(status: Need['status']) {
     if (busy || !item) return
     const verb = status === 'RETIRED' ? 'Вывести из действия' : 'Восстановить'
-    if (!window.confirm(`${verb} потребность «${item.displayLabel}»?`)) return
+    const warning = status === 'RETIRED'
+      ? ' Новые заявки будут запрещены. Существующие правила доступа не изменяются и не отзываются автоматически.'
+      : ''
+    if (!window.confirm(`${verb} потребность «${item.displayLabel}»?${warning}`)) return
     setBusy(true); setActionError('')
     try { await client.setNeedStatus(processId, needId, status); setReload(value => value + 1) }
     catch (reason) { setActionError(explain(reason)) }
@@ -177,7 +180,7 @@ export function NeedDetailScreen({ client }: { client: Client }) {
         <div><dt>Обоснование</dt><dd>{item.businessBasis ?? 'Не заполнено для исторической потребности'}</dd></div>
         <div><dt>Статус потребности</dt><dd>{item.status === 'ACTIVE' ? 'Активна' : 'Выведена из действия'}</dd></div>
       </dl>
-      {item.status === 'RETIRED' && <p className="ux-callout" role="status">Потребность выведена из действия. Существующая история доступна для просмотра; новые заявки создавать нельзя.</p>}
+      {item.status === 'RETIRED' && <p className="ux-callout" role="status">Потребность выведена из действия. Новые заявки создавать нельзя. История доступна; существующие правила доступа не отзываются автоматически.</p>}
       {item.status === 'ACTIVE' && item.process.status === 'ARCHIVED' && <p className="ux-callout" role="status">Процесс архивирован. Новые заявки недоступны, пока процесс не восстановлен.</p>}
       {item.status === 'RETIRED' && item.process.status === 'ARCHIVED' && <p className="ux-note" role="status">Сначала восстановите бизнес-процесс, затем эту потребность.</p>}
       {item.status === 'ACTIVE' && item.process.status === 'ACTIVE' && <ComposeRequest key={item.connectivityNeedId} client={client} need={item} />}
