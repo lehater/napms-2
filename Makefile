@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := help
 
-PYTHON := .venv/bin/python
+PYTHON ?= .venv/bin/python
 # Source comes from the active checkout even when .venv points to primary.
 export PYTHONPATH := $(CURDIR)/src
+ENV_BIN := $(dir $(abspath $(PYTHON)))
 export NAPMS_PYTHON := $(abspath $(PYTHON))
 DB ?= var/napms.sqlite3
 CREDENTIALS ?= var/dev-credentials.json
@@ -44,7 +45,7 @@ test:
 	$(PYTHON) -m pytest -q
 
 check:
-	PATH="$(CURDIR)/.venv/bin:$$PATH" $(PYTHON) scripts/check-fast.py
+	PATH="$(ENV_BIN):$PATH" $(PYTHON) scripts/check-fast.py
 
 check-full:
-	PATH="$(CURDIR)/.venv/bin:$$PATH" $(PYTHON) scripts/check-fast.py --full
+	PATH="$(ENV_BIN):$PATH" $(PYTHON) scripts/check-fast.py --full
