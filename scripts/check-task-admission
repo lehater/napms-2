@@ -3,14 +3,32 @@
 
 import argparse
 import json
+import re
 import subprocess
+import sys
+from pathlib import Path
 
 PROJECT = "https://github.com/users/lehater/projects/6"
+AREA_LABEL = re.compile(r"area:[a-z0-9]+(?:-[a-z0-9]+)*\Z")
+PARENT_MARKER = re.compile(r"(?m)^\s*Parent:\s*#(\d+)\b")
+DEPENDENCY_FIELD = re.compile(r"\*\*Dependenc(?:y|ies):\*\*\s*([^.;\n]+)", re.IGNORECASE)
+DEPENDENCY_SECTION = re.compile(
+    r"(?ims)^#{2,3}\s+Dependenc(?:y|ies)\s*\n(.*?)(?=^#{1,3}\s|\Z)"
+)
+ISSUE_REFERENCE = re.compile(r"#(\d+)\b")
+CHILDREN_START = "<!-- CHILDREN_START -->"
+CHILDREN_END = "<!-- CHILDREN_END -->"
+CHILD_MARKER = re.compile(r"(?m)^\s*-\s*\[[ xX]\]\s+#(\d+)\b")
+
 QUERY = """
 query($number: Int!) {
   repository(owner: "lehater", name: "napms-2") {
     issue(number: $number) {
+      number
+      url
+      repository { nameWithOwner }
       state
+      body
       assignees(first: 1) { totalCount }
       projectItems(first: 100, includeArchived: false) {
         pageInfo { hasNextPage }
@@ -19,12 +37,28 @@ query($number: Int!) {
           status: fieldValueByName(name: "Status") {
             ... on ProjectV2ItemFieldSingleSelectValue { name }
           }
+          priority: fieldValueByName(name: "Priority") {
+            ... on ProjectV2ItemFieldSingleSelectValue { name }
+          }
+          workstream: fieldValueByName(name: "Workstream") {
+            ... on ProjectV2ItemFieldSingleSelectValue { name }
+          }
         }
       }
       issueDependenciesSummary { totalBlockedBy }
       blockedBy(first: 100) {
         pageInfo { hasNextPage }
-        nodes { url state stateReason }
+        nodes { number url repository { nameWithOwner } state stateReason }
+      }
+      parent {
+        number
+        url
+        repository { nameWithOwner }
+        body
+        subIssues(first: 100) {
+          pageInfo { hasNextPage }
+          nodes { number url repository { nameWithOwner } }
+        }
       }
     }
   }
@@ -39,36 +73,198 @@ def complete_nodes(connection):
     return nodes
 
 
-def admission_reasons(issue):
-    if issue["state"] != "OPEN":
-        return ["R1: Issue is not open."]
+def declared_parent(body):
+    matches = PARENT_MARKER.findall(body)
+    if len(matches) > 1:
+        return None, "Issue body contains ambiguous Parent markers."
+    return (int(matches[0]) if matches else None), None
+
+
+def declared_blockers(body):
+    fields = DEPENDENCY_FIELD.findall(body)
+    sections = DEPENDENCY_SECTION.findall(body)
+    if not fields and not sections:
+        return None, None
+    numbers = [int(number) for text in fields + sections
+               for number in ISSUE_REFERENCE.findall(text)]
+    return set(numbers), None
+
+
+def declared_children(body):
+    starts, ends = body.count(CHILDREN_START), body.count(CHILDREN_END)
+    if starts == 0 and ends == 0:
+        return None, None
+    if starts != 1 or ends != 1 or body.index(CHILDREN_START) > body.index(CHILDREN_END):
+        return None, "Parent Issue has malformed CHILDREN markers."
+
+    block = body.split(CHILDREN_START, 1)[1].split(CHILDREN_END, 1)[0]
+    numbers = [int(number) for number in CHILD_MARKER.findall(block)]
+    if len(numbers) != len(set(numbers)):
+        return None, "Parent Issue contains duplicate child expectations."
+    return set(numbers), None
+
+
+def issue_field_values(source_issue):
+    values = {}
+    fields = source_issue.get("issue_field_values")
+    if not isinstance(fields, list):
+        raise ValueError("Issue Field read-back is unavailable")
+    for value in fields:
+        name = value.get("issue_field_name")
+        values.setdefault(name, []).append(value.get("single_select_option", {}).get("name"))
+    return values
+
+
+def html_issue_url(number):
+    return f"https://github.com/lehater/napms-2/issues/{number}"
+
+
+def api_issue_url(number):
+    return f"https://api.github.com/repos/lehater/napms-2/issues/{number}"
+
+
+def contract_validation_reason(body):
+    if not isinstance(body, str):
+        return "R2: Current Issue body is unavailable to validate its execution contract."
+    try:
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).with_name("validate-task")), "-"],
+            input=body, capture_output=True, text=True, timeout=30,
+        )
+        report = json.loads(result.stdout)
+    except (OSError, subprocess.TimeoutExpired, ValueError) as exc:
+        return f"R2: Existing execution contract validator is unavailable: {exc}"
+    if result.returncode != 0 or report.get("valid") is not True:
+        errors = report.get("errors", [])
+        if isinstance(errors, list):
+            messages = [error.get("message", json.dumps(error, sort_keys=True))
+                        if isinstance(error, dict) else str(error) for error in errors]
+            detail = "; ".join(messages)
+        else:
+            detail = str(errors)
+        return f"R2: Current execution contract is invalid{': ' + detail if detail else '.'}"
+    return None
+
+
+def admission_reasons(issue, source_issue):
+    reasons = []
+    body = issue["body"]
+    if not isinstance(body, str) or body != source_issue.get("body"):
+        reasons.append("Issue body read-back differs between GitHub endpoints; refresh the contract.")
+        body = body if isinstance(body, str) else ""
+
+    if source_issue.get("number") != issue["number"]:
+        reasons.append("Issue identity differs between GitHub endpoints.")
+    if (issue.get("url") != html_issue_url(issue["number"])
+            or issue.get("repository", {}).get("nameWithOwner") != "lehater/napms-2"
+            or source_issue.get("url") != api_issue_url(issue["number"])):
+        reasons.append("Issue identity is not the canonical lehater/napms-2 Issue.")
+    source_state = source_issue.get("state")
+    if issue["state"] != "OPEN" or not isinstance(source_state, str) or source_state.upper() != "OPEN":
+        reasons.append("R1: Issue is not open.")
 
     projects = complete_nodes(issue["projectItems"])
     matches = [item for item in projects if item["project"]["url"] == PROJECT]
     if len(matches) != 1:
-        return ["R1: No unique active item in Project #6."]
-    status = matches[0]["status"]
-    if not status or status["name"] != "Ready":
-        name = status["name"] if status else "unset"
-        return [f"R1: Project #6 Status is {name}, expected Ready."]
+        reasons.append("R1: No unique active item in Project #6.")
+    else:
+        project_item = matches[0]
+        status = project_item.get("status")
+        status_name = status.get("name") if isinstance(status, dict) else None
+        if status_name != "Ready":
+            reasons.append(f"R1: Project #6 Status is {status_name or 'unset'}, expected Ready.")
 
-    reasons = []
+        priority = project_item.get("priority")
+        priority_name = priority.get("name") if isinstance(priority, dict) else None
+        if priority_name not in {"P0", "P1", "P2"}:
+            reasons.append("Metadata: Project #6 Priority is missing or unsupported.")
+
+        workstream = project_item.get("workstream")
+        workstream_name = workstream.get("name") if isinstance(workstream, dict) else None
+        if workstream_name not in {"Product", "SDLC"}:
+            reasons.append("Metadata: Project #6 Workstream is missing or unsupported.")
+
     assignees = issue["assignees"]["totalCount"]
     if type(assignees) is not int or assignees < 0:
         raise ValueError("invalid assignee count")
     if assignees:
         reasons.append("R6: Issue already has an assignee.")
 
+    issue_type = source_issue.get("type")
+    type_name = issue_type.get("name") if isinstance(issue_type, dict) else None
+    if type_name not in {"Feature", "Task", "Bug"}:
+        reasons.append("Metadata: Issue Type is missing or unsupported.")
+
+    labels = source_issue.get("labels")
+    if not isinstance(labels, list):
+        raise ValueError("Issue label read-back is unavailable")
+    area_labels = [label.get("name", "") for label in labels
+                   if isinstance(label, dict) and AREA_LABEL.fullmatch(label.get("name", ""))]
+    if len(area_labels) != 1:
+        reasons.append("Metadata: Issue must have exactly one valid Area label.")
+
+    fields = issue_field_values(source_issue)
+    for name in ("Reasoning", "Effort"):
+        values = fields.get(name, [])
+        if len(values) != 1 or values[0] not in {"Low", "Medium", "High"}:
+            reasons.append(f"Metadata: Issue Field {name} is missing, ambiguous, or unsupported.")
+
+    body_parent, parent_error = declared_parent(body)
+    if parent_error:
+        reasons.append(f"Relationships: {parent_error}")
+    parent = issue.get("parent")
+    parent_number = parent.get("number") if isinstance(parent, dict) else None
+    rest_parent_url = source_issue.get("parent_issue_url")
+    if rest_parent_url != (api_issue_url(parent_number) if parent_number is not None else None):
+        reasons.append("Relationships: native parent read-back differs between GitHub endpoints.")
+    if (parent is not None and
+            (parent.get("url") != html_issue_url(parent_number)
+             or parent.get("repository", {}).get("nameWithOwner") != "lehater/napms-2")):
+        reasons.append("Relationships: native parent is not in lehater/napms-2.")
+    if body_parent is not None and body_parent != parent_number:
+        reasons.append("Relationships: declared Parent does not match the native parent Issue.")
+
+    if parent is not None:
+        native_children = complete_nodes(parent["subIssues"])
+        child_numbers = [child["number"] for child in native_children]
+        if any(child.get("url") != html_issue_url(child["number"])
+               or child.get("repository", {}).get("nameWithOwner") != "lehater/napms-2"
+               for child in native_children):
+            reasons.append("Relationships: native Sub-issue is not in lehater/napms-2.")
+        if len(child_numbers) != len(set(child_numbers)):
+            reasons.append("Relationships: native Sub-issues contain duplicate Issues.")
+        if issue["number"] not in child_numbers:
+            reasons.append("Relationships: native parent Sub-issues omit this Issue.")
+
+        expected_children, children_error = declared_children(parent["body"])
+        if children_error:
+            reasons.append(f"Relationships: {children_error}")
+        elif expected_children is not None and expected_children != set(child_numbers):
+            reasons.append("Relationships: native Sub-issues do not match the parent's declared children.")
+    elif body_parent is not None:
+        reasons.append("Relationships: declared Parent has no native parent/Sub-issues read-back.")
+
     blockers = complete_nodes(issue["blockedBy"])
-    urls = {blocker["url"] for blocker in blockers}
+    blocker_numbers = [blocker["number"] for blocker in blockers]
+    blocker_urls = [blocker["url"] for blocker in blockers]
     total = issue["issueDependenciesSummary"]["totalBlockedBy"]
-    if type(total) is not int or len(blockers) != len(urls) or len(blockers) != total:
-        reasons.append("R3: GitHub did not return all blocking issues.")
-        return reasons
-    for blocker in blockers:
-        state, reason = blocker["state"], blocker["stateReason"]
-        if (state, reason) != ("CLOSED", "COMPLETED"):
-            reasons.append(f"R3: {blocker['url']} is {state}/{reason or 'unset'}.")
+    if (type(total) is not int or len(blockers) != len(set(blocker_numbers))
+            or len(blockers) != len(set(blocker_urls)) or len(blockers) != total):
+        reasons.append("R3: GitHub did not return all blocking Issues.")
+    else:
+        expected_blockers, dependency_error = declared_blockers(body)
+        if dependency_error:
+            reasons.append(f"Relationships: {dependency_error}")
+        elif expected_blockers is not None and expected_blockers != set(blocker_numbers):
+            reasons.append("Relationships: native blockers do not match the Issue's declared blocked_by plan.")
+        for blocker in blockers:
+            if (blocker["url"] != html_issue_url(blocker["number"])
+                    or blocker.get("repository", {}).get("nameWithOwner") != "lehater/napms-2"):
+                reasons.append("Relationships: native blocker is not in lehater/napms-2.")
+            state, reason = blocker["state"], blocker["stateReason"]
+            if (state, reason) != ("CLOSED", "COMPLETED"):
+                reasons.append(f"R3: {blocker['url']} is {state}/{reason or 'unset'}.")
+
     return reasons
 
 
@@ -89,7 +285,16 @@ def main():
         if response.get("errors"):
             raise ValueError("GitHub GraphQL returned errors")
         issue = response["data"]["repository"]["issue"]
-        reasons = admission_reasons(issue)
+
+        rest_result = subprocess.run(
+            ["gh", "api", f"repos/lehater/napms-2/issues/{args.issue}"],
+            capture_output=True, text=True, check=True, timeout=30,
+        )
+        source_issue = json.loads(rest_result.stdout)
+        contract_reason = contract_validation_reason(issue.get("body"))
+        reasons = admission_reasons(issue, source_issue)
+        if contract_reason:
+            reasons.append(contract_reason)
     except subprocess.CalledProcessError as exc:
         detail = exc.stderr.strip() or f"gh exited with code {exc.returncode}"
         reasons = [f"GitHub data unavailable: {detail}"]
