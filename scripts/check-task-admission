@@ -176,13 +176,13 @@ def admission_reasons(issue, source_issue):
 
         priority = project_item.get("priority")
         priority_name = priority.get("name") if isinstance(priority, dict) else None
-        if priority_name not in {"P0", "P1", "P2"}:
+        if priority_name not in {"P0", "P1", "P2", "P3"}:
             reasons.append("Metadata: Project #6 Priority is missing or unsupported.")
 
         workstream = project_item.get("workstream")
         workstream_name = workstream.get("name") if isinstance(workstream, dict) else None
-        if workstream_name not in {"Product", "SDLC"}:
-            reasons.append("Metadata: Project #6 Workstream is missing or unsupported.")
+        if not isinstance(workstream_name, str) or not workstream_name.strip():
+            reasons.append("Metadata: Project #6 Workstream is missing or empty.")
 
     assignees = issue["assignees"]["totalCount"]
     if type(assignees) is not int or assignees < 0:

@@ -201,11 +201,15 @@ class CheckTaskAdmissionTest(unittest.TestCase):
             (snapshot(), source_issue(fields=[("Reasoning", "Medium"),
                                                ("Reasoning", "High"),
                                                ("Effort", "Medium")]), "Reasoning"),
-            (snapshot(priority="P3"), source_issue(), "Priority"),
+            (snapshot(priority="P4"), source_issue(), "Priority"),
         )
         for graph, rest, detail in cases:
             with self.subTest(detail=detail, graph=graph):
                 self.check(graph, "DENY", detail, source=rest)
+
+    def test_accepts_priority_p3_and_nonempty_configured_workstreams(self):
+        self.check(snapshot(priority="P3", workstream="Research"), "ALLOW")
+        self.check(snapshot(workstream=" "), "DENY", "Workstream is missing or empty")
 
     def test_rejects_inaccessible_or_incomplete_github_data(self):
         self.check(snapshot(), "DENY", "HTTP 404", graphql_error=subprocess.CalledProcessError(
