@@ -27,7 +27,22 @@ github:
       size_equivalents: {S: Low, M: Medium, L: High}
     area:
       source: label
-      pattern: '^area:[a-z0-9]+(?:-[a-z0-9]+)*  views:
+      pattern: '^area:[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+    priority:
+      source: project_field
+      name: Priority
+      values:
+        P0: Immediate action to prevent or contain an active critical incident, severe loss, or hard delivery stop.
+        P1: High-impact near-term outcome, material risk reduction, or a verified critical-path enabler.
+        P2: Valuable planned work without a near-term critical deadline or material blocking impact.
+        P3: Low-impact or optional improvement that can safely wait.
+      unknown: Leave unassigned and in Preparing until evaluated; never silently default to P2.
+    workstream:
+      source: project_field
+      name: Workstream
+    field_verification: Confirm actual Project #6 field names, options, item membership, and Issue Type/Reasoning/Effort availability before use; historical PR configuration is not a live read-back.
+  views:
     hierarchy:
       name: Product Structure
       layout: table
@@ -87,7 +102,7 @@ refinement:
     changes: Ordered create-or-reuse/Issue edits, native Sub-issues and blocked_by links, Issue Type/Reasoning/Effort/Area, Project Priority/Workstream/Status, with expected values and resource identifiers.
     apply: Check current state and permissions first; match existing Issues/links/items by canonical identity; apply only missing approved changes and never duplicate on retry.
     verify: Re-read each touched Issue, Project item/field, native Sub-issue and blocked_by relationship from GitHub; compare actual to expected and report verified IDs and differences. A successful API response is not read-back.
-    failure: On stale baseline, partial writes, permission errors, unavailable APIs, or unknown Project options, stop dependent operations, retain or return to Preparing, record verified partial state and remaining steps; never assert Ready or invent Markdown-only relationships.
+    failure: On stale baseline, partial writes, permission errors, unavailable APIs, or unknown Project options, stop dependent operations, request Preparing (or explicitly deny admission if that write is unavailable), record verified partial state and remaining steps; never assert Ready or invent Markdown-only relationships.
     ready: Advance Preparing to Ready only after the contract passes the existing validator, required classification and Project values are read back, and the native relationship state is verified. Known incomplete dependencies may block later assignment under R3.
   handoff:
     source_of_truth: GitHub Issue, native Project fields/relationships, and linked PR; chat transcripts and model assertions are not authoritative.
@@ -114,108 +129,6 @@ lifecycle:
     - from: Preparing
       to: Ready
       when: The executable issue has a valid contract, verified native classification and Project data, and reconciled relationships as required by refinement.desired_state.ready.
-    - from: Ready
-      to: Running
-      when: All execution eligibility rules pass at assignment time.
-    - from: Running
-      to: Review
-      when: The executor links the result and provides verification evidence.
-    - from: Review
-      to: Done
-      when: The acceptance criteria pass, required changes are integrated, and the issue is closed as completed.
-    - from: Running
-      to: Preparing
-      when: An unresolved decision or material contract change requires preparation.
-    - from: Review
-      to: Running
-      when: The executor can fix the implementation within the current contract.
-    - from: Review
-      to: Preparing
-      when: Review identifies a required decision or a material change to the execution contract.
-    - from: Ready
-      to: Preparing
-      when: The contract is stale or a new decision is required.
-    - from: Preparing
-      to: Done
-      when: &planning_parent_accepted A planning-only parent has all required child outcomes accepted, meets its own acceptance criteria, and is closed as completed.
-    - from: Running
-      to: Done
-      when: *planning_parent_accepted
-  blocked:
-    derived_from: github.blocked_by
-    dependency_completion:
-      state: closed
-      state_reason: completed
-    rule: Keep the issue blocked if any listed dependency fails the completion criteria or if the dependency list or a dependency's completion cannot be verified.
-
-execution:
-  assignment: manual
-  workspace:
-    isolation: "Use native Git worktree or Codex-managed worktree when supported; no custom worktree manager, mandatory path, or universal preflight."
-    dependencies: "Reuse existing Python/Node dependencies when manifests match; use native symlinks or VS Code worktree configuration if needed. Isolate installations when dependencies differ."
-    source: "Makefile points PYTHONPATH at the active checkout src, and NAPMS_PYTHON at the selected interpreter for browser tests."
-    cleanup: "Use native git worktree remove only after acceptance and inspection of untracked and ignored artifacts; never force-remove agent-owned work."
-  require_all:
-    R1: The issue is open and its Project Status is Ready.
-    R2: The issue contains a sufficient execution contract.
-    R3: The issue is unblocked according to lifecycle.blocked.
-    R4: The context and contract still match the current project state.
-    R5: The chosen executor has the required tools and reasoning capability.
-    R6: No other executor is working on the issue.
-    R7: Work can begin without resolving substantial unknowns.
-
-    priority:
-      source: project_field
-      name: Priority
-      values:
-        P0: Immediate action to prevent or contain an active critical incident, severe loss, or hard delivery stop.
-        P1: High-impact near-term outcome, material risk reduction, or a verified critical-path enabler.
-        P2: Valuable planned work without a near-term critical deadline or material blocking impact.
-        P3: Low-impact or optional improvement that can safely wait.
-      unknown: Leave unassigned and in Preparing until evaluated; never silently default to P2.
-    workstream:
-      source: project_field
-      name: Workstream
-    field_verification: Confirm actual Project #6 field names, options, item membership, and Issue Type/Reasoning/Effort availability before use; historical PR configuration is not a live read-back.
-  views:
-    hierarchy:
-      name: Product Structure
-      layout: table
-      hierarchy: true
-      fields: [Parent issue, Sub-issues progress]
-    ready_queue:
-      name: Ready Queue
-      layout: table
-      filter: 'repo:lehater/napms-2 is:issue is:open status:Ready'
-      fields: [Status, Type, Reasoning, Effort, Labels]
-
-hierarchy:
-  levels: [Initiative, Capability or Workstream, Feature, Task]
-  allow_skipped_levels: true
-  decomposition:
-    D1: Give each child a distinct, verifiable result.
-    D2: Keep tightly coupled changes in the same executable issue and branch where practical.
-    D3: Minimize dependencies and coordination between children.
-    D4: Ensure child results cover the parent outcome without duplication.
-    D5: Record genuine blockers as GitHub issue dependencies.
-    D6: Decompose recursively where needed.
-    D7: Stop when the task suits the intended executor, has a verifiable outcome, and further splitting adds little value.
-    D8: Keep work together when a safe split is unavailable and route it to a suitable executor.
-
-lifecycle:
-  source: project_status
-  field: Status
-  initial: Preparing
-  states:
-    Preparing: Research, decompose, and prepare the contract.
-    Ready: The contract is prepared. Dependencies may still block assignment.
-    Running: The assigned executor is working in an isolated branch or worktree.
-    Review: The result and evidence are available for review and integration.
-    Done: The result was accepted, any required changes were integrated, and the issue was closed as completed.
-  transitions:
-    - from: Preparing
-      to: Ready
-      when: The executable issue is classified and its execution contract is sufficient.
     - from: Ready
       to: Running
       when: All execution eligibility rules pass at assignment time.
