@@ -41,7 +41,7 @@ github:
     workstream:
       source: project_field
       name: Workstream
-    field_verification: Confirm actual Project #6 field names, options, item membership, and Issue Type/Reasoning/Effort availability before use; historical PR configuration is not a live read-back.
+    field_verification: Confirm actual Project 6 field names, options, item membership, and Issue Type/Reasoning/Effort availability before use; historical PR configuration is not a live read-back.
   views:
     hierarchy:
       name: Product Structure
@@ -98,7 +98,7 @@ refinement:
     project_operator: Apply only authorized GitHub CLI/API mutations and independently read back native fields, relationships, and saved Issue content; this is an I/O responsibility, not a new LLM role.
     worker_reviewer: Keep existing execute-task admission, Worker execution, and independent Reviewer acceptance unchanged.
   desired_state:
-    input: Canonical repository/Issue identity, Project #6 item identity, observed Issue update/version and relevant source SHA, approved decisions, evidence, and required GitHub read/write capabilities.
+    input: Canonical repository/Issue identity, Project 6 item identity, observed Issue update/version and relevant source SHA, approved decisions, evidence, and required GitHub read/write capabilities.
     changes: Ordered create-or-reuse/Issue edits, native Sub-issues and blocked_by links, Issue Type/Reasoning/Effort/Area, Project Priority/Workstream/Status, with expected values and resource identifiers.
     apply: Check current state and permissions first; match existing Issues/links/items by canonical identity; apply only missing approved changes and never duplicate on retry.
     verify: Re-read each touched Issue, Project item/field, native Sub-issue and blocked_by relationship from GitHub; compare actual to expected and report verified IDs and differences. A successful API response is not read-back.
