@@ -92,7 +92,9 @@ def need_view(c, r):
     interaction_id = canonical_interaction(c, r["interaction_id"])
     revision = c.execute("SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number,id LIMIT 1", (interaction_id,)).fetchone()
     label = (process["name"] or MISSING) + " · " + (interaction_label(c, revision) if revision else MISSING)
-    return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"], interactionId=interaction_id, componentId=r["component_id"])
+    return dict(displayLabel=label, connectivityNeedId=r["id"], processId=r["process_id"],
+                interactionId=interaction_id, componentId=r["component_id"],
+                businessBasis=r["business_basis"], status=r["status"])
 
 
 def application_view(c, row):
@@ -505,11 +507,13 @@ class Service:
                 items = [need_view(c, r) for r in c.execute("SELECT * FROM needs WHERE process_id=? ORDER BY id", (pid,))]
             return dict(items=items[offset:offset+limit], limit=limit, offset=offset, hasMore=len(items)>offset+limit)
 
-    def create_need(self, actor, pid, revision):
+    def create_need(self, actor, pid, revision, basis):
         with self.db.transaction(write=True) as c:
             self._need_access(c, actor, pid, "create")
             if find(c, "processes", pid)["status"] != "ACTIVE":
                 raise Problem(409, "PROCESS_ARCHIVED", "Archived Process cannot receive a new Need")
+            if not isinstance(basis, str) or not basis.strip() or len(basis) > 10000:
+                raise Problem(422, "INVALID_INPUT", "Business basis must be nonblank and at most 10000 characters")
             rev = find(c, "interaction_revisions", revision)
             self._compatible(c, rev)
             nid = uid()
@@ -517,13 +521,83 @@ class Service:
                         AND (interaction_id=? OR interaction_id IN
                         (SELECT alias_id FROM interaction_aliases WHERE canonical_id=?))""",
                         (pid, rev["source_component_id"], rev["interaction_id"], rev["interaction_id"])).fetchone():
-                raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists for this Interaction")
+                raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists for this Interaction; restore the existing Need")
             try:
-                c.execute("INSERT INTO needs VALUES (?,?,?,?)", (nid, pid, rev["interaction_id"], rev["source_component_id"]))
+                c.execute("INSERT INTO needs(id,process_id,interaction_id,component_id,business_basis,status) VALUES (?,?,?,?,?,'ACTIVE')",
+                          (nid, pid, rev["interaction_id"], rev["source_component_id"], basis))
             except sqlite3.IntegrityError as error:
                 if str(error) == "UNIQUE constraint failed: needs.process_id, needs.interaction_id, needs.component_id":
-                    raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists") from error
+                    raise Problem(409, "DUPLICATE_NEED", "ConnectivityNeed already exists; restore the existing Need") from error
                 raise
+            return need_view(c, find(c, "needs", nid))
+
+    def need(self, actor, pid, nid, limit=20, offset=0):
+        with self.db.transaction() as c:
+            self._need_access(c, actor, pid, "read", visibility_only=True)
+            process = find(c, "processes", pid)
+            row = find(c, "needs", nid)
+            if row["process_id"] != pid:
+                raise Problem(404, "NOT_FOUND", "Entity not found")
+            interaction_id = canonical_interaction(c, row["interaction_id"])
+            interaction = c.execute(
+                "SELECT * FROM interaction_revisions WHERE interaction_id=? ORDER BY revision_number,id LIMIT 1",
+                (interaction_id,),
+            ).fetchone()
+            participant = component_view(c, find(c, "components", row["component_id"]))
+            at = self.clock()
+            can_decide = self.shared_read
+            if not can_decide:
+                try:
+                    grant(c, actor, "access.decide", "demo-policy", at)
+                    can_decide = True
+                except Problem:
+                    pass
+            page = c.execute(
+                "SELECT r.id,r.submitted_at,d.outcome FROM access_requests r "
+                "LEFT JOIN decisions d ON d.request_id=r.id "
+                "WHERE r.need_id=? AND (? OR r.actor_id=?) "
+                "ORDER BY r.submitted_at DESC,r.id DESC LIMIT ? OFFSET ?",
+                (nid, can_decide, actor, limit + 1, min(offset, 2**63 - 1)),
+            ).fetchall()
+            return {
+                **need_view(c, row),
+                "process": process_view(process),
+                "interaction": {
+                    "interactionId": interaction_id,
+                    "applicationId": interaction["application_id"] if interaction else None,
+                    "applicationName": catalog_name(c, "application", interaction["application_id"]) if interaction else None,
+                    "name": interaction_label(c, interaction) if interaction else MISSING,
+                },
+                "participant": participant,
+                "requests": {
+                    "items": [dict(requestId=r["id"], status=r["outcome"] or "PENDING",
+                                   submittedAt=r["submitted_at"]) for r in page[:limit]],
+                    "limit": limit, "offset": offset, "hasMore": len(page) > limit,
+                },
+            }
+
+    def update_need(self, actor, pid, nid, basis):
+        with self.db.transaction(write=True) as c:
+            self._need_access(c, actor, pid, "update")
+            row = find(c, "needs", nid)
+            if row["process_id"] != pid:
+                raise Problem(404, "NOT_FOUND", "Entity not found")
+            if not isinstance(basis, str) or not basis.strip() or len(basis) > 10000:
+                raise Problem(422, "INVALID_INPUT", "Business basis must be nonblank and at most 10000 characters")
+            c.execute("UPDATE needs SET business_basis=? WHERE id=?", (basis, nid))
+            return need_view(c, find(c, "needs", nid))
+
+    def set_need_status(self, actor, pid, nid, status):
+        with self.db.transaction(write=True) as c:
+            self._need_access(c, actor, pid, "lifecycle")
+            row = find(c, "needs", nid)
+            if row["process_id"] != pid:
+                raise Problem(404, "NOT_FOUND", "Entity not found")
+            if status not in ("ACTIVE", "RETIRED"):
+                raise Problem(422, "INVALID_INPUT", "Unsupported ConnectivityNeed status")
+            if status == "ACTIVE" and find(c, "processes", pid)["status"] != "ACTIVE":
+                raise Problem(409, "PROCESS_ARCHIVED", "A Need can be restored only while its Process is active")
+            c.execute("UPDATE needs SET status=? WHERE id=?", (status, nid))
             return need_view(c, find(c, "needs", nid))
 
     def request_options(self, actor, pid, nid, kind, revision, limit, offset):
@@ -599,6 +673,8 @@ class Service:
                                        find(c, "components", dest["component_id"]))
             if "status" in process.keys() and process["status"] != "ACTIVE":
                 raise Problem(409, "PROCESS_ARCHIVED", "Archived Process cannot receive a new AccessRequest")
+            if "status" in need.keys() and need["status"] != "ACTIVE":
+                raise Problem(409, "NEED_RETIRED", "Retired ConnectivityNeed cannot receive a new AccessRequest")
             c.execute("INSERT OR IGNORE INTO access_subjects VALUES (?,?,?,?)", (uid(), subject.source, subject.destination, subject.revision))
             sid = c.execute("SELECT id FROM access_subjects WHERE source_deployment_id=? AND destination_deployment_id=? AND interaction_revision_id=?", (subject.source, subject.destination, subject.revision)).fetchone()[0]
             rid = uid()

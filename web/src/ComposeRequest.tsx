@@ -34,17 +34,22 @@ function Selector({ client, need, kind, revision = '', value, choose }: { client
 export default function ComposeRequest({ client, need }: { client: Client; need: Need }) {
   const [revision, setRevision] = useState<NeedOption | null>(null), [source, setSource] = useState<DeploymentOption | null>(null), [destination, setDestination] = useState<DeploymentOption | null>(null)
   const [confirmation, setConfirmation] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [epoch, setEpoch] = useState(0)
-  const alive = useRef(true), submitting = useRef(false), navigate = useNavigate()
+  const alive = useRef(true), generation = useRef(0), submitting = useRef(false), navigate = useNavigate()
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
+  useEffect(() => {
+    generation.current += 1
+    return () => { generation.current += 1 }
+  }, [client])
   function chooseRevision(option: Option | null) { setRevision(option && 'interactionRevisionId' in option ? option : null); setSource(null); setDestination(null); setConfirmation(false) }
   async function submit() {
     if (!confirmation || !revision || !source || !destination || submitting.current) return
     submitting.current = true; setBusy(true); setError('')
+    const requestGeneration = generation.current
     try {
       const request = await client.create({ connectivityNeedId: need.connectivityNeedId, interactionRevisionId: revision.interactionRevisionId, sourceDeploymentId: source.deploymentId, destinationDeploymentId: destination.deploymentId })
-      if (alive.current) navigate('/access-requests/' + request.requestId)
+      if (alive.current && generation.current === requestGeneration) navigate('/access-requests/' + request.requestId)
     } catch (e) {
-      if (!alive.current) return
+      if (!alive.current || generation.current !== requestGeneration) return
       setError(e instanceof ApiError ? message(e) : 'Результат отправки неизвестен. Проверьте список заявок перед новой отправкой.')
       chooseRevision(null); setEpoch(x => x + 1)
     } finally { submitting.current = false; if (alive.current) setBusy(false) }

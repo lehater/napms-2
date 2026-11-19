@@ -63,7 +63,7 @@ class Database:
         with closing(self.connect()) as c:
             c.execute("PRAGMA journal_mode=WAL")
             version = c.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
+            if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10):
                 raise RuntimeError("Unsupported database schema version")
             if version == 0:
                 # executescript handles its own transaction; schema/version commit together.
@@ -196,11 +196,39 @@ class Database:
                     c.rollback()
                     raise
 
+            # v9 -> v10: ConnectivityNeed can carry a correctable basis and lifecycle.
+            # Historical bases stay NULL; IDs, identity tuples, and references are untouched.
+            if c.execute("PRAGMA user_version").fetchone()[0] == 9:
+                try:
+                    c.execute("BEGIN IMMEDIATE")
+                    has_needs = c.execute(
+                        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='needs'"
+                    ).fetchone()
+                    if has_needs:
+                        columns = {r["name"] for r in c.execute("PRAGMA table_info(needs)")}
+                        if "business_basis" not in columns:
+                            c.execute("ALTER TABLE needs ADD COLUMN business_basis TEXT CHECK(business_basis IS NULL OR length(trim(business_basis)) BETWEEN 1 AND 10000)")
+                        if "status" not in columns:
+                            c.execute("ALTER TABLE needs ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK(status IN ('ACTIVE','RETIRED'))")
+                        c.execute("DROP TRIGGER IF EXISTS immutable_needs_UPDATE")
+                        c.execute("DROP TRIGGER IF EXISTS immutable_need_identity")
+                        c.execute("""CREATE TRIGGER immutable_need_identity
+                            BEFORE UPDATE ON needs
+                            WHEN NEW.id != OLD.id OR NEW.process_id != OLD.process_id
+                              OR NEW.interaction_id != OLD.interaction_id OR NEW.component_id != OLD.component_id
+                              OR (OLD.business_basis IS NOT NULL AND NEW.business_basis IS NULL)
+                            BEGIN SELECT RAISE(ABORT,'immutable need identity or basis'); END""")
+                    c.execute("PRAGMA user_version=10")
+                    c.commit()
+                except BaseException:
+                    c.rollback()
+                    raise
+
     @contextmanager
     def transaction(self, write=False):
         c = self.connect()
         try:
-            if c.execute("PRAGMA user_version").fetchone()[0] != 9:
+            if c.execute("PRAGMA user_version").fetchone()[0] != 10:
                 raise RuntimeError("Initialize a supported database with init-demo first")
             c.execute("BEGIN IMMEDIATE" if write else "BEGIN")
             yield c

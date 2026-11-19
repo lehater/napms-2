@@ -95,8 +95,9 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.setViewportSize({width:1920,height:1080})
   await page.screenshot({path:test.info().outputPath('real-process-needs-empty-list-1920.png'),fullPage:true})
   await page.getByLabel('Коммуникация', {exact:true}).selectOption('00000000-0000-0000-0000-000000000009')
+  await page.getByLabel('Обоснование потребности', {exact:true}).fill('Поддержать выполнение процесса Harness acceptance.')
   await page.getByRole('button', {name:'Создать потребность',exact:true}).click()
-  await expect(needsRegion.locator('tbody tr')).toHaveCount(1)
+  await expect(needsRegion.locator('tbody')).toContainText('Harness acceptance')
   await expect(createRegion.getByText('На этой странице нет доступных коммуникаций.')).toBeVisible()
   await expect(createRegion.getByRole('link',{name:'профилях приложений'})).toHaveAttribute('href','/applications')
   await expect(createRegion.getByRole('button',{name:'Создать потребность',exact:true})).toHaveCount(0)
@@ -119,15 +120,15 @@ test('one-command actor switching preserves independent grants and actual persis
   await page.getByRole('link', {name:'Выбрать процесс и потребность'}).click()
   await page.getByRole('link', {name:'Harness acceptance',exact:true}).click()
   await page.getByRole('link', {name:'Потребности',exact:true}).click()
-  await page.locator('tbody button').first().click()
+  await page.locator('tbody a[href*="/needs/"]').first().click()
   await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
   await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})
-  await expect(page.locator('tbody button').first()).toContainText('Harness acceptance · Демонстрационный HTTPS · Отправитель → Получатель')
+  await expect(page.locator('.ux-heading h1')).toContainText('Harness acceptance · Демонстрационный HTTPS · Отправитель → Получатель')
   await expect(page.getByLabel('Revision',{exact:true}).locator('option:checked')).toContainText('Отправитель → Получатель · tcp(443)')
   await expect(page.getByLabel('Source Deployment',{exact:true}).locator('option:checked')).toContainText('Отправитель @ sender.demo.example')
   await expect(page.getByLabel('Destination Deployment',{exact:true}).locator('option:checked')).toContainText('Получатель @ receiver.demo.example')
-  const selectedNeed = await page.locator('tbody button').first().locator('small').innerText()
+  const selectedNeed = new URL(page.url()).pathname.split('/').pop()!
   await expectSummary(page, selectedNeed)
   await expect(page.getByRole('button', {name:'Подтвердить заявку',exact:true})).toBeDisabled()
   await page.getByLabel('Подтверждаю состав заявки', {exact:true}).check()
@@ -562,10 +563,8 @@ test('late Rule reads and downloads discard stale actor results', async ({page,r
 })
 
 async function openComposition(page: import('@playwright/test').Page) {
-  await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
+  await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c/needs/00000000-0000-0000-0000-00000000000d')
   await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
-  await page.locator('tbody button').first().click()
-  await expect(page.locator('tbody button').first()).toHaveAttribute('aria-pressed','true')
   await page.getByLabel('Revision',{exact:true}).selectOption({index:1})
   await page.getByLabel('Source Deployment',{exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment',{exact:true}).selectOption({index:1})
@@ -609,8 +608,7 @@ test('composition delayed options and POST do not restore old context or navigat
   for (const submit of [false,true]) {
     if (submit) await openComposition(page)
     else {
-      await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
-      await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
+      await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c/needs/00000000-0000-0000-0000-00000000000d')
     }
     let release!:()=>void, received!:()=>void
     const gate=new Promise<void>(r=>{release=r}),held=new Promise<void>(r=>{received=r})
@@ -621,14 +619,15 @@ test('composition delayed options and POST do not restore old context or navigat
     })
     try {
       if(submit) await page.getByRole('button',{name:'Подтвердить заявку',exact:true}).click()
-      else await page.locator('tbody button').first().click()
+      else await page.getByLabel('Demo actor',{exact:true}).selectOption('requester')
       await held
       if(!submit) await expect(page.getByText('Загрузка Revision…',{exact:true})).toBeVisible()
       await page.getByLabel('Demo actor',{exact:true}).selectOption('decider')
     } finally {release();await page.unrouteAll({behavior:'wait'})}
     await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))
-    await expect(page).toHaveURL(/business-processes\/.*tab=needs$/)
-    await expect(page.getByRole('region',{name:'Запрос из потребности'})).toHaveCount(0)
+    await expect(page).toHaveURL(/business-processes\/.+\/needs\/.+$/)
+    await expect(page.getByRole('region',{name:'Запрос из потребности'})).toBeVisible()
+    await expect(page.getByLabel('Revision',{exact:true})).toHaveValue('')
   }
   expect(harness.file).toBeTruthy()
 })
@@ -670,9 +669,8 @@ test('confirmation summary contains the selected backend facts and resets with R
   await page.getByRole('button',{name:'Обновить · Revision',exact:true}).click()
   await expect(page.getByRole('group',{name:'Сводка заявки',exact:true})).toHaveCount(0)
   await expect(page.getByRole('button',{name:'Подтвердить заявку',exact:true})).toBeDisabled()
-  await page.getByRole('button',{name:'Обновить потребности',exact:true}).click()
-  await expect(page.locator('tbody button').first()).toHaveAttribute('aria-pressed','false')
-  await expect(page.getByRole('region',{name:'Запрос из потребности',exact:true})).toHaveCount(0)
+  await expect(page).toHaveURL(/business-processes\/.+\/needs\/.+$/)
+  await expect(page.getByRole('region',{name:'Запрос из потребности',exact:true})).toBeVisible()
 })
 
 
@@ -808,7 +806,7 @@ test('REAL Resources create a stable Endpoint and feed a new destination through
   const processResult = await demoApi('/business-processes','requester','POST',{name:'Resource endpoint acceptance',description:null,responsibleOrganization:null})
   expect(processResult.status).toBe(201)
   const process = processResult.payload as {processId:string}
-  const need = await demoApi(`/business-processes/${process.processId}/needs`,'requester','POST',{interactionRevisionId:revisionId})
+  const need = await demoApi(`/business-processes/${process.processId}/needs`,'requester','POST',{interactionRevisionId:revisionId,businessBasis:'Продолжить доступность созданного взаимодействия.'})
   expect(need.status).toBe(201)
   const needId = (need.payload as {connectivityNeedId:string}).connectivityNeedId
   const resources = await demoApi('/resources?limit=100&offset=0','requester')
@@ -1068,6 +1066,7 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   }
   expect(selfInteraction, 'Created NTP self-interaction was not found in paginated Need options').toBeTruthy()
   await needSelect.selectOption({ label: selfInteraction! })
+  await page.getByLabel('Обоснование потребности', { exact: true }).fill('Синхронизировать часы NTP Server.')
   await page.getByRole('button', { name: 'Создать потребность', exact: true }).click()
   await expect(page.getByText('Потребность сохранена.', { exact: true })).toBeVisible()
 
@@ -1076,7 +1075,7 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByRole('link', { name: 'Выбрать процесс и потребность', exact: true }).click()
   await page.getByRole('link', { name: 'NTP synchronization', exact: true }).click()
   await page.getByRole('link', { name: 'Потребности', exact: true }).click()
-  await page.locator('tbody button').first().click()
+  await page.locator('tbody a[href*="/needs/"]').first().click()
   await page.getByLabel('Revision', { exact: true }).selectOption({ index: 1 })
   await expect(page.getByLabel('Source Deployment', { exact: true })).toBeEnabled()
   await expect(page.getByLabel('Destination Deployment', { exact: true })).toBeEnabled()

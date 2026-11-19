@@ -164,7 +164,7 @@ def test_read_snapshot_and_seed_upgrade(env):
     init_demo(env[0],env[1])
     assert env[1].read_bytes() == credentials
     with env[0].transaction() as c:
-        assert c.execute('PRAGMA user_version').fetchone()[0] == 9
+        assert c.execute('PRAGMA user_version').fetchone()[0] == 10
         assert c.execute("SELECT count(*) FROM grants WHERE action='access.options.read' AND actor_id!=?",(IDS['requester'],)).fetchone()[0] == 0
 
 
@@ -188,7 +188,7 @@ def test_other_need_same_subject_and_unrelated_revision(env):
     pid,nid,revision = str(uuid4()),str(uuid4()),str(uuid4())
     with env[0].transaction(write=True) as c:
         c.execute('INSERT INTO processes(id,name) VALUES (?,?)',(pid,'Independent justification'))
-        c.execute('INSERT INTO needs VALUES (?,?,?,?)',(nid,pid,IDS['interaction'],IDS['sender']))
+        c.execute('INSERT INTO needs(id,process_id,interaction_id,component_id) VALUES (?,?,?,?)',(nid,pid,IDS['interaction'],IDS['sender']))
         c.execute('INSERT INTO interaction_revisions(id,interaction_id,application_id,source_component_id,destination_component_id,protocol,port_start,port_end) SELECT ?,?,application_id,destination_component_id,source_component_id,protocol,port_start,port_end FROM interaction_revisions',(revision,str(uuid4())))
     first = submit(env)
     a = decide(env,first)
@@ -214,7 +214,7 @@ def test_incompatible_saved_references_have_no_partial_writes(env, mismatch):
     with env[0].transaction(write=True) as c:
         if mismatch == 'need-participant':
             identifier = str(uuid4())
-            c.execute('INSERT INTO needs VALUES (?,?,?,?)',(identifier,IDS['process'],IDS['interaction'],IDS['receiver']))
+            c.execute('INSERT INTO needs(id,process_id,interaction_id,component_id) VALUES (?,?,?,?)',(identifier,IDS['process'],IDS['interaction'],IDS['receiver']))
             data['connectivityNeedId'] = identifier
         elif mismatch == 'destination-role':
             data['destinationDeploymentId'] = IDS['sourceDeployment']

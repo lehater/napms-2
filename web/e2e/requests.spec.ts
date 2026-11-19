@@ -68,7 +68,7 @@ async function create(page: Page, token: string) {
   await page.goto('/business-processes/00000000-0000-0000-0000-00000000000c?tab=needs')
   try { await page.getByLabel('Bearer token', {exact:true}).fill(token) } catch { throw new Error('Could not enter private credential') }
   await page.getByRole('button', {name:'Применить token',exact:true}).click()
-  await page.locator('tbody button').first().click()
+  await page.locator('tbody a[href*="/needs/"]').first().click()
   await page.getByLabel('Revision', {exact:true}).selectOption({index:1})
   await page.getByLabel('Source Deployment', {exact:true}).selectOption({index:1})
   await page.getByLabel('Destination Deployment', {exact:true}).selectOption({index:1})

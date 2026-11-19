@@ -20,7 +20,8 @@ IDS = {name: demo_id(i) for i, name in enumerate((
     "destinationDeployment", "process", "need", "requester", "decider", "exporter",
     "requestGrant", "decideGrant", "sourceExportGrant", "destinationExportGrant",
     "processReadGrant", "processCreateGrant", "needReadGrant", "needCreateGrant", "sourceOptionsGrant", "destinationOptionsGrant",
-    "catalogCreateGrant", "catalogReadGrant", "processUpdateGrant", "processLifecycleGrant"), 1)}
+    "catalogCreateGrant", "catalogReadGrant", "processUpdateGrant", "processLifecycleGrant",
+    "needUpdateGrant", "needLifecycleGrant"), 1)}
 DEMO_REQUEST = {"sourceDeploymentId": IDS["sourceDeployment"],
                 "destinationDeploymentId": IDS["destinationDeployment"],
                 "interactionRevisionId": IDS["revision"], "connectivityNeedId": IDS["need"]}
@@ -61,6 +62,8 @@ def init_auth(db, credentials):
             ("processLifecycleGrant", "requester", "business.process.lifecycle", "demo-business"),
             ("needReadGrant", "requester", "business.need.read", "demo-business"),
             ("needCreateGrant", "requester", "business.need.create", "demo-business"),
+            ("needUpdateGrant", "requester", "business.need.update", "demo-business"),
+            ("needLifecycleGrant", "requester", "business.need.lifecycle", "demo-business"),
             ("catalogCreateGrant", "requester", "catalog.create", "demo-catalog"),
             ("catalogReadGrant", "requester", "catalog.read", "demo-catalog"),
         ):
@@ -106,7 +109,9 @@ def init_demo(db, credentials):
         for deployment, component, resource in (("sourceDeployment", "sender", "sourceResource"), ("destinationDeployment", "receiver", "destinationResource")):
             seed("deployments", (IDS[deployment], IDS[component], IDS[resource]), "id,component_id,resource_id")
         seed("processes", (IDS["process"], "Демонстрационный процесс"), "id,name")
-        seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"]), "id,process_id,interaction_id,component_id")
+        seed("needs", (IDS["need"], IDS["process"], IDS["interaction"], IDS["sender"],
+                        "Демонстрационная потребность", "ACTIVE"),
+             "id,process_id,interaction_id,component_id,business_basis,status")
         for role in ("requester", "decider", "exporter"):
             seed("actors", (IDS[role],), "id")
         for role, display_name in (
@@ -142,6 +147,8 @@ def init_demo(db, credentials):
             ("processLifecycleGrant", "requester", "business.process.lifecycle", "demo-business"),
             ("needReadGrant", "requester", "business.need.read", "demo-business"),
             ("needCreateGrant", "requester", "business.need.create", "demo-business"),
+            ("needUpdateGrant", "requester", "business.need.update", "demo-business"),
+            ("needLifecycleGrant", "requester", "business.need.lifecycle", "demo-business"),
             ("sourceOptionsGrant", "requester", "access.options.read", IDS["sourceResource"]),
             ("destinationOptionsGrant", "requester", "access.options.read", IDS["destinationResource"]),
             ("catalogCreateGrant", "requester", "catalog.create", "demo-catalog"),
