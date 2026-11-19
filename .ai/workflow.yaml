@@ -173,7 +173,7 @@ execution:
   observability:
     backend: "Use existing Codex/Langfuse tracing when configured; no new collector or mandatory gate."
     owner: "The Coordinator or human launcher prepares task identity for any task-scoped Codex session (including refinement), not the Worker Skill after startup."
-    setup: "Follow .ai/codex-task-tracing.md in the actual checkout/worktree before starting Codex when full-run attribution is wanted."
+    setup: "Follow .ai/codex-task-tracing.md in the actual checkout/worktree before Codex launch, or when an Issue is first assigned inside a live session, before the next Stop Hook."
     identity: "One runId (UUID) per execution attempt; reuse across turns/resumed sessions, rotate for a new attempt."
     correlation: "Project-local Langfuse metadata includes repository, primary issueId, runId, and initial sourceSha; Codex supplies sessionId and traceId."
     evidence: "Record runId and initial sourceSha plus known session/trace references in existing Issue/PR handoff; GitHub/CI/Review remain outcome authority."
