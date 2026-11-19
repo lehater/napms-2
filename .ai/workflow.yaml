@@ -170,6 +170,12 @@ execution:
     dependencies: "Reuse existing Python/Node dependencies when manifests match; use native symlinks or VS Code worktree configuration if needed. Isolate installations when dependencies differ."
     source: "Makefile points PYTHONPATH at the active checkout src, and NAPMS_PYTHON at the selected interpreter for browser tests."
     cleanup: "Use native git worktree remove only after acceptance and inspection of untracked and ignored artifacts; never force-remove agent-owned work."
+  observability:
+    backend: "Use existing Codex/Langfuse tracing when configured; no new collector or mandatory gate."
+    identity: "runId (UUID) identifies an assigned Worker attempt; reuse across turns/resumed sessions, rotate for a new attempt."
+    correlation: "Project-local Langfuse metadata includes repository, issueId, runId, and initial sourceSha; Codex supplies sessionId and traceId."
+    evidence: "Record runId and known session/trace references in the existing Issue/PR handoff; GitHub/CI/Review remain outcome authority."
+    isolation: "Keep per-worktree .codex/langfuse.json untracked; do not commit credentials or reuse stale task metadata."
   require_all:
     R1: The issue is open and its Project Status is Ready.
     R2: The issue contains a sufficient execution contract.
