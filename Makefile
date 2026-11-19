@@ -45,7 +45,7 @@ test:
 	$(PYTHON) -m pytest -q
 
 check:
-	PATH="$(ENV_BIN):$PATH" $(PYTHON) scripts/check-fast.py
+	PATH="$(ENV_BIN):$$PATH" $(PYTHON) scripts/check-fast.py
 
 check-full:
-	PATH="$(ENV_BIN):$PATH" $(PYTHON) scripts/check-fast.py --full
+	PATH="$(ENV_BIN):$$PATH" $(PYTHON) scripts/check-fast.py --full

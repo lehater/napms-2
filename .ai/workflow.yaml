@@ -28,6 +28,20 @@ github:
     area:
       source: label
       pattern: '^area:[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+    priority:
+      source: project_field
+      name: Priority
+      values:
+        P0: Immediate action to prevent or contain an active critical incident, severe loss, or hard delivery stop.
+        P1: High-impact near-term outcome, material risk reduction, or a verified critical-path enabler.
+        P2: Valuable planned work without a near-term critical deadline or material blocking impact.
+        P3: Low-impact or optional improvement that can safely wait.
+      unknown: Leave unassigned and in Preparing until evaluated; never silently default to P2.
+    workstream:
+      source: project_field
+      name: Workstream
+    field_verification: Confirm actual Project 6 field names, options, item membership, and Issue Type/Reasoning/Effort availability before use; historical PR configuration is not a live read-back.
   views:
     hierarchy:
       name: Product Structure
@@ -53,6 +67,54 @@ hierarchy:
     D7: Stop when the task suits the intended executor, has a verifiable outcome, and further splitting adds little value.
     D8: Keep work together when a safe split is unavailable and route it to a suitable executor.
 
+# Intake, refinement, and ranking take place within the existing Preparing state.
+# No additional Project status, agent profile, Skill, or backlog database is required.
+refinement:
+  flow: [Issue, Intake, Refinement, Decomposition, Prioritization, Task Preparation, Ready]
+  intake:
+    scope: Coordinator selects a bounded set of candidate Issues and checks open and closed work, prior decisions, and existing parents before proposing a mutation.
+    decisions:
+      reuse: Continue an existing relevant open Issue; attach evidence and clarify its contract if needed.
+      duplicate: Reuse the canonical Issue; propose a native duplicate closure or reference only after checking scope, history, and owner intent.
+      historical: Keep accepted completed work closed; reopen only on evidence that the original acceptance is invalid, otherwise propose a distinct follow-up Issue.
+      clarify: Keep ambiguous, conflicting, or unverified work in Preparing and request the minimum missing decision or evidence.
+      new: Create an Issue only for a distinct outcome not already represented; discover its correct workstream and parent first.
+    hierarchy: Use D1-D8 and native Sub-issues only for real outcome decomposition; a Markdown checklist or mention is not a parent relationship.
+    dependencies: Use native blocked_by only when one outcome genuinely cannot start or be accepted before another; references and shared context alone are not blockers.
+  prioritization:
+    meaning: Priority describes relative scheduling importance, not defect severity, task size, or model reasoning demand; parent priority is not inherited.
+    evidence: Record affected users or outcome, impact/risk, time sensitivity, actual blockers, relevant owner decisions, and material uncertainty.
+    comparison:
+      - Compare candidates within the selected Project/workstream and cross-workstream when competing for the same capacity.
+      - Compare impact and cost of delay, then urgency or deadline, then verified critical-path unblock value; identify any owner commitments.
+      - Use Effort only as an explicit delivery trade-off after value and urgency; use Reasoning to select an executor, never as a priority score.
+      - Break remaining ties by prerequisite readiness and a documented owner choice; do not invent a numeric score or silently rank unknown priorities.
+    blocked: A high-priority blocked Issue can remain high priority but cannot pass assignment rule R3.
+    reassess: On changed impact, deadlines, owner direction, dependency resolution, newly discovered duplicates, or material scope/effort evidence.
+    escalate: Escalate disputed cross-workstream trade-offs, ambiguous product value, irreversible product/architecture decisions, missing native fields/options, or authority beyond the approved scope.
+  responsibilities:
+    coordinator: Select and compare bounded candidates, authorize routine decisions and desired state, serialize conflicting mutations, and escalate owner-level choices.
+    refiner: Research with the existing decompose Skill and optional read-only explorer; propose reuse, D1-D8 decomposition, ranking evidence, and executable contracts without claiming persistence.
+    project_operator: Apply only authorized GitHub CLI/API mutations and independently read back native fields, relationships, and saved Issue content; this is an I/O responsibility, not a new LLM role.
+    worker_reviewer: Keep existing execute-task admission, Worker execution, and independent Reviewer acceptance unchanged.
+  desired_state:
+    input: Canonical repository/Issue identity, Project 6 item identity, observed Issue update/version and relevant source SHA, approved decisions, evidence, and required GitHub read/write capabilities.
+    changes: Ordered create-or-reuse/Issue edits, native Sub-issues and blocked_by links, Issue Type/Reasoning/Effort/Area, Project Priority/Workstream/Status, with expected values and resource identifiers.
+    apply: Check current state and permissions first; match existing Issues/links/items by canonical identity; apply only missing approved changes and never duplicate on retry.
+    verify: Re-read each touched Issue, Project item/field, native Sub-issue and blocked_by relationship from GitHub; compare actual to expected and report verified IDs and differences. A successful API response is not read-back.
+    failure: On stale baseline, partial writes, permission errors, unavailable APIs, or unknown Project options, stop dependent operations, request Preparing (or explicitly deny admission if that write is unavailable), record verified partial state and remaining steps; never assert Ready or invent Markdown-only relationships.
+    ready: Advance Preparing to Ready only after the contract passes the existing validator, required classification and Project values are read back, and the native relationship state is verified. Known incomplete dependencies may block later assignment under R3.
+  handoff:
+    source_of_truth: GitHub Issue, native Project fields/relationships, and linked PR; chat transcripts and model assertions are not authoritative.
+    portable_result: Issue/PR URLs and IDs, source version/SHA, adopted decisions, existing execution contract reference, authorized desired-state operations, required runtime capabilities, verified read-back/evidence, unresolved blockers, and one next action.
+    storage: Put concise operation/evidence notes in the relevant GitHub Issue or PR; do not copy the YAML execution contract into a second store.
+    resume: Re-read GitHub and compare baseline before continuing in another runtime; on missing permissions, tools, context, or model budget, hand off the exact remaining bounded operations without pretending they ran.
+  orchestration:
+    independent_axes: Role is responsibility; Skill is method; Model is capability/cost; Runtime is execution environment; Capability is verified tools/permissions; Mode is who transfers control.
+    human_assisted: A person transfers the same GitHub handoff between ChatGPT, Codex CLI, or another harness; strong or economical models may run in any capable runtime.
+    autonomous_future: A harness may eventually transfer the same roles and contracts, but requires explicit owner-approved scope, permission checks, budgets, bounded retries, serialized conflicting mutations, dependency/admission checks, and stop/escalation on unresolved decisions or exhausted quotas.
+    enabled: human_assisted_only
+
 lifecycle:
   source: project_status
   field: Status
@@ -66,7 +128,7 @@ lifecycle:
   transitions:
     - from: Preparing
       to: Ready
-      when: The executable issue is classified and its execution contract is sufficient.
+      when: The executable issue has a valid contract, verified native classification and Project data, and reconciled relationships as required by refinement.desired_state.ready.
     - from: Ready
       to: Running
       when: All execution eligibility rules pass at assignment time.
