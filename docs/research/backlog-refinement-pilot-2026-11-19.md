@@ -26,6 +26,8 @@ Before this pilot, #126's Project Priority and Workstream were empty despite its
 - #126 remains one cohesive product task under its own root. Its saved contract says to audit purpose semantics and compatibility before implementation. It remains Preparing; the pilot did not start its Worker or reparent it under #127.
 - #129 and #130 are CLOSED/COMPLETED in GitHub, and still natively block #131 with satisfied completion reasons. Their Project Status is still Review; the Issue #131 handoff identifies changing those completed cards to Done as a separate administrative operation, so this pilot leaves them unchanged.
 
+**Desired-state replay:** a compare-only rerun after the pilot returned the same #127 child set `[#128, #129, #130, #131]` and the same #131 blockers `[#129, #130]` (both CLOSED/COMPLETED). Project item IDs for #126 and #131 also remained unchanged. The replay was a no-op: no Issue, Project item, child, or dependency was created.
+
 ## Project Operator: native operations and read-back
 
 Project #6 is `https://github.com/users/lehater/projects/6`. Relevant item IDs were #126 `PVTI_lAHOAKOiO84Brdw8zhJzQj8` and #131 `PVTI_lAHOAKOiO84Brdw8zhJzeso`.
@@ -40,11 +42,11 @@ For #131, read-back confirmed Type Task, Reasoning Medium, Effort Medium, `area:
 
 #131's Project Status changed Preparing → Ready → Running → Review. After the Ready write, `gh issue view` read back Ready. `python3 scripts/check-task-admission 131` then returned `{"decision":"ALLOW","reasons":[]}` immediately before assignment. The authenticated executor `lehater` was assigned and independently read back; Project Status Running was written and read back before work began. The Issue remains OPEN and Review was read back after PR #136 was linked. No additional Worker was dispatched and no automatic execution was enabled.
 
-The existing saved contracts for #126 and #131 both pass `scripts/validate-task`. The Stage B/C merges are present on the recorded `main` source. The pilot made no OpenSpec or product-code changes and required no application test run.
+The existing saved contracts for #126 and #131 both pass `scripts/validate-task`. The targeted existing regression `python3 -m unittest scripts.test_check_task_admission.CheckTaskAdmissionTest.test_flat_hierarchy_markdown_child_references_do_not_pass` passed; Markdown child references without matching native Sub-issues are denied. The Stage B/C merges are present on the recorded `main` source. The pilot made no OpenSpec or product-code changes and did not run application tests.
 
 ## Handoff and limits
 
-The Issue body is the portable handoff: it stores the Coordinator, Refiner, Project Operator, Worker/Reviewer boundaries, executable contract, native desired-state conditions, and required capabilities independently of a model name. The handoff from the GitHub connector to the authenticated `gh` CLI is recorded in [Issue comment #6997020664](https://github.com/lehater/napms-2/issues/131#issuecomment-6997020664); the CLI re-read it before applying the Review transition. The workflow remains human-assisted; this pilot did not enable unattended dispatch or merging.
+The Issue body is the portable handoff: it stores the Coordinator, Refiner, Project Operator, Worker/Reviewer boundaries, executable contract, native desired-state conditions, and required capabilities independently of a model name. The handoff from the GitHub connector to the authenticated `gh` CLI is recorded in [Issue comment #6997020664](https://github.com/lehater/napms-2/issues/131#issuecomment-6997020664); the CLI re-read it before applying the Review transition. The operator read-back receipt is [Issue comment #6997485577](https://github.com/lehater/napms-2/issues/131#issuecomment-6997485577). The workflow remains human-assisted; this pilot did not enable unattended dispatch or merging.
 
 Autonomous readiness gaps remain explicit: there is no approved unattended trigger, bounded execution budget/retry policy, or automated stop/approval boundary for priority conflicts and partial native writes. Assignment, review, acceptance, and merge remain manual. No cost or token measurements were collected.
 
