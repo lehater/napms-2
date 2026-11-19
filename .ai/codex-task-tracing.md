@@ -4,7 +4,9 @@
 
 The existing `tracing@codex-observability-plugin` Stop Hook reads `<cwd>/.codex/langfuse.json` when exporting each turn. To cover the **first** turn reliably, prepare the config in the target checkout/worktree **before** starting Codex. The trace experiment verified that project-local `metadata` propagates; no changes to the global Langfuse config are needed.
 
-## Start a task-scoped session
+## Prepare a task-scoped session
+
+Prefer to prepare before launching Codex so the first trace carries the ID. If the Issue is selected **inside a running Codex session**, the Coordinator can run this same setup immediately in its checkout before the next Stop Hook, then continue; already-exported traces may remain untagged. This setup does not need to start another Codex process.
 
 1. Choose the canonical **primary GitHub Issue** and target Git checkout/worktree. A session covering several independent Issues cannot yield reliable per-Issue costs; use distinct runs when task-level attribution matters.
 2. From the checkout root, run the following **once per new attempt** (replace `131` with the actual Issue number). To **resume the same attempt**, provide `RUN_ID` and `SOURCE_SHA` from the existing Issue/PR handoff, for example `RUN_ID=<saved-uuid> SOURCE_SHA=<initial-commit-sha> ISSUE_NUMBER=131 python3 ...`. Never generate a second ID for the same attempt.
