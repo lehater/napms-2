@@ -4,9 +4,9 @@ The current REAL Interaction editor creates a new Interaction and one implicit r
 
 ## What Changes
 
-- Preserve stable Interaction/source/destination/purpose across numbered revision snapshots.
+- Preserve Interaction identity by Application and directed source/destination Component pair; carry purpose as an optional description across numbered revision snapshots, not as identity.
 - Publish 1..N canonical TCP/UDP TrafficClauses atomically. The editor holds an unsaved draft; only a published snapshot is persisted.
-- Reject duplicate clause signatures within a revision and indistinguishable duplicate Interactions without a distinct purpose.
+- Reject duplicate clause signatures within a revision and any second Interaction for the same directed pair, regardless of purpose, protocol or ports.
 - Preserve historic revision IDs and all AccessSubject/PolicyRule references under additive SQLite migration.
 - Propagate all clause semantics to revisions, Need/Rule labels, and per-clause policy export.
 - Keep deleted draft clauses local; reject hard deletion of published history.
