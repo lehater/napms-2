@@ -30,11 +30,56 @@
 
 Это наилучший найденный privacy-safe корпус фактов для качественного разбора; это **не** независимо размеченная выборка уровня сигнала. Handoff, PR и CI дают проверяемые статусы, ссылки, SHA и результаты задач. Они не содержат полного потока событий исполнения, а публикация сырых traces/payload не требуется для данного результата. Наличие trace correlation само по себе не делает запись экспертом размеченной.
 
-### Примеры: наблюдение отдельно от вывода
+### Полные примеры по контракту Finding
 
-- **Факт, #150:** после merge PR #149 Issue #146 была `completed`, а Project оставался `Review`; #75 оставалась `Running` без подтверждённой активной работы. Сверка и исправление состояний описаны в handoff #150. **Интерпретация:** это симптом рассогласования lifecycle/read-back. Причина не устанавливает, была ли она в неполном handoff, обнаружении возможностей, чтении статуса или критерии остановки.
-- **Факт, #149:** `gh run watch` применялся к конкретному завершённому Verify run; правила требуют совпадения run с HEAD и чтения итогового API conclusion. **Интерпретация:** повторное чтение прежнего run может быть излишним, но новый SHA/attempt или изменение состояния требует проверки и не маркируется отклонением.
-- **Факт, #9:** две отдельные оценки и независимые oracle labels дали приведённые выше результаты. **Интерпретация:** score без привязки к типу ошибки и decision threshold недостаточен для gate. Это иллюстрация риска, не оценка частоты ошибок.
+Эти две записи применяют поля контракта к разным классам входа. Первая — наблюдённое рассогласование lifecycle. Вторая явно помечена как контрольный сценарий ожидаемой проверки, в котором нарушения не наблюдалось; успешный контроль полезен, чтобы не смешивать штатное действие с отклонением.
+
+#### Пример A — #146 закрыта, а Project item оставался в Review
+
+Источник — [handoff/refinement comment #150](https://github.com/lehater/napms-2/issues/150#issuecomment-7041462655), где прямо записано, что #146 закрыли как completed после merge #149, но Project Status оставался `Review`; при сверке #146 перевели в `Done`. В том же комментарии отдельно указано, что #75 оставалась `Running` без подтверждённой активной работы. Здесь разбирается только #146; #75 — отдельное наблюдение.
+
+| Поле Finding | Запись |
+|---|---|
+| `finding_id` | `EX-153-146-project-status` (локальный ID примера, не новый GitHub Issue) |
+| `source` | #150 [comment 7041462655](https://github.com/lehater/napms-2/issues/150#issuecomment-7041462655); связанный принятый [Issue #146](https://github.com/lehater/napms-2/issues/146) и [merged PR #149](https://github.com/lehater/napms-2/pull/149). Comment сообщает о сверке native Project state. |
+| `run_or_task`, `role` | Task/Issue `#146`; execution `runId=unknown`, `role=unknown` — источник не называет run или исполнителя операции завершения/read-back. |
+| `scope` | Lifecycle одного native Project #6 item для Issue #146 после merge PR #149: Issue state и Project Status. Это не утверждение о всём Project или других Issues. |
+| `observation` | Issue #146 уже закрыта как completed после merge PR #149, но её Project item ещё показывал `Review`; при последующей сверке его статус изменён на `Done`. |
+| `criterion` | Для этого результата проверяется согласованность lifecycle: после подтверждённых merge и completion связанный Project item должен отражать `Done`. Это аналитическое сопоставление записанных состояний, не новая policy. |
+| `expected` | Связанный item отражает завершение задачи (`Done`) после merge/completed. |
+| `actual` | На момент сверки item ещё был `Review`; позднее его привели к `Done`. |
+| `impact` | Подтверждено расхождение двух lifecycle представлений. Возможное влияние — неточное отображение завершённости/очереди в Project; фактические последствия для назначения, задержки или потери работы неизвестны. |
+| `evidence_status` / `confidence` | `verified` / высокая для записанного state mismatch: handoff явно сообщает оба значения и последующее исправление. Независимого исторического API snapshot на момент ошибки в доступном источнике нет; уверенность основана на проверяемой записи координатора. |
+| `classification` | Временный симптом: lifecycle / `False Completion`. Это не установленная причина, severity или ответственность. |
+| `fact` | После merge #149 Issue #146 была completed/closed; Project Status оставался `Review`; при сверке стал `Done` — так записано в comment #150. |
+| `hypothesis` | Возможный механизм — отсутствующий или неполный post-merge Project read-back. Доказательств того, кто/когда пропустил операцию и почему, нет; handoff также оставляет открытыми варианты handoff, capability, полномочий и критерия остановки. |
+| `method_version` | `issue-153-manual-review/v1`: ручное сопоставление handoff с Issue/PR без analyzer. Это версия примера в отчёте, не принятая или валидированная методика Harness. |
+| `privacy_note` | Используются только опубликованные handoff и native Issue/PR ссылки; raw traces и приватные payload не нужны. |
+
+#### Пример B — контрольный сценарий: проверка уже завершённого CI run
+
+**Тип записи: контрольный сценарий / ожидаемое поведение, не Finding о сбое.** PR #149 сообщает о read-only проверке существующего Verify run [44734789327](https://github.com/lehater/napms-2/actions/runs/44734789327), принадлежавшего [PR #148](https://github.com/lehater/napms-2/pull/148). Проверили, что run уже completed/success, его `head_sha` совпадает с `headRefOid` PR #148, attempt равен 1, а `gh run watch --exit-status` сразу вернул success без повторного ожидания. Независимый read-back GitHub API подтверждает run ID, `head_sha=91f80f4f31684444ae96b7eb03f48fc921f6fd7b`, `status=completed`, `conclusion=success`, `run_attempt=1`; PR #148 показывает тот же head SHA. Отдельный финальный Verify run [44737042797](https://github.com/lehater/napms-2/actions/runs/44737042797) совпадает с финальным SHA PR #149 `fec8fc4a01434aa9962793969abfb2cb4bf3fa2a`, attempt 1, и также завершился success. Это два разных run: первый — контроль completed-run check, второй — CI evidence финального PR #149 head.
+
+| Поле записи | Запись |
+|---|---|
+| `finding_id` | `EX-153-149-completed-run-control` (локальный ID контрольного примера; не новая проблема) |
+| `source` | [PR #149: Verification](https://github.com/lehater/napms-2/pull/149), [PR #148](https://github.com/lehater/napms-2/pull/148), [Verify run #44734789327](https://github.com/lehater/napms-2/actions/runs/44734789327), [финальный Verify run PR #149 #44737042797](https://github.com/lehater/napms-2/actions/runs/44737042797). Метаданные runs и PR head сверены через GitHub API. |
+| `run_or_task`, `role` | Контрольный completed run: `runId=44734789327`, `attempt=1`, task/PR #148 (Issue #145); `role=unknown` — handoff не указывает, кто вызвал watcher/read-back. Отдельный финальный run PR #149: `44737042797`. |
+| `scope` | Проверка соответствия завершённого Verify run #44734789327 HEAD и attempt PR #148; отдельно — подтверждение финального PR #149 CI. Не обобщается на другие runs или все проверки. |
+| `criterion` | Для completed-run check выбран run для текущего PR; `head_sha` и attempt совпадают; API показывает `completed/success`; watcher с `--exit-status` возвращает success. При новом HEAD/attempt требуется целевая проверка нового run. При неизменном завершённом run повторно ждать не требуется. |
+| `expected` | Метаданные выбранного run соответствуют PR #148 SHA и attempt 1; watcher возвращает success без нового ожидания, CI evidence остаётся привязанным к нужному HEAD. |
+| `actual` | Совпадение SHA `91f80f4f31684444ae96b7eb03f48fc921f6fd7b`, attempt 1, `completed/success` подтверждены API. PR #149 handoff сообщает, что `gh run watch --exit-status` вернул success без ожидания. Финальный отдельный run PR #149 также завершился success на SHA `fec8fc4a01434aa9962793969abfb2cb4bf3fa2a`, attempt 1. |
+| `impact` | Негативное влияние не наблюдалось. Контроль показывает штатную проверку и разделение CI результата от ожидания; цель — не повторять ожидание неизменного завершённого run, сохранив точную проверку SHA/attempt. Фактическая экономия времени/вызовов не измерена. |
+| `evidence_status` / `confidence` | `verified` / высокая для статуса, SHA и attempt двух runs по API и PR head. Факт о непосредственном успешном выходе watcher основан на Verification handoff PR #149; команда не перезапускалась в этом исследовании. |
+| `classification` | `control_scenario` / `normal_expected`; не failure, не false positive и не подтверждение снижения polling после merge. |
+| `fact` | В PR #149 записана проверка run #44734789327 на PR #148; API и PR head совпадают по SHA/status/attempt. Финальный run PR #149 #44737042797 отдельно совпадает с его HEAD и успешен. |
+| `hypothesis` | Снижение числа повторных чтений или времени ожидания в дальнейшей работе этим контрольным примером не подтверждено; нужен отдельный baseline и наблюдение обычных последующих PR. |
+| `method_version` | `issue-153-manual-review/v1` плюс exact-head/run/attempt read-back, описанный в [PR #149](https://github.com/lehater/napms-2/pull/149). Это иллюстративная процедура, не новая policy и не оценка частот. |
+| `privacy_note` | Только публичные workflow metadata, PR и issue handoff; trace payload не используется. |
+
+#### Связанный факт из #9 — ограничение judge, не execution Finding
+
+Факт: [Issue #9](https://github.com/lehater/napms-2/issues/9) фиксирует по одной положительной и отрицательной оценке с независимым oracle; threshold 0.5 принял и дефектный пример. Это основание не считать judge score доказательством корректности. Артефакты #9 не содержат пары `expected/actual` для task-level execution событий, поэтому не включаются в два примера выше и не дают FP/FN rate для #153.
 
 ## Предлагаемый минимальный контракт Finding
 
