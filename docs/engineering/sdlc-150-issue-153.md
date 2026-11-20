@@ -8,7 +8,7 @@
 
 ## Краткий вывод
 
-Рекомендуется начинать с ручного evidence-first разбора конкретного выполнения и детерминированных фактов, уже доступных в GitHub, CI и согласованных handoff. Сохранять проверяемое наблюдение как Finding с точной ссылкой на источник, а интерпретацию причины — отдельно как гипотезу. Временный набор группировок ниже использовать только как аналитические метки, допускающие несколько значений и `unknown`; не закреплять его как нормативную классификацию до проверки на размеченных случаях.
+Рекомендуется начинать с ручного evidence-first разбора конкретного выполнения и детерминированных фактов, уже доступных в GitHub, CI и согласованных handoff. Сохранять Finding под стабильным локальным `finding_id`, отдельно связывать его с одним или несколькими `evidence_refs`; связь evidence↔Finding многие-ко-многим. Повторное чтение/импорт того же аналитического утверждения не создаёт новый Finding, но новое отдельное evidence сохраняется. Новый Finding обосновывается только отличающимися утверждением, критерием или scope с учётом дедупликации #154. Временный набор группировок ниже — аналитические метки, не нормативная классификация.
 
 Нативные Langfuse scores, annotation queues и evaluators — доступные варианты реализации будущего пилота, но необходимость их применения здесь не доказана. Публичная документация описывает возможности продукта, однако доступ к проектному экземпляру и его версия не подтверждены этим исследованием. Локальный `.codex/langfuse.json` не читался; значения конфигурации и credentials не проверялись. Внешние traces не запрашивались и не передавались.
 
@@ -40,16 +40,22 @@
 
 | Поле Finding | Запись |
 |---|---|
-| `finding_id` | `EX-153-146-project-status` (локальный ID примера, не новый GitHub Issue) |
-| `source` | Тело [#150](https://github.com/lehater/napms-2/issues/150), раздел «Наблюдение: незавершённый refinement и рассогласование lifecycle (2026-11-20)»; связанный [Issue #146](https://github.com/lehater/napms-2/issues/146) и [merged PR #149](https://github.com/lehater/napms-2/pull/149). |
-| `run_or_task`, `role` | Task/Issue `#146`; execution `runId=unknown`, `role=unknown` — источник не называет run или исполнителя операции завершения/read-back. |
+| `finding_id` | `F-153-146-lifecycle-mismatch` — стабильный локальный ключ этого аналитического утверждения, не ID источника. Повторное чтение этого же mismatch сохраняет ключ; отличающийся scope/criterion потребует отдельного обоснования. |
+| `finding_ref` | Каноническое место уже записанного наблюдения: тело [#150](https://github.com/lehater/napms-2/issues/150), указанный lifecycle раздел + ключ `F-153-146-lifecycle-mismatch`. Это пример mapping, а не отдельная копия записи в PR #160. |
+| `evidence_refs` | `E-150-body-146-lifecycle` → #150 body section; `E-146-issue-state` → [Issue #146](https://github.com/lehater/napms-2/issues/146); `E-149-merge` → [merged PR #149](https://github.com/lehater/napms-2/pull/149). Локаторы указывают на источники, не на Finding ID. |
+| `task_identity` | `lehater/napms-2 + issueId=146`. |
+| `attempt_identity` / `execution_runId` | `unknown`; evidence не идентифицирует execution attempt. |
+| `sourceSha`, `role` | `sourceSha=unknown`; `role=unknown`. CI identity для этого наблюдения неизвестна и не подставляется из PR merge. |
+| `ci_run_id`, `ci_attempt`, `environment_id` | `unknown`; источник не связывает lifecycle mismatch с CI run или конкретным runtime environment. |
 | `scope` | Lifecycle одного native Project #6 item для Issue #146 после merge PR #149: Issue state и Project Status. Это не утверждение о всём Project или других Issues. |
 | `observation` | После merge PR #149 состояние Issue #146 было `completed/closed`, но её Project item оставался в `Review`; при последующей сверке item был приведён к `Done`. Кто установил или объявил состояние Issue, источник не уточняет. |
 | `criterion` | Для этого результата проверяется согласованность lifecycle: после подтверждённых merge и completion связанный Project item должен отражать `Done`. Это аналитическое сопоставление записанных состояний, не новая policy. |
 | `expected` | Связанный item отражает завершение задачи (`Done`) после merge/completed. |
 | `actual` | На момент сверки item ещё был `Review`; позднее его привели к `Done`. |
 | `impact` | Подтверждено расхождение двух lifecycle представлений. Возможное влияние — неточное отображение завершённости/очереди в Project; фактические последствия для назначения, задержки или потери работы неизвестны. |
-| `evidence_status` / `confidence` | `verified` / высокая для записанного state mismatch: handoff явно сообщает оба значения и последующее исправление. Независимого исторического API snapshot на момент ошибки в доступном источнике нет; уверенность основана на проверяемой записи координатора. |
+| `evidence_status` | `E-150-body-146-lifecycle` — `verified` как запись самого утверждения в теле #150; claim об underlying mismatch — `partial`, так как исторического native snapshot нет. Для такого отсутствующего snapshot проверенность `unverified` (`source_availability=unavailable`). `E-146-issue-state` и `E-149-merge` — `verified` только для их текущего Issue/merge context. |
+| `source_availability` | Тело #150, текущая Issue #146 и merged PR #149 — `available`; исторический snapshot Project #6 на момент mismatch — `unavailable`. |
+| `confidence` | Высокая для утверждения «тело #150 сообщает mismatch и correction»; средняя для реконструкции исторического mismatch на основании этого сообщения; `unknown` для RCA. Это уверенность по утверждениям, не один общий score. |
 | `classification` | Временный симптом: lifecycle mismatch. Это не установленная причина, false completion, severity или ответственность. |
 | `fact` | В теле #150 в указанном разделе зафиксированы состояния Issue #146 (`completed/closed`) и Project Status (`Review`), затем исправление Project item на `Done`. |
 | `hypothesis` | Возможный механизм — отсутствующий или неполный post-merge Project read-back. Доказательств того, кто/когда пропустил операцию и почему, нет; handoff также оставляет открытыми варианты handoff, capability, полномочий и критерия остановки. |
@@ -62,18 +68,21 @@
 
 | Поле записи | Запись |
 |---|---|
-| `finding_id` | `EX-153-149-completed-run-control` (локальный ID контрольного примера; не новая проблема) |
-| `source` | [Verification handoff PR #149](https://github.com/lehater/napms-2/pull/149), связанный [Issue #146](https://github.com/lehater/napms-2/issues/146), target [PR #148](https://github.com/lehater/napms-2/pull/148), [CI Verify run #44734789327](https://github.com/lehater/napms-2/actions/runs/44734789327), [финальный CI Verify run PR #149 #44737042797](https://github.com/lehater/napms-2/actions/runs/44737042797). Метаданные CI runs и PR heads сверены через GitHub API. |
-| `run_or_task`, `role` | Задача/выполнение: Issue #146 / PR #149; `role=unknown` — handoff не указывает роль участника. |
-| `execution_attempt_runId` | `unknown`; связанный Langfuse/Codex execution run не указан. Не подставлять сюда GitHub Actions CI ID. |
-| `ci_run_id` | `44734789327` — GitHub Actions Verify run, использованный как CI evidence для PR #148. Отдельный финальный CI run PR #149: `44737042797`. |
-| `ci_attempt`, `ci_head_sha`, `ci_result` | Для #44734789327: attempt `1`, head `91f80f4f31684444ae96b7eb03f48fc921f6fd7b`, `completed/success`. Для финального #44737042797: attempt `1`, head `fec8fc4a01434aa9962793969abfb2cb4bf3fa2a`, `completed/success`. |
+| `record_kind`, `finding_id`, `finding_ref` | `normal_control`; Finding ID/ref не применимы, потому что проверка прошла ожидаемо и не образует Finding. Это control result, не запись Problem. |
+| `evidence_refs` | `E-149-verification-note` → verification handoff задачи #146 / [PR #149](https://github.com/lehater/napms-2/pull/149); `E-CI-44734789327` → [GitHub Actions Verify run](https://github.com/lehater/napms-2/actions/runs/44734789327), target PR #148; `E-CI-44737042797` → [финальный Verify run PR #149](https://github.com/lehater/napms-2/actions/runs/44737042797). Evidence refs — источники, не Finding IDs. |
+| `task_identity` | `lehater/napms-2 + issueId=146`; verification task linked to PR #149. |
+| `attempt_identity` / `execution_runId` | `unknown`; matching execution attempt/runId отсутствует в evidence. Не использовать CI run как замену. |
+| `sourceSha`, `role` | `sourceSha=unknown` для execution attempt; `role=unknown`. CI run/attempt/SHA перечислены отдельно ниже. |
+| `ci_run_id`, `ci_attempt`, `ci_head_sha`, `ci_result` | CI #44734789327: target PR #148, attempt `1`, SHA `91f80f4f31684444ae96b7eb03f48fc921f6fd7b`, `completed/success`. Финальный CI #44737042797: target PR #149, attempt `1`, SHA `fec8fc4a01434aa9962793969abfb2cb4bf3fa2a`, `completed/success`. |
+| `environment_id` | `unknown`; источник не задаёт environment identity. |
 | `scope` | В рамках #146 / PR #149 проверялась корректность использования уже завершённого CI run #44734789327, чьим target был PR #148; отдельно подтверждён финальный CI PR #149. Execution attempt и CI run не отождествляются; вывод не обобщается на другие runs. |
 | `criterion` | Для CI completed-run check выбран правильный run для target PR; `head_sha` и CI `run_attempt` совпадают; API показывает `completed/success`; watcher с `--exit-status` возвращает success. При новом HEAD/attempt требуется целевая проверка нового CI run. Execution attempt runId остаётся отдельной identity и здесь неизвестен. |
 | `expected` | CI run соответствует PR #148 SHA и CI attempt 1; watcher возвращает success без нового ожидания, а CI evidence остаётся привязанным к нужному HEAD. Неизвестный execution attempt ID не заполняется CI run ID. |
 | `actual` | GitHub API подтверждает CI run #44734789327, SHA `91f80f4f31684444ae96b7eb03f48fc921f6fd7b`, attempt 1, `completed/success`. Verification handoff PR #149 сообщает, что watcher вернул success без ожидания. Финальный отдельный CI run PR #149 (#44737042797) также завершился success на SHA `fec8fc4a01434aa9962793969abfb2cb4bf3fa2a`, attempt 1. Execution attempt runId остаётся `unknown`. |
 | `impact` | Негативное влияние не наблюдалось. Контроль показывает штатную проверку и разделение CI результата от ожидания; цель — не повторять ожидание неизменного завершённого run, сохранив точную проверку SHA/attempt. Фактическая экономия времени/вызовов не измерена. |
-| `evidence_status` / `confidence` | `verified` / высокая для статуса, SHA и attempt двух runs по API и PR head. Факт о непосредственном успешном выходе watcher основан на Verification handoff PR #149; команда не перезапускалась в этом исследовании. |
+| `evidence_status` | `E-CI-44734789327` и `E-CI-44737042797` — `verified` для status/SHA/attempt по API и PR read-back. `E-149-verification-note` — `partial` для утверждения об immediate watcher success: есть handoff, но нет исходного stdout в этом источнике. |
+| `source_availability` | PR #149 verification handoff, оба Actions run и PR #148/#149 — `available`; исходный stdout watcher — `unavailable`. |
+| `confidence` | Высокая для CI status/SHA/attempt; средняя для сообщения handoff об immediate watcher success; `unknown` для execution attempt identity. Confidence относится к каждому утверждению, не к RCA. |
 | `classification` | `control_scenario` / `normal_expected`; не failure, не false positive и не подтверждение снижения polling после merge. |
 | `fact` | В verification handoff задачи #146 / PR #149 записана проверка CI run #44734789327, target PR #148; API и PR head совпадают по SHA/status/attempt. CI run PR #149 #44737042797 отдельно совпадает с его HEAD и успешен. Execution attempt identity в source не установлена. |
 | `hypothesis` | Снижение числа повторных чтений или времени ожидания в дальнейшей работе этим контрольным примером не подтверждено; нужен отдельный baseline и наблюдение обычных последующих PR. |
@@ -90,19 +99,23 @@ Finding — проверяемая запись о наблюдении; его 
 
 | Поле | Минимальное содержание |
 |---|---|
-| `finding_id` | Стабильный ID записи или ссылка на Issue/PR; без идентификатора, раскрывающего секретные данные. |
-| `source` | Ссылка и конкретный source ID: Issue/PR comment, commit SHA, workflow run + attempt/job, либо разрешённый observation/event ID. Указать, если источник агрегирован или неполон. |
-| `run_or_task`, `role` | Issue и attempt/run ID, если доступны; затронутая ответственность (например Coordinator, Worker, Reviewer) либо `unknown`. Не отождествлять роль с моделью или инструментом. |
+| `finding_id` | Стабильный локальный ключ аналитической записи, не ID источника, attempt или CI run. Один Finding может иметь несколько evidence refs, и одно evidence может поддерживать несколько различных Findings. Повторный импорт/перечитывание того же аналитического утверждения не создаёт новый ID/Finding. |
+| `finding_ref` | Канонический URL комментария/записи GitHub + ключ Finding, если в записи несколько записей. Если Finding уже находится в соответствующем Problem Issue, сохранять ссылку туда; иначе использовать существующий Issue/PR с контекстом. Не копировать запись при появлении Problem — сохранить исходную ссылку и связь. |
+| `evidence_refs` | Один или несколько ID/локаторов исходных записей (Issue/PR comment/body, commit, workflow run/job, разрешённый observation/event ID). Это ID evidence, не ID Finding; связь Evidence↔Finding многие-ко-многим. При повторном чтении того же утверждения использовать прежний `finding_id`, добавляя только реально отдельное evidence. Сырые данные остаются в источнике. |
+| `task_identity`, `attempt_identity`, `sourceSha` | Task = repository + issueId; attempt = repository + primary issueId + runId. `sourceSha` только версия исходника. Не подменять execution runId CI run ID; CI run/attempt/job и environment IDs хранить отдельно. Недоступная identity = `unknown`. |
+| `role` | Затронутая ответственность (Coordinator, Refiner, Worker, Reviewer) либо `unknown`; не отождествлять её с моделью или инструментом. |
 | `observation` | Краткое конкретное событие/состояние, без вывода о мотивах; ссылка позволяет его проверить. |
 | `criterion`, `expected`, `actual` | Проверяемое правило и сравнение. Для намеренно неуспешного probe/TDD: ожидаемое поведение шага и результат должны быть указаны явно. Если oracle или ожидание не определены — `unknown`, а не нарушение по умолчанию. |
 | `classification` | Отдельные временные метки: симптом (ноль или несколько предложенных групп), тип доказательства и статус подтверждения. `cause`, ответственность и severity не кодировать в symptom. |
 | `impact` | Наблюдаемое влияние и область, либо `unknown`; не присваивать приоритет из одного симптома. |
-| `evidence_status` / `confidence` | Например: `verified` (прямой артефакт и критерий), `partial` (неполный источник/часть критерия), `unknown`. Confidence относится к уверенности в наблюдении/сопоставлении, не к вероятности причины. Качественная метка предпочтительнее псевдоточного числа без калибровки. |
+| `evidence_status` | Только `verified` / `partial` / `unverified`, применяется к конкретной evidence-связи. `unknown` по проверенности отображается как `unverified`. |
+| `source_availability` | Отдельно для каждого источника: `available` / `unavailable` / `unknown`. Это доступность evidence, не его проверенность. |
+| `confidence` | Качественная оценка уверенности в конкретном утверждении (например high/medium/low/unknown), отдельно от `evidence_status` и только применительно к этому утверждению; не уверенность в RCA. |
 | `fact` / `hypothesis` | Явно разделённые утверждения и основания. У гипотезы — подтверждающие/опровергающие данные и что проверить дальше. Не выдавать корреляцию за root cause. |
 | `method_version` | Имя и версия применённого ручного протокола, правила или evaluator; `manual` также имеет версию чек-листа. Для автоматического результата — конфигурация evaluator и источник версии. |
 | `privacy_note` | Ссылка на safe artifact или причина, по которой идентификатор/содержимое опущены; raw trace, credentials и приватные payload в запись не копировать. |
 
-Статус доказательства отделять от статуса выполнения задачи и от статуса изменения Harness. Полезный маршрут вывода: **штатный шаг / сигнал без нарушения → проверенное наблюдение → evidence-backed problem → гипотеза причины → решение**. Это последовательность аналитических различий, а не новый workflow gate. Неуспешная команда сама по себе — факт о команде; для классификации как проблемы требуется показать, что шаг не должен был завершиться так, или что последующие ожидаемые проверки/восстановление не произошли.
+Статус доказательства отделять от доступности источника, уверенности в утверждении, статуса выполнения задачи и статуса изменения Harness. Дедупликация следует смысловой записи, не числу импортов: повторное чтение того же утверждения использует прежний `finding_id` и добавляет только действительно новое `evidence_ref`; новый Finding требует обоснованно отличающихся scope, criterion или claim. Каноническую ссылку и поиск дублей согласовывать с #154; не заводить отдельный реестр. Canonical Problem — существующий GitHub Issue; Decision/effect assessment записываются там комментариями с отдельным стабильным ключом, а связанный Action Issue/PR сохраняет обратную ссылку. #153 описывает только Finding/evidence связь и не дублирует эти записи.
 
 ## Временные группы симптомов и границы
 
@@ -140,7 +153,21 @@ Finding — проверяемая запись о наблюдении; его 
 
 ## Минимальный пилот и условия для метрик
 
-На текущих материалах допустим только **качественный пилот методики**: перепроверить уже опубликованные кейсы #150 и #144–#146 по контракту Finding, указав факты, гипотезы, штатный/ожидаемый шаг и отсутствующие поля. Не считать это независимой калибровкой: записи создавались в ходе тех же расследований и не являются слепой разметкой.
+Согласованный межзадачный интерфейс зафиксирован в [интеграционном ревью #150](https://github.com/lehater/napms-2/issues/150#issuecomment-7043459327): #153 отвечает за семантику Finding; #151 — полномочия и инициацию; #152 — read-only доступ и read-back; #154 — canonical refs/dedup; #155 — оценку эффекта. Следующие пункты описывают только аналитический результат в существующем handoff, не новый lifecycle.
+
+### Инициация, границы и результат ручного разбора
+
+Координатор инициирует ограниченную выборку при обычном handoff/разборе результата либо при завершении или прерывании уже существующей попытки. Он выполняет read-only анализ в пределах своих полномочий или поручает его Refiner с подтверждённой capability. Project Operator делает только отдельно разрешённые записи и read-back. До чтения фиксируются критерий, окно/граница, планируемый размер и правило отбора. Первый кандидат для будущего пилота — одна уже завершённая обычная задача; последующая ограниченная выборка может включать завершённые и прерванные попытки по заранее заданному правилу. Это не обязательное расписание и не live pilot.
+
+Для каждой выбранной задачи/попытки существующий handoff получает GitHub outcome, ссылки на выбранные evidence, availability/capability gaps, результат по заданному критерию и следующий шаг:
+
+- `finding` — критерий подтверждён доступным evidence; записать стабильный `finding_id`/`finding_ref` и связи `evidence_refs` по контракту выше.
+- `normal` — покрытие достаточно для именно этого критерия и наблюдения ему соответствуют; это результат выбранного разбора, а не утверждение о незамеченных критериях.
+- `unknown` — критерий, evidence или покрытие недостаточны для выбора между finding и normal; сохранить причину/отсутствующий источник и capability gap.
+
+Зафиксировать границы покрытия: планируемый/eligible объём, выбранное и проверенное `n`, исключения, пропуски и причины, недоступные источники. Без покрытия отсутствие Finding означает `unknown`, а не `normal`; никакая доля accuracy или effect не выводится из отсутствия записей. При достаточном покрытии `normal` относится только к заранее заданному критерию.
+
+Качественный ручной пилот допустим после read-only gate #152: подтвердить разрешённый источник/доступ и корреляцию task→attempt, использовать минимум необходимых метаданных и не выносить raw I/O из исходного хранилища. Экспертные labels для такого качественного разбора не обязательны. В данном документальном исследовании live pilot не проводился; фактический доступ и корреляция Langfuse остаются непроверенными. Это не измеренная точность или эффект. Без основания не запускать Judge, auto-write, paid/synthetic evaluation и не утверждать measured accuracy. Этот контракт не вводит сериализацию, новый gate, расписание или инфраструктуру.
 
 Если владелец отдельно решит измерить качество метода, минимальная безопасная процедура:
 
