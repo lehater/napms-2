@@ -51,7 +51,7 @@ export function ClauseFields({ item, index, change, remove }: {
 }) {
   const key = index + 1
   return <fieldset className="interaction-clause-draft">
-    <legend>TrafficClause #{key}</legend>
+    <legend>Условие #{key}</legend>
     <label>Протокол<select aria-label={`Протокол условия ${key}`} value={item.ipProtocol}
       onChange={event => change({ ...item, ipProtocol: event.target.value as 'TCP' | 'UDP' })}>
       <option value="TCP">TCP</option><option value="UDP">UDP</option>

@@ -161,6 +161,31 @@ def test_same_purpose_requires_new_revision_and_legacy_exact_duplicates_blocked(
                  "UDP", 9998, 9998))
 
 
+def test_purpose_is_optional_and_does_not_distinguish_self_interactions(env):
+    _, _, _, client, _ = env
+    requester = auth(env, "requester")
+    base = f'/applications/{IDS["application"]}/interactions'
+    created = client.post(base, headers=requester, json={
+        "sourceComponentId": IDS["sender"],
+        "destinationComponentId": IDS["sender"],
+        "trafficClauses": [clause("TCP", destination=443)],
+    })
+    assert created.status_code == 201, created.text
+    interaction = created.json()
+    assert interaction["purpose"] == ""
+    assert interaction["sourceComponentId"] == interaction["destinationComponentId"]
+    assert interaction["revisions"][0]["revisionNumber"] == 1
+
+    duplicate = client.post(base, headers=requester, json={
+        "sourceComponentId": IDS["sender"],
+        "destinationComponentId": IDS["sender"],
+        "purpose": "A different description",
+        "trafficClauses": [clause("UDP", destination=5353)],
+    })
+    assert duplicate.status_code == 409
+    assert duplicate.json()["error"]["code"] == "INTERACTION_PAIR_EXISTS"
+
+
 def test_overlapping_clauses_are_rejected(env):
     _, _, _, client, _ = env
     requester = auth(env, "requester")
