@@ -16,7 +16,7 @@ Use [.ai/workflow.yaml](../../../.ai/workflow.yaml) as the source for intake, pr
 
 ## Apply and reconcile
 
-7. Project Operator uses only approved native GitHub CLI/API operations available in the runtime. Re-read the baseline before writing; reconcile drift or return for a revised decision. Match canonical identities/outcome scope before creation and use persisted IDs subsequently. Before retrying a timeout or partial batch, inspect for existing Issues, links and Project items; apply only missing approved changes and preserve unrelated data. Include removals explicitly in the approved plan.
+7. Project Operator uses only approved native GitHub CLI/API operations available in the runtime. Re-read the baseline before writing; reconcile drift or return for a revised decision. Match canonical identities/outcome scope before creation and use persisted IDs subsequently. Before retrying a timeout or partial batch, inspect for existing Issues, links and Project items; apply only missing approved changes and preserve unrelated data. Include removals explicitly in the approved plan. Use the shared [GitHub operations reference](../../../.ai/github-operations.md) for live field/option discovery, pagination, API forms, and permission diagnostics; it is command guidance, not additional policy.
 
    Use existing native operations below when a shell is available, or supported connector equivalents. Verify endpoint/request support and discovered IDs before writes; unsupported operations require a handoff.
 
