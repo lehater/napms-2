@@ -1,6 +1,6 @@
 # GitHub operations
 
-Use this as the shared command reference for Project and Issue/PR operations. Policy and ordering remain in [`.ai/workflow.yaml`](workflow.yaml), [`decompose`](../.agents/skills/decompose/SKILL.md), and [`execute-task`](../.agents/skills/execute-task/SKILL.md). IDs, names, options, endpoint support, and CLI JSON fields are live data: discover them in the target repository/Project and runtime before each operation. Do not copy values from examples into another operation.
+Use this as the shared command reference for Project and Issue/PR operations. Policy and ordering remain in [`.ai/workflow.yaml`](workflow.yaml), [`decompose`](../.agents/skills/decompose/SKILL.md), and [`execute-task`](../.agents/skills/execute-task/SKILL.md). At the start of an operation, discover the target repository/Project, relevant IDs, names, options, endpoint support, and CLI JSON fields. Reuse those discoveries for subsequent steps in the same operation while the target and baseline remain consistent and there are no signs of drift. Re-read after each write to verify its result. If a concurrent update, changed target, API/CLI error, or read-back mismatch indicates drift, stop and refresh the affected baseline before another write. A later operation starts with a fresh baseline. Do not copy values from examples into another operation.
 
 ## Runtime capability and errors
 
@@ -41,6 +41,8 @@ gh project item-edit --project-id PROJECT_NODE_ID --id ITEM_ID \
 # Independently re-read with `gh project item-list ... --format json` and compare.
 ```
 
+This command form follows the [GitHub CLI `gh project item-edit` manual](https://cli.github.com/manual/gh_project_item-edit); the local `gh project item-edit --help` is the capability check for the installed version.
+
 ## Issue type and custom Issue Fields
 
 Issue Type and custom Issue Fields are repository/owner Issue metadata, separate from similarly named Project fields. Check the repository Issue API and field definitions/values rather than the Project item. Current REST forms:
@@ -57,7 +59,8 @@ gh api repos/OWNER/REPO/issues/NUMBER/issue-field-values --paginate \
 For an authorized Issue Field change, first read the complete current values and discover the field ID and valid option name. Prepare the exact payload, then use `POST /repos/{owner}/{repo}/issues/{issue_number}/issue-field-values` to add/update supplied values. `PUT` replaces the complete value set; include all intended existing values if using it. Read the complete values endpoint again and compare. Issue type can be set on Issue create; check the currently documented endpoint/API before trying to change an existing Issue's type. Do not conflate this metadata with Project `Type`, `Reasoning`, or `Effort` fields.
 
 ```sh
-# issue-fields.json contains the exact authorized field_id/value pairs.
+# issue-fields.json uses an issue_field_values array; each entry has a discovered
+# numeric field_id and a value matching that field's documented data type.
 gh api repos/OWNER/REPO/issues/NUMBER/issue-field-values \
   -X POST --input issue-fields.json
 gh api repos/OWNER/REPO/issues/NUMBER/issue-field-values --paginate
@@ -98,11 +101,12 @@ gh api repos/OWNER/REPO/issues/PARENT/sub_issue -X DELETE \
 # Add/remove a blocker using the blocked issue's database ID.
 gh api repos/OWNER/REPO/issues/BLOCKED_ISSUE/dependencies/blocked_by -X POST \
   -F issue_id=BLOCKER_DATABASE_ID
-gh api repos/OWNER/REPO/issues/BLOCKED_ISSUE/dependencies/blocked_by -X DELETE \
-  -F issue_id=BLOCKER_DATABASE_ID
+# DELETE takes the blocker ID as a path parameter, not a request body.
+gh api repos/OWNER/REPO/issues/BLOCKED_ISSUE/dependencies/blocked_by/BLOCKER_DATABASE_ID \
+  -X DELETE
 ```
 
-Independently read the full parent, child, and blocker lists after the write; compare canonical IDs and dependency completion state/reason. Do not retry a timed-out write until read-back establishes whether it applied. A successful HTTP response by itself is not evidence of the final relationship state. See GitHub's [sub-issues endpoints](https://docs.github.com/en/rest/issues/sub-issues) and [issue dependency endpoints](https://docs.github.com/en/rest/issues/issue-dependencies).
+Independently read the full parent, child, and blocker lists after the write; compare canonical IDs and dependency completion state/reason. Do not retry a timed-out write until read-back establishes whether it applied. A successful HTTP response by itself is not evidence of the final relationship state. The endpoint and request shapes above follow GitHub's [sub-issues endpoints](https://docs.github.com/en/rest/issues/sub-issues) and [issue dependency endpoints](https://docs.github.com/en/rest/issues/issue-dependencies).
 
 ## Pull request fields
 
@@ -120,4 +124,4 @@ The CLI field list is version-specific; ask `gh pr view --json unsupportedField`
 
 Checked read-only on **2026-11-20** with **GitHub CLI 2.46.0** against `lehater/napms-2`, Project #6, Issue #144, and PR #138. `gh project view` returned `.fields.totalCount` and `.items.totalCount`; `field-list` exposed fields as `.fields[]` with option objects, and `item-list` exposed `.items[]` including item IDs and current Status/Priority/Workstream. REST reads returned Issue Type as `.type.name`; the Issue Field values route returned field IDs/names/types/values, and the owner field-definition route returned definitions/options. Parent, sub-issues, and blocked-by reads succeeded (empty relationships for #144); GraphQL returned `parent`, `subIssues.nodes/pageInfo`, `blockedBy.nodes/pageInfo`; the PR query returned `headRefOid` and `closingIssuesReferences`. `gh pr view`'s local JSON field error listed supported fields, including `headRefOid`; its list is runtime output, not a repository-wide compatibility promise. No relationship, field value, Project field, or PR value was written for this verification.
 
-The evidence establishes these read forms for that date/runtime and accessible resources. Check again when the runtime, endpoint, repository, or permission context differs. GitHub documents [Issue Field value endpoints](https://docs.github.com/en/rest/issues/issue-field-values) and [Issue Field definitions](https://docs.github.com/en/rest/users/issue-fields); endpoint-specific permission tables are authoritative for access requirements.
+The read forms were checked on that date/runtime against accessible resources. The write request shapes above were separately checked against GitHub's official [Issue Field value endpoints](https://docs.github.com/en/rest/issues/issue-field-values), [sub-issues endpoints](https://docs.github.com/en/rest/issues/sub-issues), [issue dependency endpoints](https://docs.github.com/en/rest/issues/issue-dependencies), and [GitHub CLI `gh api` manual](https://cli.github.com/manual/gh_api). In particular, removing a blocker uses `DELETE .../dependencies/blocked_by/{issue_id}` with the blocking Issue database ID in the path. No relationship or field write was issued for this documentation check. Check again when the runtime, endpoint, repository, or permission context differs. GitHub's [Issue Field definitions](https://docs.github.com/en/rest/users/issue-fields) and each endpoint's permission table remain authoritative.
