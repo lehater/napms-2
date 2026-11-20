@@ -4,7 +4,11 @@
 
 ### Requirement: Directed Interaction with initial immutable revision
 
-Each Interaction SHALL identify a directed pair of Components within one Application. Purpose SHALL describe that relationship but SHALL NOT be part of its identity. Published revisions SHALL be numbered and immutable, each containing at least one canonical TCP/UDP TrafficClause with independent source and destination ports. Editing traffic SHALL publish a new revision; duplicate or overlapping clauses SHALL be rejected.
+Each Interaction SHALL be identified by its Application and directed source-to-destination Component pair. Purpose SHALL be optional and MAY be omitted or empty when creating an Interaction. When present, purpose SHALL be descriptive only and SHALL NOT be part of the Interaction's identity. The primary user-facing label SHALL be derived from the directed Component pair; a supplied purpose SHALL be supplementary. Published revisions SHALL be numbered and immutable, each containing at least one canonical TCP/UDP TrafficClause with independent source and destination ports. Editing traffic SHALL publish a new revision; duplicate or overlapping clauses SHALL be rejected.
+
+#### Scenario: Create an Interaction without a purpose
+- **WHEN** an authorized actor creates an Interaction with a valid directed Component pair and valid initial revision but omits purpose or leaves it empty
+- **THEN** creation succeeds, the initial revision is published atomically, and the Interaction's primary label is derived from its source and destination Components
 
 #### Scenario: Publish initial multi-clause revision
 - **WHEN** an actor creates an Interaction with two distinct valid clauses
