@@ -175,8 +175,10 @@ function InteractionsTab({ client, application, reloadKey }: {
     </div>
     <ErrorNotice text={error}/>
     <EntityTable<Interaction> rows={page?.items ?? []} columns={[
-      {key:'purpose', title:'Назначение', render:item=><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>{item.purpose || `Историческая связь · ${item.interactionId.slice(0,8)}`}</Link>},
-      {key:'direction', title:'Направление', render:item=>`${item.sourceComponentName} → ${item.destinationComponentName}`},
+      {key:'interaction', title:'Взаимодействие', render:item=><Link className="block" to={`/applications/${application.applicationId}/interactions/${item.interactionId}`}>
+        {item.sourceComponentName} → {item.destinationComponentName}
+        {item.purpose && <small className="block">Описание: {item.purpose}</small>}
+      </Link>},
       {key:'latest', title:'Последняя ревизия', render:item=>{
         const latest = item.revisions.at(-1)!
         return <><Link to={`/applications/${application.applicationId}/interactions/${item.interactionId}/revisions/${latest.interactionRevisionId}`}>{`#${latest.revisionNumber}`}</Link><small className="block max-w-64 truncate" title={latest.trafficLabel}>{latest.trafficLabel}</small></>

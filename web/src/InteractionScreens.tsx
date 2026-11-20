@@ -14,6 +14,8 @@ const revisionPath = (applicationId: string, interactionId: string, revisionId: 
   `${interactionPath(applicationId, interactionId)}/revisions/${revisionId}`
 const newRevisionPath = (applicationId: string, interactionId: string) =>
   `${interactionPath(applicationId, interactionId)}/revisions/new`
+const interactionLabel = (item: Pick<Interaction, 'sourceComponentName' | 'destinationComponentName'>) =>
+  `${item.sourceComponentName} → ${item.destinationComponentName}`
 
 function catalogError(reason: unknown): string {
   if (reason instanceof ApiError) {
@@ -44,7 +46,7 @@ function ClauseEditor({ clauses, setClauses }: {
       <Button type="button" variant="outline" disabled={clauses.length >= 32}
         onClick={() => setClauses(items => [...items, emptyClause()])}>Добавить условие</Button>
     </header>
-    <p className="ux-note">Условия принадлежат создаваемой ревизии. Удаление здесь изменяет только черновик.</p>
+    <p className="ux-note">Удаление условия здесь меняет только черновик.</p>
     {clauses.map((clause, index) => <ClauseFields key={index} item={clause} index={index}
       change={value => change(index, value)} remove={() => remove(index)} />)}
     {!clauses.length && <p role="alert">Добавьте хотя бы одно условие для публикации.</p>}
@@ -150,7 +152,7 @@ export function InteractionCreateScreen({client}: {client: Client}) {
     try {
       const created = await client.createInteraction(applicationId, {
         sourceComponentId: source, destinationComponentId: destination,
-        purpose: purpose.trim(), trafficClauses,
+        purpose: purpose.trim() || undefined, trafficClauses,
       })
       navigate(interactionPath(applicationId, created.interactionId))
     } catch (reason) { setError(catalogError(reason)) }
@@ -162,19 +164,12 @@ export function InteractionCreateScreen({client}: {client: Client}) {
   return <DetailView
     breadcrumbs={<InteractionBreadcrumbs applicationId={applicationId} applicationName={application.name} />}
     title="Создать взаимодействие"
-    subtitle={<>Профиль: <Link to={`/applications/${applicationId}?tab=interactions`}>{application.name}</Link></>}
-    tabs={[{id:'create',label:'Создание',href:`/applications/${applicationId}/interactions/new`}]}
-    activeTab="create">
-    <p>Взаимодействие описывает назначение связи и её участников. Первую ревизию с набором TrafficClause опубликуем одновременно с созданием.</p>
+    subtitle={<>Профиль: <Link to={`/applications/${applicationId}?tab=interactions`}>{application.name}</Link></>}>
+    <p className="ux-note">Одна направленная пара компонентов — одно взаимодействие. Описание можно добавить при необходимости; условия трафика сохраняются вместе с первой ревизией.</p>
     {error && <p role="alert" className="ux-field-error">{error}</p>}
-    <form className="interaction-draft-form" onSubmit={submit}>
+    <form className="interaction-draft-form interaction-create-form" onSubmit={submit}>
       <section className="interaction-identity">
-        <h2>Взаимодействие</h2>
-        <label>Назначение взаимодействия
-          <input aria-label="Назначение взаимодействия" required maxLength={300}
-            value={purpose} placeholder="Например, синхронизация времени"
-            onChange={event => setPurpose(event.target.value)} />
-        </label>
+        <h2>Направление</h2>
         <div className="interaction-participants">
           <label>Источник<select required value={source} onChange={event => setSource(event.target.value)}>
             <option value="">Выберите компонент</option>
@@ -185,15 +180,20 @@ export function InteractionCreateScreen({client}: {client: Client}) {
             {components.map(c => <option key={c.componentId} value={c.componentId}>{c.name}</option>)}
           </select></label>
         </div>
+        <label>Описание взаимодействия (необязательно)
+          <input aria-label="Описание взаимодействия (необязательно)" maxLength={300}
+            value={purpose} placeholder="Например, синхронизация времени"
+            onChange={event => setPurpose(event.target.value)} />
+        </label>
         {samePair && <p role="alert" className="ux-field-error">
           Такая направленная связь уже существует: <Link to={interactionPath(applicationId, samePair.interactionId)}>
-            {samePair.purpose || `Interaction ${samePair.interactionId.slice(0,8)}`}
-          </Link>. Изменяйте условия через новую ревизию.
+            {interactionLabel(samePair)}
+          </Link>{samePair.purpose && <small className="block">Описание: {samePair.purpose}</small>}. Условия можно изменить новой ревизией.
         </p>}
       </section>
       <section className="interaction-new-revision">
-        <h2>Ревизия #1 · черновик</h2>
-        <p className="ux-note">Опубликованная ревизия неизменяема. Её TrafficClause нельзя редактировать или удалять.</p>
+        <h2>Условия первой ревизии</h2>
+        <p className="ux-note">После создания эти условия нельзя редактировать; изменения публикуются новой ревизией.</p>
         <ClauseEditor clauses={clauses} setClauses={setClauses}/>
       </section>
       <div className="interaction-draft-actions">
@@ -213,17 +213,17 @@ export function InteractionDetailScreen({client}: {client: Client}) {
     {error ? <p role="alert">{error}</p> : <p role="status">Загрузка взаимодействия…</p>}
   </section>
   const base = interactionPath(applicationId, interactionId)
+  const label = interactionLabel(item)
   const latest = item.revisions.at(-1)!
   return <DetailView
-    breadcrumbs={<InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName} interactionId={interactionId} name={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`} currentInteraction />}
-    title={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}
-    subtitle={`${item.sourceComponentName} → ${item.destinationComponentName}`}
+    breadcrumbs={<InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName} interactionId={interactionId} name={label} currentInteraction />}
+    title={label}
     actions={tab === 'revisions' ? <Button asChild><Link to={newRevisionPath(applicationId, interactionId)}>Создать ревизию</Link></Button> : undefined}
     tabs={[{id:'overview',label:'Обзор',href:base}, {id:'revisions',label:'Ревизии',href:`${base}?tab=revisions`}]}
     activeTab={tab}>
     {tab === 'overview' && <>
       <dl className="ux-properties">
-        <div><dt>Назначение</dt><dd>{item.purpose || 'Не указано (историческая запись)'}</dd></div>
+        <div><dt>Описание</dt><dd>{item.purpose || 'Не добавлено'}</dd></div>
         <div><dt>Источник</dt><dd>{item.sourceComponentName}</dd></div>
         <div><dt>Получатель</dt><dd>{item.destinationComponentName}</dd></div>
         <div><dt>Последняя опубликованная ревизия</dt><dd>
@@ -234,7 +234,7 @@ export function InteractionDetailScreen({client}: {client: Client}) {
       <p className="ux-note">Изменения трафика создают новую ревизию. Предыдущие версии и связанные с ними заявки и правила сохраняются.</p>
     </>}
     {tab === 'revisions' && <>
-      <p className="ux-note">Список опубликованных неизменяемых ревизий. Откройте версию для просмотра её TrafficClause.</p>
+      <p className="ux-note">Список опубликованных неизменяемых ревизий. Откройте версию, чтобы посмотреть её условия.</p>
       <EntityTable<InteractionRevision> rows={item.revisions} columns={[
         {key:'number',title:'Ревизия',render:r=><Link to={revisionPath(applicationId, interactionId, r.interactionRevisionId)}>{`#${r.revisionNumber}`}</Link>},
         {key:'count',title:'Условий',render:r=>r.trafficClauses.length},
@@ -257,22 +257,23 @@ export function InteractionRevisionDetailScreen({client}: {client: Client}) {
   if (!revision) return <section className="ux-panel ux-panel-body"><p role="alert">Ревизия не найдена.</p>
     <Link to={revisionsPath(applicationId, interactionId)}>К списку ревизий</Link></section>
   const base = revisionPath(applicationId, interactionId, revisionId)
+  const label = interactionLabel(item)
   return <DetailView
     breadcrumbs={<><InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName}
-      interactionId={interactionId} name={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}/>
+      interactionId={interactionId} name={label}/>
       <span>/</span><span aria-current="page">Ревизия #{revision.revisionNumber}</span></>}
     title={`Ревизия #${revision.revisionNumber}`}
-    subtitle={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}
+    subtitle={<><strong>{label}</strong>{item.purpose && <small className="block">Описание: {item.purpose}</small>}</>}
     state="Опубликована"
     tabs={[{id:'overview',label:'Обзор',href:base},
       {id:'clauses',label:'Условия трафика',href:`${base}?tab=clauses`}]}
     activeTab={tab}>
     {tab === 'overview' && <>
       <dl className="ux-properties">
-        <div><dt>Взаимодействие</dt><dd><Link to={interactionPath(applicationId, interactionId)}>{item.purpose || 'Историческое взаимодействие'}</Link></dd></div>
+        <div><dt>Взаимодействие</dt><dd><Link to={interactionPath(applicationId, interactionId)}>{label}</Link>{item.purpose && <small className="block">Описание: {item.purpose}</small>}</dd></div>
         <div><dt>Номер версии</dt><dd>#{revision.revisionNumber}</dd></div>
         <div><dt>Состояние</dt><dd>Опубликована · неизменяема</dd></div>
-        <div><dt>Количество TrafficClause</dt><dd>{revision.trafficClauses.length}</dd></div>
+        <div><dt>Количество условий</dt><dd>{revision.trafficClauses.length}</dd></div>
         <div><dt>Краткое описание трафика</dt><dd>{revision.trafficLabel}</dd></div>
         <div><dt>Revision ID</dt><dd><code>{revision.interactionRevisionId}</code></dd></div>
       </dl>
@@ -280,7 +281,7 @@ export function InteractionRevisionDetailScreen({client}: {client: Client}) {
       <Button asChild variant="outline"><Link to={`${base}?tab=clauses`}>Посмотреть условия трафика</Link></Button>
     </>}
     {tab === 'clauses' && <>
-      <p className="ux-note">TrafficClause принадлежат только этой опубликованной ревизии; каждое условие сохранено в её неизменяемом снимке.</p>
+      <p className="ux-note">Условия принадлежат только этой опубликованной ревизии и не изменяются после публикации.</p>
       <EntityTable rows={revision.trafficClauses} columns={[
         {key:'index',title:'Условие',render:c=>`#${c.clauseIndex}`},
         {key:'protocol',title:'Протокол',render:c=>c.ipProtocol},
@@ -325,15 +326,14 @@ export function InteractionRevisionCreateScreen({client}: {client: Client}) {
   if (!item || !latest || draftKey !== revisionKey) return <section className="ux-panel ux-panel-body">
     {loadError ? <p role="alert">{loadError}</p> : <p role="status">Загрузка черновика ревизии…</p>}
   </section>
+  const label = interactionLabel(item)
   return <DetailView
     breadcrumbs={<><InteractionBreadcrumbs applicationId={applicationId} applicationName={item.applicationName}
-      interactionId={interactionId} name={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}/>
+      interactionId={interactionId} name={label}/>
       <span>/</span><span aria-current="page">Новая ревизия</span></>}
     title={`Новая ревизия #${latest.revisionNumber + 1}`}
-    subtitle={item.purpose || `${item.sourceComponentName} → ${item.destinationComponentName}`}
-    tabs={[{id:'draft',label:'Черновик ревизии',href:newRevisionPath(applicationId, interactionId)}]}
-    activeTab="draft">
-    <p>Черновик создан из Revision #{latest.revisionNumber}. Изменения не сохраняются до публикации.</p>
+    subtitle={<><strong>{label}</strong>{item.purpose && <small className="block">Описание: {item.purpose}</small>}</>}>
+    <p className="ux-note">Новая ревизия основана на версии #{latest.revisionNumber}. Условия сохраняются после публикации.</p>
     {error && <p role="alert" className="ux-field-error">{error}</p>}
     <form className="interaction-draft-form" onSubmit={submit}>
       <ClauseEditor clauses={clauses} setClauses={setClauses}/>

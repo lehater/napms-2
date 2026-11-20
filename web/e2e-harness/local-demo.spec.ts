@@ -1021,15 +1021,15 @@ test('local-demo requester creates a self-interaction and requester/exporter see
   await page.getByRole('button', { name: 'Добавить компонент', exact: true }).click()
   await page.getByRole('link', { name: 'Взаимодействия', exact: true }).click()
   await page.getByRole('link', { name: 'Создать', exact: true }).click()
-  await page.getByLabel('Назначение взаимодействия').fill('Time synchronization')
+  await page.getByLabel('Описание взаимодействия (необязательно)').fill('Time synchronization')
   await page.getByRole('combobox', { name: 'Источник', exact: true }).selectOption({ label: 'NTP Server' })
   await page.getByRole('combobox', { name: 'Получатель', exact: true }).selectOption({ label: 'NTP Server' })
   await page.getByRole('combobox', { name: 'Протокол условия 1', exact: true }).selectOption('UDP')
   await page.getByLabel('Назначение от 1').fill('123')
   await page.getByLabel('Назначение до 1').fill('123')
   await page.getByRole('button', { name: 'Создать', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Time synchronization', exact: true })).toBeVisible()
-  await expect(page.getByText('NTP Server → NTP Server', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'NTP Server → NTP Server', exact: true })).toBeVisible()
+  await expect(page.getByText('Time synchronization', { exact: true })).toBeVisible()
 
   await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('link', { name: 'Развёрнутые компоненты', exact: true }).click()
   for (const resourceName of ['sender.demo.example', 'receiver.demo.example']) {
