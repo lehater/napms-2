@@ -112,6 +112,17 @@ refinement:
   orchestration:
     independent_axes: Role is responsibility; Skill is method; Model is capability/cost; Runtime is execution environment; Capability is verified tools/permissions; Mode is who transfers control.
     human_assisted: A person transfers the same GitHub handoff between ChatGPT, Codex CLI, or another harness; strong or economical models may run in any capable runtime.
+    task_boundary:
+      independent_outcome: Start a new task scope and session, with its source and handoff recorded in GitHub.
+      same_outcome: Resume the existing task/attempt when its context remains useful; preserve the same attempt identity, even when a handoff starts another session.
+      bounded_refinement: Treat one explicitly bounded refinement batch as one task; do not require a separate session for every child Issue.
+      new_attempt: A new attempt is distinct from a session; when optional tracing is enabled, follow its procedure to create a new runId. A session ID is not a runId.
+    coordinator_handoff: Before assignment, record the outcome, source of truth, required capabilities, selected runtime, suitable model/reasoning mode, and session boundary in the existing Issue/PR handoff. Use Reasoning/Effort to characterize task demand, not as fixed model settings; choose the least costly capable model/mode and use deterministic operations without an LLM where practical.
+    routing:
+      github_only: Use a connected GitHub-capable chat/runtime when its verified operations cover the task; return a bounded handoff if a required operation is unavailable.
+      local_code_or_tests: Use a local development runtime with the required checkout, dependencies, and verification tools.
+      host_service: Use a runtime with verified access to the required host service; otherwise return the bounded handoff to a capable operator without broad environment searching.
+      deterministic_checks: Use the existing CI or deterministic local checks appropriate to the change.
     autonomous_future: A harness may eventually transfer the same roles and contracts, but requires explicit owner-approved scope, permission checks, budgets, bounded retries, serialized conflicting mutations, dependency/admission checks, and stop/escalation on unresolved decisions or exhausted quotas.
     enabled: human_assisted_only
 
