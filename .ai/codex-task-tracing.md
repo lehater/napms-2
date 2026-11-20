@@ -4,7 +4,9 @@
 
 The existing `tracing@codex-observability-plugin` Stop Hook reads `<cwd>/.codex/langfuse.json` when exporting each turn. To cover the **first** turn reliably, prepare the config in the target checkout/worktree **before** starting Codex. The trace experiment verified that project-local `metadata` propagates; no changes to the global Langfuse config are needed.
 
-## Prepare a task-scoped session
+The Coordinator chooses the session boundary under [.ai/workflow.yaml](workflow.yaml). This procedure handles optional **attempt/runId correlation** only: a runId is not a session ID, resuming the same attempt reuses its runId, and a new attempt gets a new one. Do not use tracing setup as a reason to require an extra user-facing stage.
+
+## Prepare task-scoped tracing
 
 Prefer to prepare before launching Codex so the first trace carries the ID. If the Issue is selected **inside a running Codex session**, the Coordinator can run this same setup immediately in its checkout before the next Stop Hook, then continue; already-exported traces may remain untagged. This can tag subsequent turns only if the running Codex process has no conflicting `LANGFUSE_CODEX_METADATA` override. A running process cannot have its inherited environment changed from inside the session; if that override conflicts or its value is unknown, relaunch Codex with the override removed or corrected.
 
