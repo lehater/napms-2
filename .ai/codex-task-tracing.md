@@ -1,5 +1,7 @@
 # Task-scoped Codex / Langfuse tracing
 
+**Scope:** this procedure prepares telemetry sending/export through the existing Codex Stop Hook. For Public API reads, use the separate [Langfuse read-access procedure](langfuse-read-access.md). The task-local metadata file is not the API connection configuration.
+
 **Responsibility:** the Coordinator or human launching a Codex session prepares its task identity, regardless of whether the task uses `decompose`, `execute-task`, or another approved workflow. This is an **optional observability step**, not a new admission gate, runtime, hook, or wrapper.
 
 The existing `tracing@codex-observability-plugin` Stop Hook reads `<cwd>/.codex/langfuse.json` when exporting each turn. To cover the **first** turn reliably, prepare the config in the target checkout/worktree **before** starting Codex. The trace experiment verified that project-local `metadata` propagates; no changes to the global Langfuse config are needed.
