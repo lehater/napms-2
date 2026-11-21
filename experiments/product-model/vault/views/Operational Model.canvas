@@ -1,0 +1,492 @@
+{
+  "nodes": [
+    {
+      "id": "77366e7f1cfa5cd3",
+      "type": "file",
+      "file": "knowledge/operational/fragmented-access-knowledge.md",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "a0483c4ffbfd5c23",
+      "type": "file",
+      "file": "knowledge/operational/operational-mission.md",
+      "x": 0,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "637bba31cb0f598f",
+      "type": "file",
+      "file": "knowledge/operational/napms-system-mission.md",
+      "x": 0,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "9ab3f8edf0ee5208",
+      "type": "file",
+      "file": "knowledge/operational/govern-network-access-process.md",
+      "x": 0,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "31f15ef43b315bc5",
+      "type": "file",
+      "file": "knowledge/operational/catalog-curator.md",
+      "x": 370,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "13acf18ae75458ea",
+      "type": "file",
+      "file": "knowledge/operational/business-process-owner.md",
+      "x": 370,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "c573a8456f175f34",
+      "type": "file",
+      "file": "knowledge/operational/access-requester.md",
+      "x": 370,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "76e05790d7fb57d0",
+      "type": "file",
+      "file": "knowledge/operational/access-decision-maker.md",
+      "x": 370,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "ff63a75b31145d04",
+      "type": "file",
+      "file": "knowledge/operational/policy-export-operator.md",
+      "x": 370,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "690dd353352159ad",
+      "type": "file",
+      "file": "knowledge/operational/authority-administrator.md",
+      "x": 370,
+      "y": 950,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "c4e105cc989155fe",
+      "type": "file",
+      "file": "knowledge/operational/napms-system.md",
+      "x": 370,
+      "y": 1140,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "0aa2e0a9a7c75c39",
+      "type": "file",
+      "file": "knowledge/operational/maintain-resources.md",
+      "x": 740,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "030666f9132f5269",
+      "type": "file",
+      "file": "knowledge/operational/define-communication.md",
+      "x": 740,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "2f65fdff769e50ee",
+      "type": "file",
+      "file": "knowledge/operational/express-connectivity-need.md",
+      "x": 740,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "e4b4ef4be7d75298",
+      "type": "file",
+      "file": "knowledge/operational/submit-access-request.md",
+      "x": 740,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "bea1f8c7065c51d5",
+      "type": "file",
+      "file": "knowledge/operational/decide-access-request.md",
+      "x": 740,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "5901e79627b6560b",
+      "type": "file",
+      "file": "knowledge/operational/review-policy-export.md",
+      "x": 740,
+      "y": 950,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "760a42b0f14a5fbe",
+      "type": "file",
+      "file": "knowledge/operational/explainable-connectivity.md",
+      "x": 1110,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "668a2c8931825365",
+      "type": "file",
+      "file": "knowledge/scenarios/catalog-to-business-need.md",
+      "x": 1110,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "2a2a8818e17b5830",
+      "type": "file",
+      "file": "knowledge/scenarios/access-request-allowed.md",
+      "x": 1110,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "ca382e05a91f5e10",
+      "type": "file",
+      "file": "knowledge/scenarios/policy-export.md",
+      "x": 1110,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "899549d5abbf5b42",
+      "fromNode": "637bba31cb0f598f",
+      "fromSide": "right",
+      "toNode": "77366e7f1cfa5cd3",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "addresses"
+    },
+    {
+      "id": "1ff1084774655acd",
+      "fromNode": "31f15ef43b315bc5",
+      "fromSide": "right",
+      "toNode": "0aa2e0a9a7c75c39",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "7a4ef92567785c58",
+      "fromNode": "31f15ef43b315bc5",
+      "fromSide": "right",
+      "toNode": "030666f9132f5269",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "19cd404ad3a65b12",
+      "fromNode": "13acf18ae75458ea",
+      "fromSide": "right",
+      "toNode": "2f65fdff769e50ee",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "2d3980a6579359e9",
+      "fromNode": "c573a8456f175f34",
+      "fromSide": "right",
+      "toNode": "e4b4ef4be7d75298",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "5220c689497f570a",
+      "fromNode": "76e05790d7fb57d0",
+      "fromSide": "right",
+      "toNode": "bea1f8c7065c51d5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "ecc16b2bf27d5bdb",
+      "fromNode": "ff63a75b31145d04",
+      "fromSide": "right",
+      "toNode": "5901e79627b6560b",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "e71eef238df558a1",
+      "fromNode": "690dd353352159ad",
+      "fromSide": "right",
+      "toNode": "e4b4ef4be7d75298",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "84014fd4d40a5337",
+      "fromNode": "690dd353352159ad",
+      "fromSide": "right",
+      "toNode": "bea1f8c7065c51d5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "e9c8f48c07e35b65",
+      "fromNode": "690dd353352159ad",
+      "fromSide": "right",
+      "toNode": "5901e79627b6560b",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "6b33afacd6785f88",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "0aa2e0a9a7c75c39",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "d99ae19bcf585240",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "030666f9132f5269",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "6bfd0bad344e5859",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "2f65fdff769e50ee",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "96ca651c5f8e5abf",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "e4b4ef4be7d75298",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "008fa16906455747",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "bea1f8c7065c51d5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "fad36065b4fe5017",
+      "fromNode": "c4e105cc989155fe",
+      "fromSide": "right",
+      "toNode": "5901e79627b6560b",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "participates_in"
+    },
+    {
+      "id": "f6896b5638395fc3",
+      "fromNode": "0aa2e0a9a7c75c39",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "e7aaec9f4328510d",
+      "fromNode": "030666f9132f5269",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "d025d2cc2ecd5127",
+      "fromNode": "2f65fdff769e50ee",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "e048627a7a9d5855",
+      "fromNode": "e4b4ef4be7d75298",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "1db5f8f3aa785d6f",
+      "fromNode": "bea1f8c7065c51d5",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "6e751d027fd3572d",
+      "fromNode": "5901e79627b6560b",
+      "fromSide": "right",
+      "toNode": "9ab3f8edf0ee5208",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "part_of"
+    },
+    {
+      "id": "e211a3567a315e30",
+      "fromNode": "760a42b0f14a5fbe",
+      "fromSide": "right",
+      "toNode": "77366e7f1cfa5cd3",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "addresses"
+    },
+    {
+      "id": "967852b3c9345757",
+      "fromNode": "668a2c8931825365",
+      "fromSide": "right",
+      "toNode": "31f15ef43b315bc5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "f686c1e191495918",
+      "fromNode": "668a2c8931825365",
+      "fromSide": "right",
+      "toNode": "13acf18ae75458ea",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "a5806235944f54c1",
+      "fromNode": "668a2c8931825365",
+      "fromSide": "right",
+      "toNode": "c4e105cc989155fe",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "770bc450de955beb",
+      "fromNode": "668a2c8931825365",
+      "fromSide": "right",
+      "toNode": "030666f9132f5269",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "eed2df8f0a2a56d1",
+      "fromNode": "668a2c8931825365",
+      "fromSide": "right",
+      "toNode": "2f65fdff769e50ee",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "4ddd3e5907d95772",
+      "fromNode": "2a2a8818e17b5830",
+      "fromSide": "right",
+      "toNode": "c573a8456f175f34",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "451bace805fa5f45",
+      "fromNode": "2a2a8818e17b5830",
+      "fromSide": "right",
+      "toNode": "76e05790d7fb57d0",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "29d4af0a3af05e4b",
+      "fromNode": "2a2a8818e17b5830",
+      "fromSide": "right",
+      "toNode": "c4e105cc989155fe",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "e090826f945f5b7c",
+      "fromNode": "ca382e05a91f5e10",
+      "fromSide": "right",
+      "toNode": "ff63a75b31145d04",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    },
+    {
+      "id": "f449c28746e35865",
+      "fromNode": "ca382e05a91f5e10",
+      "fromSide": "right",
+      "toNode": "c4e105cc989155fe",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "references"
+    }
+  ]
+}

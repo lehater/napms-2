@@ -1,0 +1,47 @@
+filters:
+  and:
+    - file.inFolder("knowledge/capabilities")
+    - type == "capability"
+views:
+  - type: table
+    name: Все возможности
+    groupBy:
+      property: area
+      direction: ASC
+    order:
+      - file.name
+      - capability_code
+      - name
+      - area
+      - scope_classification
+      - roadmap_stage
+      - implementation_status
+      - implementation_evidence
+  - type: table
+    name: Принятые возможности
+    filters:
+      and:
+        - scope_classification == "A"
+    groupBy:
+      property: area
+      direction: ASC
+    order:
+      - capability_code
+      - name
+      - area
+      - implementation_status
+  - type: table
+    name: Кандидаты и вне текущего плана
+    filters:
+      or:
+        - scope_classification == "C"
+        - scope_classification == "O"
+    groupBy:
+      property: scope_classification
+      direction: ASC
+    order:
+      - capability_code
+      - name
+      - area
+      - roadmap_stage
+      - implementation_status

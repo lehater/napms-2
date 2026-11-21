@@ -1,0 +1,371 @@
+{
+  "standardStyleDefaults": "native",
+  "hierarchy": {
+    "parents": [
+      "part_of",
+      "specializes",
+      "realizes",
+      "state_of"
+    ],
+    "children": [],
+    "leftFriends": [
+      "allocated_to",
+      "participates_in",
+      "references",
+      "conveys",
+      "addresses"
+    ],
+    "rightFriends": [
+      "Challenger",
+      "constrains"
+    ],
+    "previous": [
+      "source"
+    ],
+    "next": [
+      "target",
+      "precedes"
+    ],
+    "hidden": []
+  },
+  "ontologyPairingVersion": 1,
+  "inferAllLinksAsFriends": false,
+  "inverseInfer": false,
+  "inverseArrowDirection": true,
+  "renderAlias": true,
+  "nameFields": "name, aliases",
+  "showInferredNodes": false,
+  "showAttachments": false,
+  "showURLNodes": false,
+  "showVirtualNodes": false,
+  "showFolderNodes": false,
+  "showTagNodes": false,
+  "showPageNodes": true,
+  "showNeighborCount": true,
+  "wrapNodeLabels": false,
+  "typographyProfiles": {
+    "desktop": {
+      "baseFontSize": 9.8,
+      "maxLabelLength": 70,
+      "maxWidth": 510,
+      "wrapNodeLabels": false
+    }
+  },
+  "baseFontSize": 12.4,
+  "showFullTagName": false,
+  "maxItemCount": 100,
+  "renderSiblings": false,
+  "showCrossLinks": true,
+  "siblingRelativeSize": 85,
+  "crossLinkOpacity": 85,
+  "applyPowerFilter": false,
+  "baseNodeStyle": {
+    "prefix": "",
+    "fillStyle": "solid",
+    "fontSize": 20,
+    "fontFamily": 3,
+    "maxLabelLength": 70,
+    "maxWidth": 390,
+    "roughness": 0,
+    "strokeShaprness": "round",
+    "strokeWidth": 1,
+    "strokeStyle": "solid",
+    "padding": 10,
+    "gateRadius": 5,
+    "gateOffset": 15,
+    "gateFillStyle": "solid"
+  },
+  "centralNodeStyle": {
+    "fontSize": 30,
+    "maxWidth": 450
+  },
+  "inferredNodeStyle": {},
+  "urlNodeStyle": {
+    "icon": "globe"
+  },
+  "virtualNodeStyle": {
+    "fillStyle": "hachure"
+  },
+  "siblingNodeStyle": {
+    "fontSize": 15
+  },
+  "attachmentNodeStyle": {
+    "icon": "paperclip"
+  },
+  "folderNodeStyle": {
+    "icon": "folder",
+    "strokeShaprness": "sharp"
+  },
+  "tagNodeStyle": {
+    "icon": "tag",
+    "strokeShaprness": "sharp"
+  },
+  "tagNodeStyles": {
+    "#exchange_involvement": {
+      "backgroundColor": "#F0F2F5",
+      "borderColor": "#687484",
+      "textColor": "#172033"
+    },
+    "#function_involvement": {
+      "backgroundColor": "#F0F2F5",
+      "borderColor": "#687484",
+      "textColor": "#172033"
+    },
+    "#functional_exchange": {
+      "backgroundColor": "#E4E9EF",
+      "borderColor": "#536579",
+      "textColor": "#172033"
+    },
+    "#operational_process": {
+      "backgroundColor": "#D8EAFB",
+      "borderColor": "#245B94",
+      "textColor": "#172033"
+    },
+    "#functional_chain": {
+      "backgroundColor": "#FFE8CC",
+      "borderColor": "#A95109",
+      "textColor": "#172033"
+    },
+    "#scenario_message": {
+      "backgroundColor": "#E9ECF1",
+      "borderColor": "#687484",
+      "textColor": "#172033"
+    },
+    "#domain_entity": {
+      "backgroundColor": "#D8F3EF",
+      "borderColor": "#087E76",
+      "textColor": "#172033"
+    },
+    "#exchange_item": {
+      "backgroundColor": "#F2E5D8",
+      "borderColor": "#855C36",
+      "textColor": "#172033"
+    },
+    "#participant": {
+      "backgroundColor": "#FFF3CD",
+      "borderColor": "#876100",
+      "textColor": "#172033"
+    },
+    "#capability": {
+      "backgroundColor": "#F0E4FC",
+      "borderColor": "#7C3BB0",
+      "textColor": "#172033"
+    },
+    "#constraint": {
+      "backgroundColor": "#FCE1EC",
+      "borderColor": "#A9225C",
+      "textColor": "#172033"
+    },
+    "#component": {
+      "backgroundColor": "#DAF3E2",
+      "borderColor": "#237742",
+      "textColor": "#172033"
+    },
+    "#activity": {
+      "backgroundColor": "#DDF2FF",
+      "borderColor": "#0875A6",
+      "textColor": "#172033"
+    },
+    "#function": {
+      "backgroundColor": "#DCEAFE",
+      "borderColor": "#2057B0",
+      "textColor": "#172033"
+    },
+    "#scenario": {
+      "backgroundColor": "#FFE3DA",
+      "borderColor": "#B44E32",
+      "textColor": "#172033"
+    },
+    "#mission": {
+      "backgroundColor": "#FCE7D6",
+      "borderColor": "#A34700",
+      "textColor": "#172033"
+    },
+    "#problem": {
+      "backgroundColor": "#FDE8E7",
+      "borderColor": "#B42318",
+      "textColor": "#172033"
+    },
+    "#state": {
+      "backgroundColor": "#E2F2E6",
+      "borderColor": "#40794C",
+      "textColor": "#172033"
+    }
+  },
+  "tagStyleList": [
+    "#exchange_involvement",
+    "#function_involvement",
+    "#functional_exchange",
+    "#operational_process",
+    "#functional_chain",
+    "#scenario_message",
+    "#domain_entity",
+    "#exchange_item",
+    "#participant",
+    "#capability",
+    "#constraint",
+    "#component",
+    "#activity",
+    "#function",
+    "#scenario",
+    "#mission",
+    "#problem",
+    "#state"
+  ],
+  "primaryTagField": "type",
+  "displayAllStylePrefixes": false,
+  "baseLinkStyle": {
+    "strokeWidth": 1,
+    "strokeStyle": "solid",
+    "roughness": 0,
+    "startArrowHead": "none",
+    "endArrowHead": "arrow",
+    "showLabel": true,
+    "fontSize": 10,
+    "fontFamily": 3
+  },
+  "inferredLinkStyle": {
+    "strokeStyle": "dashed"
+  },
+  "folderLinkStyle": {},
+  "tagLinkStyle": {},
+  "hierarchyLinkStyles": {
+    "part_of": {
+      "strokeColor": "#4169B1",
+      "strokeWidth": 2,
+      "showLabel": true
+    },
+    "specializes": {
+      "strokeColor": "#C47724",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "realizes": {
+      "strokeColor": "#9639AC",
+      "strokeWidth": 2,
+      "showLabel": true
+    },
+    "addresses": {
+      "strokeColor": "#B97828",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "allocated_to": {
+      "strokeColor": "#287A43",
+      "strokeWidth": 2,
+      "showLabel": true
+    },
+    "constrains": {
+      "strokeColor": "#BD2856",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "conveys": {
+      "strokeColor": "#8B6C47",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "source": {
+      "strokeColor": "#8254BA",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "target": {
+      "strokeColor": "#A76623",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "participates_in": {
+      "strokeColor": "#7E8520",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "references": {
+      "strokeColor": "#697786",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    },
+    "precedes": {
+      "strokeColor": "#18865C",
+      "strokeWidth": 2,
+      "showLabel": true
+    },
+    "state_of": {
+      "strokeColor": "#137B78",
+      "strokeWidth": 1.5,
+      "showLabel": true
+    }
+  },
+  "graphDepth": 1,
+  "groupRelations": false,
+  "connectorStyle": "bezier",
+  "nodeSortOrder": "name-asc",
+  "parentColumns": 2,
+  "childColumns": 5,
+  "graphLenses": [
+    {
+      "id": "lens-napms-01",
+      "name": "Structure",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"part_of\")) or (edge.definition.equals(\"specializes\"))"
+    },
+    {
+      "id": "lens-napms-02",
+      "name": "Abstraction / Traceability",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"realizes\")) or (edge.definition.equals(\"addresses\"))"
+    },
+    {
+      "id": "lens-napms-03",
+      "name": "Product Overview",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"part_of\")) or (edge.definition.equals(\"realizes\")) or (edge.definition.equals(\"addresses\"))"
+    },
+    {
+      "id": "lens-napms-04",
+      "name": "Responsibility",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"allocated_to\")) or (edge.definition.equals(\"constrains\"))"
+    },
+    {
+      "id": "lens-napms-05",
+      "name": "Information Flow",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"source\")) or (edge.definition.equals(\"target\")) or (edge.definition.equals(\"conveys\"))"
+    },
+    {
+      "id": "lens-napms-06",
+      "name": "Functional Composition",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"part_of\")) or (edge.definition.equals(\"references\")) or (edge.definition.equals(\"participates_in\")) or (edge.definition.equals(\"precedes\")) or (edge.definition.equals(\"source\")) or (edge.definition.equals(\"target\")) or (edge.definition.equals(\"conveys\"))"
+    },
+    {
+      "id": "lens-napms-07",
+      "name": "Domain / Rules",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"state_of\")) or (edge.definition.equals(\"constrains\")) or (edge.definition.equals(\"references\")) or (edge.definition.equals(\"source\")) or (edge.definition.equals(\"target\"))"
+    },
+    {
+      "id": "lens-napms-08",
+      "name": "Scenario / Sequence",
+      "enabled": false,
+      "scope": "edge",
+      "mode": "include",
+      "expression": "(edge.definition.equals(\"part_of\")) or (edge.definition.equals(\"references\")) or (edge.definition.equals(\"participates_in\")) or (edge.definition.equals(\"precedes\")) or (edge.definition.equals(\"source\")) or (edge.definition.equals(\"target\"))"
+    }
+  ]
+}
