@@ -1,0 +1,17 @@
+filters:
+  and:
+  - file.inFolder("knowledge")
+  - file.ext == "md"
+views:
+- type: table
+  name: Typed model nodes
+  groupBy:
+    property: type
+    direction: ASC
+  order:
+  - file.name
+  - type
+  - name
+  - level
+  - epistemic
+  - sources

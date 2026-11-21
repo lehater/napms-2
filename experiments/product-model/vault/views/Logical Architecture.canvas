@@ -1,0 +1,339 @@
+{
+  "nodes": [
+    {
+      "id": "87d3ef71139b5935",
+      "type": "file",
+      "file": "knowledge/functions/resolve-deployment-resource-identity.md",
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "a979a9815a6d57ac",
+      "type": "file",
+      "file": "knowledge/functions/resolve-current-endpoint-address.md",
+      "x": 0,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "0c0f46086a905b16",
+      "type": "file",
+      "file": "knowledge/functions/select-communication-context.md",
+      "x": 0,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "643972537bea5703",
+      "type": "file",
+      "file": "knowledge/functions/check-request-authority.md",
+      "x": 0,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "d797a49ae05d54ae",
+      "type": "file",
+      "file": "knowledge/functions/create-pending-access-request.md",
+      "x": 0,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "c23f2aacfccf5947",
+      "type": "file",
+      "file": "knowledge/functions/check-decision-authority.md",
+      "x": 0,
+      "y": 950,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "d973d6aa4c035025",
+      "type": "file",
+      "file": "knowledge/functions/record-access-decision.md",
+      "x": 0,
+      "y": 1140,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "e6978690cb3058e9",
+      "type": "file",
+      "file": "knowledge/functions/create-or-reuse-policy-rule.md",
+      "x": 0,
+      "y": 1330,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "b4546cd2e68b5201",
+      "type": "file",
+      "file": "knowledge/functions/check-policy-export-authority.md",
+      "x": 0,
+      "y": 1520,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "4789e87e50d35e6d",
+      "type": "file",
+      "file": "knowledge/functions/select-effective-policy-rules.md",
+      "x": 0,
+      "y": 1710,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "2ca416672991541a",
+      "type": "file",
+      "file": "knowledge/functions/materialize-policy-export-row.md",
+      "x": 0,
+      "y": 1900,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "2d1d7212f9d350e7",
+      "type": "file",
+      "file": "knowledge/components/catalog-and-placement.md",
+      "x": 370,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "352a13f38e5b5ff5",
+      "type": "file",
+      "file": "knowledge/components/authority-evaluation.md",
+      "x": 370,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "d86bd7ae8e545212",
+      "type": "file",
+      "file": "knowledge/components/access-governance.md",
+      "x": 370,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "c2ee433759d05dd3",
+      "type": "file",
+      "file": "knowledge/components/desired-policy-projection.md",
+      "x": 370,
+      "y": 570,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "9ffdfb34c574f2d0",
+      "type": "file",
+      "file": "knowledge/functions/maintain-application-profile.md",
+      "x": -370,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "ddb595e225f0d9fe",
+      "type": "file",
+      "file": "knowledge/functions/define-component-roles.md",
+      "x": -370,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "470cd4e970cbc340",
+      "type": "file",
+      "file": "knowledge/functions/define-directed-interaction-revisions.md",
+      "x": -370,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "e4c0cb44c23df9a4",
+      "type": "file",
+      "file": "knowledge/functions/maintain-business-process.md",
+      "x": -370,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "1cc66d2623c2a163",
+      "type": "file",
+      "file": "knowledge/functions/record-connectivity-need.md",
+      "x": -370,
+      "y": 950,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "5063e813593ea54d",
+      "type": "file",
+      "file": "knowledge/components/business-justification.md",
+      "x": 370,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "8a04883809c0548e",
+      "fromNode": "87d3ef71139b5935",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "60b1f393827b5d27",
+      "fromNode": "a979a9815a6d57ac",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "042f550f21d2513b",
+      "fromNode": "0c0f46086a905b16",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "10580e2d2f4b573c",
+      "fromNode": "643972537bea5703",
+      "fromSide": "right",
+      "toNode": "352a13f38e5b5ff5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "b68c0e7aefde5960",
+      "fromNode": "d797a49ae05d54ae",
+      "fromSide": "right",
+      "toNode": "d86bd7ae8e545212",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "e776cde090295f86",
+      "fromNode": "c23f2aacfccf5947",
+      "fromSide": "right",
+      "toNode": "352a13f38e5b5ff5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "af0106cbd2585161",
+      "fromNode": "d973d6aa4c035025",
+      "fromSide": "right",
+      "toNode": "d86bd7ae8e545212",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "a69edb8dc1e6598b",
+      "fromNode": "e6978690cb3058e9",
+      "fromSide": "right",
+      "toNode": "d86bd7ae8e545212",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "45a59684b3265c9e",
+      "fromNode": "b4546cd2e68b5201",
+      "fromSide": "right",
+      "toNode": "352a13f38e5b5ff5",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "a6a0840f41575711",
+      "fromNode": "4789e87e50d35e6d",
+      "fromSide": "right",
+      "toNode": "d86bd7ae8e545212",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "ead011641a085b02",
+      "fromNode": "2ca416672991541a",
+      "fromSide": "right",
+      "toNode": "c2ee433759d05dd3",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "bc4c4aa512c3c751",
+      "fromNode": "9ffdfb34c574f2d0",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "d19d9be4b87bef2f",
+      "fromNode": "ddb595e225f0d9fe",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "156ccbc14dee67b9",
+      "fromNode": "470cd4e970cbc340",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "f80082ef05d9edee",
+      "fromNode": "e4c0cb44c23df9a4",
+      "fromSide": "right",
+      "toNode": "5063e813593ea54d",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "f02dd7136084dd01",
+      "fromNode": "1cc66d2623c2a163",
+      "fromSide": "right",
+      "toNode": "5063e813593ea54d",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    }
+  ]
+}

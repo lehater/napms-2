@@ -1,0 +1,20 @@
+filters:
+  or:
+    - type == "domain_entity"
+    - type == "state"
+views:
+  - type: table
+    name: Domain entities and states
+    groupBy:
+      property: type
+      direction: ASC
+    order:
+      - name
+      - domain_subtype
+      - part_of
+      - specializes
+      - source
+      - target
+      - references
+      - state_of
+      - epistemic
