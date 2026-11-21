@@ -39,7 +39,9 @@
 		{"id":"9fcd634a418056a9","type":"file","file":"knowledge/constraints/access-subject-identity.md","x":1110,"y":1710,"width":320,"height":150},
 		{"id":"50954cf8ff705f67","type":"file","file":"knowledge/constraints/effective-policy-export.md","x":1110,"y":1900,"width":320,"height":150},
 		{"id":"861e303cafda5199","type":"file","file":"knowledge/constraints/missing-address-incomplete.md","x":1110,"y":2090,"width":320,"height":150},
-		{"id":"8f8a7f6e5de55c1e","type":"file","file":"knowledge/constraints/responsibility-not-authority.md","x":1110,"y":2280,"width":320,"height":150}
+		{"id":"8f8a7f6e5de55c1e","type":"file","file":"knowledge/constraints/responsibility-not-authority.md","x":1110,"y":2280,"width":320,"height":150},
+		{"id":"f29f92ba4725df28","type":"file","file":"knowledge/constraints/immutable-interaction-revision.md","x":1110,"y":2470,"width":320,"height":150},
+		{"id":"0c31624b19c016a8","type":"file","file":"knowledge/constraints/connectivity-need-tuple-uniqueness.md","x":1110,"y":2660,"width":320,"height":150}
 	],
 	"edges":[
 		{"id":"4bc8c8b9240f5c45","fromNode":"1cf4faf4639c5374","fromSide":"right","toNode":"807899d2baed528c","toSide":"left","toEnd":"arrow","label":"references"},
@@ -55,7 +57,6 @@
 		{"id":"3652099e9e76569d","fromNode":"3af379d980ad5ed3","fromSide":"right","toNode":"0a3bff3d715a5720","toSide":"left","toEnd":"arrow","label":"references"},
 		{"id":"b7aa778344c05ab7","fromNode":"ce153497639b5593","fromSide":"right","toNode":"4a70fe7e35ab5bda","toSide":"left","toEnd":"arrow","label":"part_of"},
 		{"id":"c87e8a67cc235f35","fromNode":"ce153497639b5593","fromSide":"right","toNode":"d3cf8541101251c5","toSide":"left","toEnd":"arrow","label":"references"},
-		{"id":"611509e69ded5638","fromNode":"ce153497639b5593","fromSide":"right","toNode":"770b9c55f316508c","toSide":"left","toEnd":"arrow","label":"references"},
 		{"id":"9c31c003d6c95c32","fromNode":"f712e82d4a0c527d","fromSide":"right","toNode":"32d9acded3d75849","toSide":"left","toEnd":"arrow","label":"references"},
 		{"id":"ae7370f294a556a8","fromNode":"f712e82d4a0c527d","fromSide":"right","toNode":"ce153497639b5593","toSide":"left","toEnd":"arrow","label":"references"},
 		{"id":"a96643ba680e5536","fromNode":"5adab28e5da65d45","fromSide":"right","toNode":"f712e82d4a0c527d","toSide":"left","toEnd":"arrow","label":"references"},
@@ -96,6 +97,9 @@
 		{"id":"cb9e1d7eb7655a47","fromNode":"50954cf8ff705f67","fromSide":"right","toNode":"c0ec7fd8a8b45698","toSide":"left","toEnd":"arrow","label":"constrains"},
 		{"id":"dbe7dfad8cc35a10","fromNode":"861e303cafda5199","fromSide":"right","toNode":"d83f32b4db475d13","toSide":"left","toEnd":"arrow","label":"constrains"},
 		{"id":"99a508241dae5240","fromNode":"8f8a7f6e5de55c1e","fromSide":"right","toNode":"c0ec7fd8a8b45698","toSide":"left","toEnd":"arrow","label":"constrains"},
-		{"id":"04f2906f27b95508","fromNode":"8f8a7f6e5de55c1e","fromSide":"right","toNode":"0a3bff3d715a5720","toSide":"left","toEnd":"arrow","label":"constrains"}
+		{"id":"04f2906f27b95508","fromNode":"8f8a7f6e5de55c1e","fromSide":"right","toNode":"0a3bff3d715a5720","toSide":"left","toEnd":"arrow","label":"constrains"},
+		{"id":"4db9703558879eb3","fromNode":"ce153497639b5593","fromSide":"right","toNode":"770b9c55f316508c","toSide":"left","toEnd":"arrow","label":"source"},
+		{"id":"b89ed8dd6c55f6f1","fromNode":"f29f92ba4725df28","fromSide":"right","toNode":"62188ba771625e9e","toSide":"left","toEnd":"arrow","label":"constrains"},
+		{"id":"3bdf408078d29401","fromNode":"0c31624b19c016a8","fromSide":"right","toNode":"ce153497639b5593","toSide":"left","toEnd":"arrow","label":"constrains"}
 	]
 }

@@ -15,6 +15,7 @@ references:
 - '[[knowledge/capabilities/component-deployment]]'
 - '[[knowledge/capabilities/business-process]]'
 - '[[knowledge/capabilities/connectivity-need]]'
+- '[[knowledge/chains/prepare-j01-connectivity-need]]'
 - '[[knowledge/operational/catalog-curator]]'
 - '[[knowledge/operational/business-process-owner]]'
 - '[[knowledge/operational/napms-system]]'

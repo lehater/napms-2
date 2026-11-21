@@ -11,7 +11,7 @@ architecture_status: hypothesis
 
 # Catalog and placement
 
-Гипотеза логической ответственности за stable Resource/Deployment identity и текущую адресную реализацию.
+Гипотеза логической ответственности за каталожные identity Application/Component/Interaction и стабильные Resource/Deployment identity с текущей адресной реализацией. Это группа ответственности для модели, не утверждённая граница кода или Bounded Context.
 
 Источники:
 - [1](https://github.com/lehater/napms-2/blob/main/docs/product.md#L55-L72)

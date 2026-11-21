@@ -7,6 +7,7 @@ sources:
 - https://github.com/lehater/napms-2/blob/main/docs/product/capability-map.md
 constrains:
 - '[[knowledge/domain/interaction]]'
+- '[[knowledge/functions/define-directed-interaction-revisions]]'
 ---
 
 # Directed pair уникален в Application

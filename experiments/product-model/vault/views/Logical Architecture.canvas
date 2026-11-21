@@ -134,6 +134,60 @@
       "y": 570,
       "width": 320,
       "height": 150
+    },
+    {
+      "id": "9ffdfb34c574f2d0",
+      "type": "file",
+      "file": "knowledge/functions/maintain-application-profile.md",
+      "x": -370,
+      "y": 0,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "ddb595e225f0d9fe",
+      "type": "file",
+      "file": "knowledge/functions/define-component-roles.md",
+      "x": -370,
+      "y": 190,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "470cd4e970cbc340",
+      "type": "file",
+      "file": "knowledge/functions/define-directed-interaction-revisions.md",
+      "x": -370,
+      "y": 380,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "e4c0cb44c23df9a4",
+      "type": "file",
+      "file": "knowledge/functions/maintain-business-process.md",
+      "x": -370,
+      "y": 760,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "1cc66d2623c2a163",
+      "type": "file",
+      "file": "knowledge/functions/record-connectivity-need.md",
+      "x": -370,
+      "y": 950,
+      "width": 320,
+      "height": 150
+    },
+    {
+      "id": "5063e813593ea54d",
+      "type": "file",
+      "file": "knowledge/components/business-justification.md",
+      "x": 370,
+      "y": 760,
+      "width": 320,
+      "height": 150
     }
   ],
   "edges": [
@@ -232,6 +286,51 @@
       "fromNode": "2ca416672991541a",
       "fromSide": "right",
       "toNode": "c2ee433759d05dd3",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "bc4c4aa512c3c751",
+      "fromNode": "9ffdfb34c574f2d0",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "d19d9be4b87bef2f",
+      "fromNode": "ddb595e225f0d9fe",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "156ccbc14dee67b9",
+      "fromNode": "470cd4e970cbc340",
+      "fromSide": "right",
+      "toNode": "2d1d7212f9d350e7",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "f80082ef05d9edee",
+      "fromNode": "e4c0cb44c23df9a4",
+      "fromSide": "right",
+      "toNode": "5063e813593ea54d",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "allocated_to"
+    },
+    {
+      "id": "f02dd7136084dd01",
+      "fromNode": "1cc66d2623c2a163",
+      "fromSide": "right",
+      "toNode": "5063e813593ea54d",
       "toSide": "left",
       "toEnd": "arrow",
       "label": "allocated_to"

@@ -11,7 +11,7 @@ source:
 target:
 - '[[knowledge/operational/napms-system]]'
 references:
-- '[[knowledge/exchanges/access-request-context]]'
+- '[[knowledge/exchanges/application-component-roles]]'
 part_of:
 - '[[knowledge/scenarios/catalog-to-business-need]]'
 precedes:

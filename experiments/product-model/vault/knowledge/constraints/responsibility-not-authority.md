@@ -8,6 +8,8 @@ sources:
 constrains:
 - '[[knowledge/domain/authority-grant]]'
 - '[[knowledge/domain/resource]]'
+- '[[knowledge/functions/maintain-business-process]]'
+- '[[knowledge/functions/record-connectivity-need]]'
 ---
 
 # Responsibility и criticality не дают authority

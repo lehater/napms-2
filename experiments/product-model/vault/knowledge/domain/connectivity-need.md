@@ -8,14 +8,15 @@ sources:
 domain_subtype: ConnectivityNeed
 part_of:
 - '[[knowledge/domain/business-process]]'
+source:
+- '[[knowledge/domain/component-role]]'
 references:
 - '[[knowledge/domain/interaction]]'
-- '[[knowledge/domain/component-role]]'
 ---
 
 # ConnectivityNeed
 
-Обоснование коммуникации, связанное с Process, Interaction и участником; не permission.
+Обоснование коммуникации, связанное с Process, directed Interaction и его source Component; не permission.
 
 Источники:
 - [1](https://github.com/lehater/napms-2/blob/main/docs/domain.md#L6-L65)

@@ -10,7 +10,7 @@ area: Business Connectivity
 scope_classification: A
 roadmap_stage: R1
 implementation_status: real_slice_documented
-implementation_note: Реальный срез указан в продуктовой документации и тестовом файле; полного CRUD это не означает.
+implementation_note: Реальный persistent-срез найден в коде и тестах. Поле criticality из C09 отсутствует в текущей схеме и UI; дизайн первого среза явно отложил его до отдельного запроса. Полное покрытие capability не утверждается.
 implementation_evidence:
 - tests/test_business_processes.py
 ---

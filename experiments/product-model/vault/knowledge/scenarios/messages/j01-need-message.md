@@ -11,14 +11,16 @@ source:
 target:
 - '[[knowledge/operational/napms-system]]'
 references:
-- '[[knowledge/exchanges/access-request-context]]'
+- '[[knowledge/exchanges/business-process-context]]'
 part_of:
 - '[[knowledge/scenarios/catalog-to-business-need]]'
+precedes:
+- '[[knowledge/scenarios/messages/j01-need-recorded-message]]'
 ---
 
 # J01: business basis
 
-Владелец процесса связывает BusinessProcess и ConnectivityNeed с коммуникацией.
+Владелец процесса передаёт NAPMS business context для связывания с уже описанной коммуникацией.
 
 Источники:
 - [1](https://mbse-capella.org/arcadia-qna.html)

@@ -8,6 +8,7 @@ sources:
 constrains:
 - '[[knowledge/domain/connectivity-need]]'
 - '[[knowledge/domain/policy-rule]]'
+- '[[knowledge/functions/record-connectivity-need]]'
 ---
 
 # ConnectivityNeed не является разрешением

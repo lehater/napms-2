@@ -21,7 +21,12 @@
 		{"id":"a193e1318b9453d8","type":"file","file":"knowledge/functions/select-access-communication-context.md","x":-280,"y":460,"width":320,"height":150},
 		{"id":"0e216d68a7ec5e35","type":"file","file":"knowledge/functions/select-communication-context.md","x":-280,"y":835,"width":320,"height":150},
 		{"id":"ade790dfd36c5db6","type":"file","file":"knowledge/functions/maintain-business-justification.md","x":-740,"y":925,"width":320,"height":150},
-		{"id":"84a53f58f2205a29","type":"file","file":"knowledge/functions/evaluate-authority.md","x":140,"y":140,"width":320,"height":150}
+		{"id":"84a53f58f2205a29","type":"file","file":"knowledge/functions/evaluate-authority.md","x":140,"y":140,"width":320,"height":150},
+		{"id":"9ffdfb34c574f2d0","type":"file","file":"knowledge/functions/maintain-application-profile.md","x":-1880,"y":-330,"width":320,"height":150},
+		{"id":"ddb595e225f0d9fe","type":"file","file":"knowledge/functions/define-component-roles.md","x":-1880,"y":-100,"width":320,"height":150},
+		{"id":"470cd4e970cbc340","type":"file","file":"knowledge/functions/define-directed-interaction-revisions.md","x":-1880,"y":130,"width":320,"height":150},
+		{"id":"e4c0cb44c23df9a4","type":"file","file":"knowledge/functions/maintain-business-process.md","x":-1080,"y":1120,"width":320,"height":150},
+		{"id":"1cc66d2623c2a163","type":"file","file":"knowledge/functions/record-connectivity-need.md","x":-1080,"y":1350,"width":320,"height":150}
 	],
 	"edges":[
 		{"id":"ddb48145d51052b1","fromNode":"d82cf68556a45ae9","fromSide":"right","toNode":"c256747cc3af5c23","toSide":"left","label":"part_of"},
@@ -44,6 +49,11 @@
 		{"id":"2a9d595a1e9b5a6f","fromNode":"d604c54a8e885b36","fromSide":"right","toNode":"4d360d68823050c2","toSide":"left","label":"realizes"},
 		{"id":"b70d52d9d58b53cc","fromNode":"3a59dc06b38c5fca","fromSide":"right","toNode":"84a53f58f2205a29","toSide":"left","label":"realizes"},
 		{"id":"3f5dcdb4bcc55356","fromNode":"26388c52b3205fb0","fromSide":"right","toNode":"3a9da4909961585e","toSide":"left","label":"realizes"},
-		{"id":"675c3feaf9d75f54","fromNode":"dcc8a77239b15a2b","fromSide":"right","toNode":"3a9da4909961585e","toSide":"left","label":"realizes"}
+		{"id":"675c3feaf9d75f54","fromNode":"dcc8a77239b15a2b","fromSide":"right","toNode":"3a9da4909961585e","toSide":"left","label":"realizes"},
+		{"id":"8b8a695c7bc8b89f","fromNode":"9ffdfb34c574f2d0","fromSide":"right","toNode":"141e6f0180c65b9c","toSide":"left","toEnd":"arrow","label":"realizes"},
+		{"id":"b3117af22d068cd1","fromNode":"ddb595e225f0d9fe","fromSide":"right","toNode":"141e6f0180c65b9c","toSide":"left","toEnd":"arrow","label":"realizes"},
+		{"id":"f10c186556db5ea3","fromNode":"470cd4e970cbc340","fromSide":"right","toNode":"141e6f0180c65b9c","toSide":"left","toEnd":"arrow","label":"realizes"},
+		{"id":"9225dd76463596b8","fromNode":"e4c0cb44c23df9a4","fromSide":"right","toNode":"ade790dfd36c5db6","toSide":"left","toEnd":"arrow","label":"realizes"},
+		{"id":"0ea21b67b2c20b9b","fromNode":"1cc66d2623c2a163","fromSide":"right","toNode":"ade790dfd36c5db6","toSide":"left","toEnd":"arrow","label":"realizes"}
 	]
 }
