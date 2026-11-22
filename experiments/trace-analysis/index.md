@@ -1,4 +1,4 @@
-# Agent Trace Analysis Capability Map — v0.9
+# Agent Trace Analysis Capability Map — v0.10
 Status: experimental; owner authorized initial pilot 2026-11-22. Context: #150, accepted #153 and #156; #169 aggregate review is separate and unchanged. This is a catalog of capabilities, not an accepted Harness policy.
 
 | ID | Capability | Source lead | Pilot order | Local result |
@@ -20,6 +20,10 @@ Status: experimental; owner authorized initial pilot 2026-11-22. Context: #150, 
 | F11 | Comparative analysis (supporting method) | Graphectory | Later | Not tested |
 | F01 | Statistical anomaly detection | log mining | Later | Not tested |
 | F12 | Counterfactual analysis | causal replay | Later | Not tested |
+
+## Shared Langfuse access decision (2026-11-22)
+
+The owner designates the existing local `~/.codex/langfuse.json` as the trusted source of Langfuse connection parameters in the execution VM. Use its explicit base URL and existing keys with the installed official CLI and Skill. Load values without displaying them in the same shell invocation as the query; do not rely on inherited variables or default Cloud endpoints. Do not duplicate the endpoint or credentials in the repository, prompts or other configuration. No per-task endpoint confirmation is required for the owner-maintained configuration. If it is missing, invalid, or access fails, report the blocker; do not discover alternative hosts or modify connection settings. Task authorization still specifies the permitted telemetry scope and read-only operations; this decision does not confer write permission or establish technical restrictions on the key. This common connection rule supersedes the per-handoff endpoint-confirmation requirement in historical experimental plans for future authorized runs. Historical reports/plans remain intact. Owner may place the same operating rule in global Codex instructions; global files and accepted project Harness are unchanged by this decision.
 
 ## F02 review and decision (2026-11-22)
 
