@@ -3,6 +3,7 @@ Follow-up run for PR #175
   validate-sysml 1.0.0
   validator repository commit 63abbd9fbc7851dc437d01b2dc07836b919770b8
   OMG SysML v2 Pilot Implementation release 2026-07, jupyter-sysml-kernel 0.61.0
+  Pilot Implementation release tag commit c7fc737d56da9e2d78f9d7df6d38efbec2e7e965
   SysML-v2-Release tag commit 29a3d2acdd49600cff872e7a55962a40400f3335
   OpenJDK 21.0.13.1 (2026-11-17)
   Apache Maven 3.9.12
