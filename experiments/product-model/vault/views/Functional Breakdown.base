@@ -1,0 +1,17 @@
+filters:
+  and:
+    - file.inFolder("knowledge/functions")
+    - type == "function"
+views:
+  - type: table
+    name: Functions by ARCADIA level
+    groupBy:
+      property: level
+      direction: ASC
+    order:
+      - name
+      - level
+      - part_of
+      - realizes
+      - allocated_to
+      - epistemic
