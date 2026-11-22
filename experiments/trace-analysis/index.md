@@ -1,9 +1,9 @@
-# Agent Trace Analysis Capability Map — v0.6
+# Agent Trace Analysis Capability Map — v0.7
 Status: experimental; owner authorized initial pilot 2026-11-22. Context: #150, accepted #153 and #156; #169 aggregate review is separate and unchanged. This is a catalog of capabilities, not an accepted Harness policy.
 
 | ID | Capability | Source lead | Pilot order | Local result |
 |---|---|---|---|---|
-| F02 | Pattern detection | [Graphectory](https://arxiv.org/html/2512.02393), §3.4 | 1 | [run-001](F02-pattern-detection/run-001.md): PARTIAL, patterns unknown; [run-002](F02-pattern-detection/run-002.md): PARTIAL; 0 eligible reads, 22/36 command events unknown. RV/SC paused; [run-003](F02-pattern-detection/run-003.md) PASS exact-repeat prefilter: 35/35 eligible, 0 candidates; [run-004 plan](F02-pattern-detection/run-004-plan.md) larger attempt (not RV/SC) |
+| F02 | Pattern detection | [Graphectory](https://arxiv.org/html/2512.02393), §3.4 | 1 | [run-001](F02-pattern-detection/run-001.md): PARTIAL, patterns unknown; [run-002](F02-pattern-detection/run-002.md): PARTIAL; 0 eligible reads, 22/36 command events unknown. RV/SC paused; [run-003](F02-pattern-detection/run-003.md) PASS exact-repeat prefilter: 35/35 eligible, 0 candidates; [run-004](F02-pattern-detection/run-004.md) PASS: #126, 232/232 eligible, 13 groups / 38 excess, reported raw outputs differ; [run-005 plan](F02-pattern-detection/run-005-plan.md) wrapper normalization (not RV/SC) |
 | F15 | Skill discovery | [SKILL-DISCO](https://aclanthology.org/2026.findings-emnlp.2260/), [Agent Workflow Memory](https://proceedings.mlr.press/v267/wang25bx.html) | High, after F02 | Not tested |
 | F16 | Deterministic offloading | [FlashScript](https://arxiv.org/abs/2610.33876), [TraceCompiler](https://www.alphaxiv.org/abs/2608.02680) | Candidate discovery | [run-001](F16-deterministic-offloading/run-001.md): BLOCKED (not isolated); [run-002](F16-deterministic-offloading/run-002.md): PARTIAL, three report-derived candidates; [run-003](F16-deterministic-offloading/run-003.md) native review; [run-005](F16-deterministic-offloading/run-005.md) PASS native retrieval, effect unmeasured |
 | F17 | Existing skill utilization analysis | Source/method to be researched | High, after F02 | Not tested |
