@@ -12,7 +12,28 @@ The global connection is stored in `~/.codex/langfuse.json`. Read the existing v
 
 Do not create or edit this file, add credentials elsewhere, or reveal the endpoint or keys in logs, Issue comments, PRs, or tool output.
 
-## Verify read capability
+Treat this owner-maintained configuration as the single trusted source of connection parameters. No separate endpoint confirmation is required in each handoff. Task authorization still determines the allowed read scope; it does not grant write access. Do not substitute default cloud endpoints, discover alternative hosts, or use inherited connection values instead of this file.
+
+## Preferred read path: installed Langfuse CLI
+
+Read the installed official Langfuse Skill when using the CLI. Load the existing connection in the same shell invocation as the query; do not rely on variables inherited from the launcher. For example, on the verified VM with CLI 1.4.0 and `jq`, the following bounded capability probe returns only HTTP status and row count:
+
+```bash
+(
+  set +x
+  set -euo pipefail
+  LANGFUSE_BASE_URL="$(jq -er '.base_url | strings | select(length > 0)' ~/.codex/langfuse.json)"
+  LANGFUSE_PUBLIC_KEY="$(jq -er '.public_key | strings | select(length > 0)' ~/.codex/langfuse.json)"
+  LANGFUSE_SECRET_KEY="$(jq -er '.secret_key | strings | select(length > 0)' ~/.codex/langfuse.json)"
+  export LANGFUSE_BASE_URL LANGFUSE_PUBLIC_KEY LANGFUSE_SECRET_KEY
+  langfuse --api-version 4 api observations list --limit 1 --fields core --json 2>/dev/null |
+    jq -e '{status: .status, rows: (if (.body.data | type) == "array" then (.body.data | length) else null end)}'
+)
+```
+
+For an authorized analysis, replace the probe query with the task-scoped read query and project the response to approved fields before exposing it to the model. Never use `--curl`, verbose authentication logs or raw payload output. If the CLI or configuration is missing, or a request fails, report the observed blocker and safe status/exit code; do not install tools, change the connection or retry alternative endpoints on your own. A successful scoped query itself confirms read capability; an extra probe is not required for every task. The direct HTTP example below remains an alternative when explicitly needed, not a mandatory additional step.
+
+## Direct HTTP capability probe (alternative)
 
 Make this authorized GET from the runtime that will read telemetry:
 
