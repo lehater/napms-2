@@ -7,12 +7,43 @@ package AccessRequestModel {
         attribute interactionRevisionId : String;
     }
 
+    part def AccessRequestData {
+        part requestSubject : AccessSubject;
+        attribute connectivityNeedId : String;
+    }
+
+    attribute def RequestStatus :> String;
+
+    part def RequestDecision {
+        attribute outcome : String;
+    }
+
+    state def AccessRequestLifecycle {
+        state PENDING;
+        state ALLOWED;
+        state DENIED;
+
+        entry; then PENDING;
+
+        transition first PENDING
+            accept decision : RequestDecision
+            if decision.outcome == "ALLOWED"
+            then ALLOWED;
+
+        transition first PENDING
+            accept decision : RequestDecision
+            if decision.outcome == "DENIED"
+            then DENIED;
+    }
+
     part def AccessRequest {
         attribute requestId : String;
-        attribute status : String;
+        attribute status : RequestStatus;
         part requestSubject : AccessSubject;
+        attribute connectivityNeedId : String;
+        state lifecycle : AccessRequestLifecycle;
 
-        assert constraint terminalStatus {
+        assert constraint statusIsLifecycleValue {
             status == "PENDING" or status == "ALLOWED" or status == "DENIED"
         }
     }
@@ -21,102 +52,132 @@ package AccessRequestModel {
         attribute sourceGrantEffective : Boolean;
     }
 
-    part def RequestDecision {
-        attribute outcome : String;
+    part def AccessRequestSubmissionResult {
+        attribute admitted : Boolean;
+        part registeredRequest : AccessRequest[0..1];
     }
 
     action def CheckRequestSemantics {
-        in request : AccessRequest;
+        in requestData : AccessRequestData;
         out semanticsValid : Boolean;
     }
 
     action def CheckSourceAdmission {
-        in request : AccessRequest;
+        in requestData : AccessRequestData;
         out evidence : AdmissionEvidence;
         out admitted : Boolean;
     }
 
-    action def PrepareRequest {
-        in request : AccessRequest;
-        out prepared : AccessRequest;
+    action def PrepareAccessRequest {
+        in requestData : AccessRequestData;
         out admissionEvidence : AdmissionEvidence;
         out admitted : Boolean;
         out semanticsValid : Boolean;
         action checkSemantics : CheckRequestSemantics;
         action checkAdmission : CheckSourceAdmission;
-        bind checkSemantics.request = request;
-        bind checkAdmission.request = request;
+        bind checkSemantics.requestData = requestData;
+        bind checkAdmission.requestData = requestData;
         bind semanticsValid = checkSemantics.semanticsValid;
         bind admissionEvidence = checkAdmission.evidence;
         bind admitted = checkAdmission.admitted;
         first checkSemantics then checkAdmission;
     }
 
-    action def RegisterRequest {
-        in request : AccessRequest;
+    action def RegisterAccessRequest {
+        in requestData : AccessRequestData;
         in admissionEvidence : AdmissionEvidence;
         in admitted : Boolean;
         in semanticsValid : Boolean;
-        out registered : AccessRequest;
+        out registeredRequest : AccessRequest;
 
-        assert constraint onlyRegisterValidAdmittedRequest {
-            admissionEvidence.sourceGrantEffective and admitted and semanticsValid and registered.status == "PENDING"
+        assert constraint registrationRequiresSuccessfulAdmission {
+            admitted and admissionEvidence.sourceGrantEffective and semanticsValid and registeredRequest.status == "PENDING" and
+                registeredRequest.requestSubject == requestData.requestSubject and
+                registeredRequest.connectivityNeedId == requestData.connectivityNeedId
         }
     }
 
-    action def RecordPendingRequest {
-        in request : AccessRequest;
-        out registered : AccessRequest;
-        action prepare : PrepareRequest;
-        action record : RegisterRequest;
-        bind prepare.request = request;
-        bind record.request = request;
-        bind record.admissionEvidence = prepare.admissionEvidence;
-        bind record.admitted = prepare.admitted;
-        bind record.semanticsValid = prepare.semanticsValid;
-        first prepare then record;
+    action def RegisterAndDecideAccessRequest {
+        in requestData : AccessRequestData;
+        in admissionEvidence : AdmissionEvidence;
+        in admitted : Boolean;
+        in semanticsValid : Boolean;
+        in decision : RequestDecision;
+        out decidedRequest : AccessRequest;
+        action register : RegisterAccessRequest;
+        action applyDecision : DecideAccessRequest;
+        bind register.requestData = requestData;
+        bind register.admissionEvidence = admissionEvidence;
+        bind register.admitted = admitted;
+        bind register.semanticsValid = semanticsValid;
+        bind applyDecision.request = register.registeredRequest;
+        bind applyDecision.decision = decision;
+        bind decidedRequest = applyDecision.decidedRequest;
+        first register then applyDecision;
     }
 
-    action def AdmitAndRegister {
-        in request : AccessRequest;
-        out registered : AccessRequest;
-        action recordRequest : RecordPendingRequest;
-        bind recordRequest.request = request;
+    action def AdmitAndRegisterAccessRequest {
+        in requestData : AccessRequestData;
+        out result : AccessRequestSubmissionResult;
+        action prepare : PrepareAccessRequest;
+        action register : RegisterAccessRequest;
+        action reject : RejectAccessRequest;
+        bind prepare.requestData = requestData;
+        bind result.admitted = prepare.admitted;
+        bind register.requestData = requestData;
+        bind register.admissionEvidence = prepare.admissionEvidence;
+        bind register.admitted = prepare.admitted;
+        bind register.semanticsValid = prepare.semanticsValid;
+        bind result.registeredRequest = register.registeredRequest;
+        bind reject.requestData = requestData;
+
+        first start;
+        then prepare;
+        then decide admissionBranch;
+            if prepare.admitted and prepare.semanticsValid then register;
+            else reject;
     }
 
-    action def DecideRequest {
+    action def RejectAccessRequest {
+        in requestData : AccessRequestData;
+        out rejected : Boolean;
+    }
+
+    action def DecideAccessRequest {
         in request : AccessRequest;
         in decision : RequestDecision;
-        out decided : AccessRequest;
+        out decidedRequest : AccessRequest;
 
         assert constraint decisionHasTerminalOutcome {
             decision.outcome == "ALLOWED" or decision.outcome == "DENIED"
         }
+
+        assert constraint decisionStatusMatchesOutcome {
+            (decision.outcome == "ALLOWED" and decidedRequest.status == "ALLOWED") or
+                (decision.outcome == "DENIED" and decidedRequest.status == "DENIED")
+        }
     }
 
-    action def SubmitAndDecide {
-        in request : AccessRequest;
+    action def SubmitAndDecideAccessRequest {
+        in requestData : AccessRequestData;
         in decision : RequestDecision;
-        in admissionEvidence : AdmissionEvidence;
-        in semanticsValid : Boolean;
-        out result : AccessRequest;
-        action submit : RecordPendingRequest;
-        action applyDecision : DecideRequest;
-        bind submit.request = request;
-        bind applyDecision.request = submit.registered;
-        bind applyDecision.decision = decision;
-        first submit then applyDecision;
-    }
-
-    constraint def RegistrationRequiresAdmission {
-        in admitted : Boolean;
-        in semanticsValid : Boolean;
-        admitted and semanticsValid
-    }
-
-    constraint def DeniedRequestCannotBeRegistered {
-        in admitted : Boolean;
-        in registered : Boolean;
-        registered implies admitted
+        out result : AccessRequestSubmissionResult;
+        action prepare : PrepareAccessRequest;
+        action registerAndDecide : RegisterAndDecideAccessRequest;
+        action reject : RejectAccessRequest;
+        bind prepare.requestData = requestData;
+        bind result.admitted = prepare.admitted;
+        bind registerAndDecide.requestData = requestData;
+        bind registerAndDecide.admissionEvidence = prepare.admissionEvidence;
+        bind registerAndDecide.admitted = prepare.admitted;
+        bind registerAndDecide.semanticsValid = prepare.semanticsValid;
+        bind registerAndDecide.decision = decision;
+        bind result.registeredRequest = registerAndDecide.decidedRequest;
+        bind reject.requestData = requestData;
+        first start;
+        then prepare;
+        then decide admissionBranch;
+            if prepare.admitted and prepare.semanticsValid then registerAndDecide;
+            else reject;
     }
 }
