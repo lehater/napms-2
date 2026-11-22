@@ -10,6 +10,7 @@ The model is based on the current [Access Requests specification](../../../opens
 - Follow-up source NAPMS commit: `b21fd63234cce8e1d91f0af1dcf3718cf7033944`
 - Validator: `validate-sysml 1.0.0`, repository commit `63abbd9fbc7851dc437d01b2dc07836b919770b8`
 - OMG SysML v2 Pilot Implementation: release `2026-07`, artifact `jupyter-sysml-kernel 0.61.0` (pinned by the installed validator's `pom.xml`)
+- Pilot Implementation release tag commit: `c7fc737d56da9e2d78f9d7df6d38efbec2e7e965`
 - Matching SysML-v2-Release tag commit: `29a3d2acdd49600cff872e7a55962a40400f3335`
 - Java: OpenJDK `21.0.13.1` (2026-11-17)
 - Maven: Apache Maven `3.9.12`
