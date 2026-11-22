@@ -1,0 +1,42 @@
+Follow-up run for PR #175
+  NAPMS source/base commit b21fd63234cce8e1d91f0af1dcf3718cf7033944
+  validate-sysml 1.0.0
+  validator repository commit 63abbd9fbc7851dc437d01b2dc07836b919770b8
+  OMG SysML v2 Pilot Implementation release 2026-07, jupyter-sysml-kernel 0.61.0
+  Pilot Implementation release tag commit c7fc737d56da9e2d78f9d7df6d38efbec2e7e965
+  SysML-v2-Release tag commit 29a3d2acdd49600cff872e7a55962a40400f3335
+  OpenJDK 21.0.13.1 (2026-11-17)
+  Apache Maven 3.9.12
+
+T01–T08: updated model
+$ validate-sysml experiments/product-model/sysml-pilot/model.sysml
+Exit code: 0
+No model errors or warnings. The validator emitted Log4j configuration warnings on stderr.
+
+T09: syntax error
+$ validate-sysml experiments/product-model/sysml-pilot/negative/syntax-error.sysml
+syntax-error.sysml:3:25: error: no viable alternative at input ';'
+Exit code: 1
+
+T10: unresolved reference
+$ validate-sysml experiments/product-model/sysml-pilot/negative/unresolved-reference.sysml
+unresolved-reference.sysml:5:22: error: Couldn't resolve reference to Type 'MissingRequest'.
+unresolved-reference.sysml:5:9: error: A usage must be typed by definitions.
+Exit code: 1
+
+T11: incompatible binding types
+$ validate-sysml experiments/product-model/sysml-pilot/negative/type-mismatch.sysml
+type-mismatch.sysml:7:9: warning: Bound features should have conforming types
+Exit code: 0
+
+T06 structural trace
+  AdmitAndRegisterAccessRequest: prepare -> decide admissionBranch
+  prepare.admitted AND prepare.semanticsValid -> RegisterAccessRequest
+  otherwise -> RejectAccessRequest
+  SubmitAndDecideAccessRequest: same admission branch; registration and decision are composed only in the success action
+
+T07 structural trace
+  AccessRequest.lifecycle : AccessRequestLifecycle
+  entry -> PENDING
+  PENDING + RequestDecision(ALLOWED) -> ALLOWED
+  PENDING + RequestDecision(DENIED) -> DENIED
