@@ -1,0 +1,655 @@
+issue_id,run_id,sample_type,session_id,tool_name,category,nested_invocation_count,nested_tool_methods,nested_categories,result_bytes,result_size_known,confirmed_error,error_level,repeat_of_prior_identical_call,operation_sequence
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,skill:execute-task,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,40704,True,False,DEFAULT,False,1
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,skill:execute-task,получение данных GitHub,1,exec_command,получение данных GitHub,40723,True,False,DEFAULT,False,2
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,398,True,False,DEFAULT,False,3
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,35576,True,False,DEFAULT,False,4
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,33142,True,False,DEFAULT,False,5
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,прочее,1,web__run,прочее,31542,True,False,DEFAULT,False,6
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,прочее,1,web__run,прочее,29352,True,False,DEFAULT,False,7
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,190,True,False,DEFAULT,False,8
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1176,True,False,DEFAULT,False,9
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,40384,True,False,DEFAULT,False,10
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,165,True,False,DEFAULT,False,11
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,12
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,162,True,False,DEFAULT,False,13
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,522,True,False,DEFAULT,False,14
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,15
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,262,True,False,DEFAULT,False,16
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,730,True,False,DEFAULT,False,17
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,160,True,False,DEFAULT,False,18
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,791,True,False,DEFAULT,False,19
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,3619,True,False,DEFAULT,False,20
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,615,True,False,DEFAULT,False,21
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,322,True,False,DEFAULT,False,22
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,3208,True,False,DEFAULT,False,23
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2501,True,False,DEFAULT,False,24
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,4089,True,False,DEFAULT,False,25
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2165,True,False,DEFAULT,False,26
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1512,True,False,DEFAULT,False,27
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,3528,True,False,DEFAULT,False,28
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,10934,True,False,DEFAULT,False,29
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,6080,True,False,DEFAULT,False,30
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,1910,True,False,DEFAULT,False,31
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,22293,True,False,DEFAULT,False,32
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,33
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,9049,True,False,DEFAULT,False,34
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,30806,True,False,DEFAULT,False,35
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,433,True,False,DEFAULT,False,36
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,420,True,False,DEFAULT,False,37
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,843,True,False,DEFAULT,False,38
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1332,True,False,DEFAULT,False,39
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,897,True,False,DEFAULT,False,40
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2537,True,False,DEFAULT,False,41
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,995,True,False,DEFAULT,False,42
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,17029,True,False,DEFAULT,False,43
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,44
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,45
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,18285,True,False,DEFAULT,False,46
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,527,True,False,DEFAULT,False,47
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,590,True,False,DEFAULT,False,48
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,40365,True,False,DEFAULT,False,49
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,50
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,16211,True,False,DEFAULT,False,51
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,52
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,53
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,6202,True,False,DEFAULT,False,54
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,55
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,20258,True,False,DEFAULT,False,56
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,57
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,603,True,False,DEFAULT,False,58
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,2501,True,False,DEFAULT,False,59
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,1116,True,False,DEFAULT,False,60
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,2227,True,False,DEFAULT,False,61
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,955,True,False,DEFAULT,False,62
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,603,True,False,DEFAULT,False,63
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,64
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,2457,True,False,DEFAULT,False,65
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,66
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,67
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,33004,True,False,DEFAULT,False,68
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,69
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,932,True,False,DEFAULT,False,70
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,6080,True,False,DEFAULT,False,71
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,72
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,1187,True,False,DEFAULT,False,73
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,3974,True,False,DEFAULT,False,74
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,1093,True,False,DEFAULT,False,75
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,76
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,1155,True,False,DEFAULT,False,77
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,чтение файлов,1,exec_command,чтение файлов,4460,True,False,DEFAULT,False,78
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,1158,True,False,DEFAULT,False,79
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,260,True,False,DEFAULT,False,80
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,1064,True,False,DEFAULT,False,81
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,585,True,False,DEFAULT,False,82
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,19857,True,False,DEFAULT,False,83
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,21834,True,False,DEFAULT,False,84
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,85
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,обработка данных,1,exec_command,обработка данных,786,True,False,DEFAULT,False,86
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,592,True,False,DEFAULT,False,87
+153,db02fc391bb2432b870be9feedba5d63,research,01a1f974-533f-7a40-9fe0-092bfced4837,exec,получение данных GitHub,1,exec_command,получение данных GitHub,386,True,False,DEFAULT,False,88
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,skill:execute-task,чтение файлов,1,exec_command,чтение файлов,28788,True,False,DEFAULT,False,1
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,41391,True,False,DEFAULT,False,2
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,40780,True,False,DEFAULT,False,3
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,17400,True,False,DEFAULT,False,4
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,3990,True,False,DEFAULT,False,5
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2694,True,False,DEFAULT,False,6
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1051,True,False,DEFAULT,False,7
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,220,True,False,DEFAULT,False,8
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,186,True,False,DEFAULT,False,9
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,обработка данных,1,exec_command,обработка данных,159,True,False,DEFAULT,False,10
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,177,True,False,DEFAULT,False,11
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,240,True,False,DEFAULT,False,12
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,185,True,False,DEFAULT,False,13
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,299,True,False,DEFAULT,False,14
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,462,True,False,DEFAULT,False,15
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,360,True,False,DEFAULT,False,16
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,40715,True,False,DEFAULT,False,17
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,40776,True,False,DEFAULT,False,18
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,skill:openspec-update-change,чтение файлов,1,exec_command,чтение файлов,26398,True,False,DEFAULT,False,19
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,40981,True,False,DEFAULT,False,20
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,41190,True,False,DEFAULT,False,21
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,14117,True,False,DEFAULT,False,22
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,21771,True,False,DEFAULT,False,23
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,24
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,25
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,9937,True,False,DEFAULT,False,26
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,17033,True,False,DEFAULT,False,27
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,273,True,False,DEFAULT,False,28
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,29
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,30
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,31
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,35522,True,False,DEFAULT,False,32
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,33
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1213,True,False,DEFAULT,False,34
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,602,True,False,DEFAULT,False,35
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,388,True,False,DEFAULT,False,36
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,948,True,False,DEFAULT,False,37
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,1149,True,False,DEFAULT,False,38
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,180,True,False,DEFAULT,False,39
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,115,True,False,DEFAULT,False,40
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,469,True,False,DEFAULT,False,41
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,1890,True,False,DEFAULT,False,42
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,419,True,False,DEFAULT,False,43
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,461,True,False,DEFAULT,False,44
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,525,True,False,DEFAULT,True,45
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,587,True,False,DEFAULT,True,46
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,438,True,False,DEFAULT,True,47
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,686,True,False,DEFAULT,True,48
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,486,True,False,DEFAULT,True,49
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,3190,True,False,DEFAULT,True,50
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,645,True,False,DEFAULT,False,51
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,405,True,False,DEFAULT,True,52
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,422,True,False,DEFAULT,True,53
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,885,True,False,DEFAULT,True,54
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,901,True,False,DEFAULT,True,55
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,637,True,False,DEFAULT,True,56
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,5453,True,False,DEFAULT,False,57
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1840,True,False,DEFAULT,False,58
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,41312,True,False,DEFAULT,False,59
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,3251,True,False,DEFAULT,False,60
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,115,True,False,DEFAULT,False,61
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1302,True,False,DEFAULT,False,62
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,обработка данных,1,exec_command,обработка данных,242,True,False,DEFAULT,False,63
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,578,True,False,DEFAULT,False,64
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,обработка данных,1,exec_command,обработка данных,115,True,False,DEFAULT,False,65
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,636,True,False,DEFAULT,False,66
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,1380,True,False,DEFAULT,False,67
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,12398,True,False,DEFAULT,False,68
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,6895,True,False,DEFAULT,False,69
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,385,True,False,DEFAULT,False,70
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,363,True,False,DEFAULT,False,71
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,923,True,False,DEFAULT,False,72
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,790,True,False,DEFAULT,False,73
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,379,True,False,DEFAULT,False,74
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,обработка данных,1,exec_command,обработка данных,3487,True,False,DEFAULT,False,75
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,12643,True,False,DEFAULT,False,76
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,599,True,False,DEFAULT,False,77
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,235,True,False,DEFAULT,False,78
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,637,True,False,DEFAULT,False,79
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,362,True,False,DEFAULT,False,80
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,255,True,False,DEFAULT,False,81
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,exec_command|view_image,поиск и навигация по репозиторию|чтение файлов,1186,True,False,DEFAULT,False,82
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,83
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,469,True,False,DEFAULT,True,84
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,549,True,False,DEFAULT,False,85
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,view_image,чтение файлов,647,True,False,DEFAULT,False,86
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,20297,True,False,DEFAULT,False,87
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,88
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,12629,True,False,DEFAULT,False,89
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,view_image,чтение файлов,506,True,False,DEFAULT,False,90
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,635,True,False,DEFAULT,True,91
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,write_stdin,выполнение команд,381,True,False,DEFAULT,False,92
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,view_image,чтение файлов,224,True,False,DEFAULT,False,93
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,94
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,5114,True,False,DEFAULT,False,95
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,468,True,False,DEFAULT,True,96
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,1122,True,False,DEFAULT,False,97
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1395,True,False,DEFAULT,False,98
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,1796,True,False,DEFAULT,False,99
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,650,True,False,DEFAULT,False,100
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|запуск тестов,1314,True,False,DEFAULT,False,101
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,12465,True,False,DEFAULT,False,102
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,103
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,1976,True,False,DEFAULT,False,104
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,10183,True,False,DEFAULT,False,105
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,4244,True,False,DEFAULT,False,106
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,10022,True,False,DEFAULT,False,107
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,108
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|обработка данных,41369,True,False,DEFAULT,False,109
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию,40938,True,False,DEFAULT,False,110
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,952,True,False,DEFAULT,False,111
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,1795,True,False,DEFAULT,False,112
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,7197,True,False,DEFAULT,False,113
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,41047,True,False,DEFAULT,False,114
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,4199,True,False,DEFAULT,False,115
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,обработка данных,1,exec_command,обработка данных,1154,True,False,DEFAULT,False,116
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,8142,True,False,DEFAULT,False,117
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments,изменение данных GitHub|получение данных GitHub,26469,True,False,DEFAULT,False,118
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,253,True,False,DEFAULT,False,119
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,2633,True,False,DEFAULT,False,120
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,150,True,False,DEFAULT,False,121
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,2166,True,False,DEFAULT,False,122
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,958,True,False,DEFAULT,False,123
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,421,True,False,DEFAULT,False,124
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,559,True,False,DEFAULT,False,125
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,157,True,False,DEFAULT,False,126
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,mcp__codex_apps__github_create_pull_request,изменение данных GitHub,4226,True,False,DEFAULT,False,127
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,115,True,False,DEFAULT,False,128
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,16382,True,False,DEFAULT,False,129
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,2,exec_command|exec_command,получение данных GitHub,977,True,False,DEFAULT,False,130
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,194,True,False,DEFAULT,False,131
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,239,True,False,DEFAULT,False,132
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,238,True,False,DEFAULT,False,133
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,115,True,False,DEFAULT,False,134
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,320,True,False,DEFAULT,False,135
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,mcp__codex_apps__github_get_commit_combined_status|mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_get_pr_info,получение данных GitHub,4865,True,False,DEFAULT,False,136
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,False,137
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,False,138
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_fetch_workflow_run_jobs|mcp__codex_apps__github_get_commit_combined_status,получение данных GitHub,7335,True,False,DEFAULT,False,139
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,False,140
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,True,141
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,972,True,False,DEFAULT,False,142
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_job_logs,получение данных GitHub,1044,True,False,DEFAULT,False,143
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,144
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,7559,True,False,DEFAULT,True,145
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_job_logs,получение данных GitHub,40954,True,False,DEFAULT,True,146
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,147
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,4235,True,False,DEFAULT,False,148
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,1404,True,False,DEFAULT,False,149
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,7379,True,False,DEFAULT,False,150
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,3368,True,False,DEFAULT,False,151
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,чтение файлов,1,exec_command,чтение файлов,6452,True,False,DEFAULT,False,152
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,1340,True,False,DEFAULT,False,153
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,259,True,False,DEFAULT,False,154
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,245,True,False,DEFAULT,False,155
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,mcp__codex_apps__github_get_commit_combined_status|mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_get_pr_info,получение данных GitHub,4549,True,False,DEFAULT,False,156
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,157,True,False,DEFAULT,False,157
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,158
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,2,mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_get_commit_combined_status,получение данных GitHub,707,True,False,DEFAULT,False,159
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6584,True,False,DEFAULT,False,160
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,161
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,True,162
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,163
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,True,164
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,165
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,7559,True,False,DEFAULT,True,166
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_job_logs,получение данных GitHub,9419,True,False,DEFAULT,False,167
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,168
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,3013,True,False,DEFAULT,False,169
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,skill:openspec-update-change,прочее,3,exec_command|exec_command|exec_command,поиск и навигация по репозиторию|чтение файлов,21026,True,False,DEFAULT,False,170
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,3610,True,False,DEFAULT,False,171
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,3571,True,False,DEFAULT,False,172
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,4130,True,False,DEFAULT,False,173
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,174
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию,4158,True,False,DEFAULT,False,175
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,269,True,False,DEFAULT,False,176
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,245,True,False,DEFAULT,True,177
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,157,True,False,DEFAULT,True,178
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,mcp__codex_apps__github_get_pr_info|mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_get_commit_combined_status,получение данных GitHub,4865,True,False,DEFAULT,False,179
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,180
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6584,True,False,DEFAULT,False,181
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,182
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,True,183
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,184
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,7438,True,False,DEFAULT,True,185
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_job_logs,получение данных GitHub,4756,True,False,DEFAULT,False,186
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_fetch_workflow_run_jobs|mcp__codex_apps__github_get_commit_combined_status,получение данных GitHub,8166,True,False,DEFAULT,False,187
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,mcp__codex_apps__github_update_pull_request,изменение данных GitHub,5032,True,False,DEFAULT,False,188
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,1907,True,False,DEFAULT,False,189
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,4,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_list_pull_request_reviews|mcp__codex_apps__github_fetch_pr_comments,изменение данных GitHub|получение данных GitHub,26972,True,False,DEFAULT,False,190
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,mcp__codex_apps__github_add_comment_to_issue,изменение данных GitHub,241,True,False,DEFAULT,False,191
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,5,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_get_pr_info|exec_command|exec_command,изменение данных GitHub|поиск и навигация по репозиторию|получение данных GitHub,160,True,False,DEFAULT,False,192
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,5,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_get_pr_info|exec_command|exec_command,изменение данных GitHub|поиск и навигация по репозиторию|получение данных GitHub,5199,True,False,DEFAULT,False,193
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,skill:openspec-apply-change,прочее,4,exec_command|exec_command|exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию|получение данных GitHub|чтение файлов,35444,True,False,DEFAULT,False,194
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию|получение данных GitHub,8203,True,False,DEFAULT,False,195
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,0,,,927,True,False,DEFAULT,False,196
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,2,mcp__codex_apps__github_list_pull_request_review_threads|mcp__codex_apps__github_list_pull_request_reviews,получение данных GitHub,395,True,False,DEFAULT,False,197
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,поиск и навигация по репозиторию|чтение файлов,17589,True,False,DEFAULT,False,198
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,apply_patch,изменение файлов,117,True,False,DEFAULT,False,199
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию,4537,True,False,DEFAULT,False,200
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,333,True,False,DEFAULT,False,201
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,выполнение команд,1,exec_command,выполнение команд,245,True,False,DEFAULT,False,202
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,295,True,False,DEFAULT,False,203
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,2,mcp__codex_apps__github_fetch_commit_workflow_runs|mcp__codex_apps__github_get_commit_combined_status,получение данных GitHub,702,True,False,DEFAULT,False,204
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,False,205
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6584,True,False,DEFAULT,False,206
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,207
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6629,True,False,DEFAULT,True,208
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,209
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,6733,True,False,DEFAULT,True,210
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,sleep,прочее,0,,,43,True,False,DEFAULT,True,211
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_workflow_run_jobs,получение данных GitHub,7559,True,False,DEFAULT,True,212
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,mcp__codex_apps__github_update_pull_request,изменение данных GitHub,4727,True,False,DEFAULT,False,213
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение данных GitHub,1,mcp__codex_apps__github_update_issue_comment,изменение данных GitHub,241,True,False,DEFAULT,False,214
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,4,exec_command|mcp__codex_apps__github_get_pr_info|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_commit_workflow_runs,изменение данных GitHub|поиск и навигация по репозиторию|получение данных GitHub,1999,True,False,DEFAULT,False,215
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,skill:execute-task,прочее,8,exec_command|exec_command|mcp__codex_apps__github_get_pr_info|mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_list_pull_request_reviews|exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub|чтение файлов,40275,True,False,DEFAULT,False,216
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,4,exec_command|mcp__codex_apps__github_fetch_pr_comments|mcp__codex_apps__github_fetch_commit_workflow_runs|exec_command,изменение данных GitHub|поиск и навигация по репозиторию|получение данных GitHub,3351,True,False,DEFAULT,False,217
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,665,True,False,DEFAULT,False,218
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,115,True,False,DEFAULT,False,219
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,20643,True,False,DEFAULT,False,220
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,4426,True,False,DEFAULT,False,221
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,6511,True,False,DEFAULT,False,222
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,изменение данных GitHub|изменение файлов|получение данных GitHub,432,True,False,DEFAULT,False,223
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,изменение файлов,1,exec_command,изменение файлов,2245,True,False,DEFAULT,False,224
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,1237,True,False,DEFAULT,False,225
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,exec_command|exec_command,изменение данных GitHub|изменение файлов,360,True,False,DEFAULT,False,226
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,3,exec_command|exec_command|exec_command,изменение данных GitHub|изменение файлов,463,True,False,DEFAULT,False,227
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1905,True,False,DEFAULT,False,228
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,прочее,2,exec_command|exec_command,изменение файлов|получение данных GitHub,3287,True,False,DEFAULT,False,229
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1385,True,False,DEFAULT,False,230
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1400,True,False,DEFAULT,False,231
+126,b4263d71cb3a4d50965d29dd35b8d249,implementation,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,906,True,False,DEFAULT,False,232
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:decompose,чтение файлов,3,exec_command|exec_command|exec_command,чтение файлов,29233,True,False,DEFAULT,False,1
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,40985,True,False,DEFAULT,False,2
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,30387,True,False,DEFAULT,False,3
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,337,True,False,DEFAULT,False,4
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,4199,True,False,DEFAULT,False,5
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,5,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|exec_command,изменение данных GitHub|поиск и навигация по репозиторию|получение данных GitHub,41764,True,False,DEFAULT,False,6
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,7,exec_command|exec_command|exec_command|mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_pr|mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_pr,обработка данных|поиск и навигация по репозиторию|получение данных GitHub|чтение файлов,41036,True,False,DEFAULT,False,7
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,7,exec_command|exec_command|exec_command|exec_command|exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,8140,True,False,DEFAULT,False,8
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,8,exec_command|exec_command|exec_command|exec_command|exec_command|exec_command|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_list_pull_request_reviews,изменение данных GitHub|получение данных GitHub,34894,True,False,DEFAULT,False,9
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,web__run,прочее,14783,True,False,DEFAULT,False,10
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,web__run,прочее,20868,True,False,DEFAULT,False,11
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,web__run,прочее,12973,True,False,DEFAULT,False,12
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,поиск и навигация по репозиторию|получение данных GitHub,7382,True,False,DEFAULT,False,13
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:execute-task,чтение файлов,1,exec_command,чтение файлов,7579,True,False,DEFAULT,False,14
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,7,exec_command|exec_command|exec_command|exec_command|exec_command|exec_command|exec_command,получение данных GitHub,4157,True,False,DEFAULT,False,15
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,web__run,прочее,17602,True,False,DEFAULT,False,16
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,3702,True,False,DEFAULT,False,17
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,2,exec_command|exec_command,получение данных GitHub,429,True,False,DEFAULT,False,18
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,225,True,False,DEFAULT,False,19
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,199,True,False,DEFAULT,False,20
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,583,True,False,DEFAULT,False,21
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,416,True,False,DEFAULT,False,22
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2270,True,False,DEFAULT,False,23
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,354,True,False,DEFAULT,False,24
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,361,True,False,DEFAULT,False,25
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,297,True,False,DEFAULT,False,26
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,7,exec_command|exec_command|exec_command|exec_command|exec_command|exec_command|exec_command,получение данных GitHub,1166,True,False,DEFAULT,False,27
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,361,True,False,DEFAULT,False,28
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,обработка данных|получение данных GitHub,609,True,False,DEFAULT,False,29
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,обработка данных|поиск и навигация по репозиторию,501,True,False,DEFAULT,False,30
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,196,True,False,DEFAULT,False,31
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,обработка данных|чтение файлов,11535,True,False,DEFAULT,False,32
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,7,exec_command|exec_command|exec_command|exec_command|exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,12175,True,False,DEFAULT,False,33
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,167,True,False,DEFAULT,False,34
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,1070,True,False,DEFAULT,False,35
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,выполнение команд|получение данных GitHub,191,True,False,DEFAULT,False,36
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,167,True,False,DEFAULT,False,37
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,194,True,False,DEFAULT,False,38
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,745,True,False,DEFAULT,False,39
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,271,True,False,DEFAULT,False,40
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,поиск и навигация по репозиторию|получение данных GitHub,773,True,False,DEFAULT,False,41
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,request_user_input_async,прочее,0,,,112,True,False,DEFAULT,False,42
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,request_user_input_async,прочее,0,,,80,True,False,DEFAULT,False,43
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,request_user_input_async,прочее,0,,,17,True,False,DEFAULT,False,44
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,5,exec_command|exec_command|exec_command|exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию|получение данных GitHub,3259,True,False,DEFAULT,False,45
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,356,True,False,DEFAULT,False,46
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,5,exec_command|exec_command|exec_command|exec_command|exec_command,выполнение команд|обработка данных|получение данных GitHub,1597,True,False,DEFAULT,False,47
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|mcp__codex_apps__github_fetch_issue_comments|exec_command,изменение данных GitHub|обработка данных|получение данных GitHub,19613,True,False,DEFAULT,False,48
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,выполнение команд|обработка данных,343,True,False,DEFAULT,False,49
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,40509,True,False,DEFAULT,False,50
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,mcp__codex_tui__list_threads|mcp__codex_tui__list_worktrees,прочее,10477,True,False,DEFAULT,False,51
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,215,True,False,DEFAULT,False,52
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3376,True,False,DEFAULT,False,53
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3558,True,False,DEFAULT,False,54
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,mcp__codex_tui__read_thread|mcp__codex_tui__read_thread,прочее,6869,True,False,DEFAULT,False,55
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,223,True,False,DEFAULT,False,56
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,196,True,False,DEFAULT,False,57
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,286,True,False,DEFAULT,False,58
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1191,True,False,DEFAULT,False,59
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,обработка данных,1,exec_command,обработка данных,680,True,False,DEFAULT,False,1
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4136,True,False,DEFAULT,False,60
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,True,61
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,5,exec_command|exec_command|exec_command|exec_command|exec_command,получение данных GitHub,17156,True,False,DEFAULT,False,2
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4038,True,False,DEFAULT,False,62
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,63
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4038,True,False,DEFAULT,False,64
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,65
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4038,True,False,DEFAULT,True,66
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,67
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,прочее,5,exec_command|exec_command|exec_command|exec_command|exec_command,выполнение команд|поиск и навигация по репозиторию|получение данных GitHub,5436,True,False,DEFAULT,False,3
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,68
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1553,True,False,DEFAULT,False,69
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,70
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,71
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,skill:execute-task,прочее,4,exec_command|exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,9892,True,False,DEFAULT,False,4
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,72
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,73
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,прочее,1,clock__curr_time,прочее,161,True,False,DEFAULT,False,5
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1313,True,False,DEFAULT,False,74
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,75
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,False,76
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,429,True,False,DEFAULT,False,77
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,78
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,2579,True,False,DEFAULT,False,6
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,79
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,80
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,выполнение команд,1,exec_command,выполнение команд,337,True,False,DEFAULT,False,7
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,False,81
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,408,True,False,DEFAULT,False,82
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,83
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,обработка данных,1,exec_command,обработка данных,291,True,False,DEFAULT,False,8
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,289,True,False,DEFAULT,False,9
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,выполнение команд,1,write_stdin,выполнение команд,312,True,False,DEFAULT,False,10
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,84
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,368,True,False,DEFAULT,False,11
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,419,True,False,DEFAULT,False,85
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,240,True,False,DEFAULT,False,12
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1425,True,False,DEFAULT,False,86
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,424,True,False,DEFAULT,False,13
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,87
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1450,True,False,DEFAULT,True,88
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,чтение файлов,1,exec_command,чтение файлов,232,True,False,DEFAULT,False,14
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,306,True,False,DEFAULT,False,15
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,421,True,False,DEFAULT,False,89
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,510,True,False,DEFAULT,False,16
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,обработка данных|получение данных GitHub,1340,True,False,DEFAULT,False,90
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,459,True,False,DEFAULT,False,17
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,91
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,обработка данных,1,exec_command,обработка данных,4793,True,False,DEFAULT,False,18
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4167,True,False,DEFAULT,True,92
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,выполнение команд|получение данных GitHub,2804,True,False,DEFAULT,False,93
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,94
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4167,True,False,DEFAULT,True,95
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,96
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,610,True,False,DEFAULT,False,97
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,98
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,99
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,прочее,1,clock__curr_time,прочее,161,True,False,DEFAULT,True,19
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,100
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1191,True,False,DEFAULT,True,101
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,137,True,False,DEFAULT,False,102
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,103
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,1006,True,False,DEFAULT,False,104
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,False,105
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,чтение файлов,1,exec_command,чтение файлов,232,True,False,DEFAULT,False,20
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,False,106
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,3546,True,False,DEFAULT,True,107
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,442,True,False,DEFAULT,False,108
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,109
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,чтение файлов,1,exec_command,чтение файлов,2666,True,False,DEFAULT,False,21
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,False,110
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,выполнение команд,0,,,40909,True,False,DEFAULT,False,22
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,выполнение команд,0,,,948,True,False,DEFAULT,False,23
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4008,True,False,DEFAULT,True,111
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,112
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,изменение данных GitHub,1,mcp__codex_apps__github_add_comment_to_issue,изменение данных GitHub,241,True,False,DEFAULT,False,24
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,выполнение команд|получение данных GitHub,1585,True,False,DEFAULT,False,113
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2942,True,False,DEFAULT,False,25
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,148,True,False,DEFAULT,False,26
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,2596,True,False,DEFAULT,False,114
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,выполнение команд,1,exec_command,выполнение команд,24409,True,False,DEFAULT,False,27
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,148,True,False,DEFAULT,False,28
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,exec,получение данных GitHub,1,exec_command,получение данных GitHub,378,True,False,DEFAULT,False,29
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,594,True,False,DEFAULT,False,115
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,5788,True,False,DEFAULT,True,116
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,5,exec_command|exec_command|exec_command|exec_command|exec_command,получение данных GitHub,1290,True,False,DEFAULT,False,117
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,41385,True,False,DEFAULT,False,118
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,7395,True,False,DEFAULT,False,119
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,117,True,False,DEFAULT,False,120
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,117,True,False,DEFAULT,False,121
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1347,True,False,DEFAULT,False,122
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub,4689,True,False,DEFAULT,False,123
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,request_user_input_async,прочее,0,,,112,True,False,DEFAULT,False,124
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,request_user_input_async,прочее,0,,,17,True,False,DEFAULT,False,125
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:decompose,прочее,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub|чтение файлов,41095,True,False,DEFAULT,False,126
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:decompose,прочее,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub|чтение файлов,27219,True,False,DEFAULT,False,127
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,5241,True,False,DEFAULT,False,128
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub|чтение файлов,19700,True,False,DEFAULT,False,129
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,mcp__codex_tui__read_thread|exec_command|exec_command,получение данных GitHub|прочее,6878,True,False,DEFAULT,False,130
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение файлов,1,exec_command,изменение файлов,122,True,False,DEFAULT,False,131
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,725,True,False,DEFAULT,False,132
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,поиск и навигация по репозиторию,1,exec_command,поиск и навигация по репозиторию,625,True,False,DEFAULT,False,133
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,401,True,False,DEFAULT,False,134
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,чтение файлов,1,exec_command,чтение файлов,16328,True,False,DEFAULT,False,135
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,298,True,False,DEFAULT,False,136
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,267,True,False,DEFAULT,False,137
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,обработка данных|получение данных GitHub,449,True,False,DEFAULT,False,138
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,162,True,False,DEFAULT,False,139
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub,5404,True,False,DEFAULT,False,140
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,967,True,False,DEFAULT,False,141
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,1867,True,False,DEFAULT,False,142
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,162,True,False,DEFAULT,False,143
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,213,True,False,DEFAULT,False,144
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,115,True,False,DEFAULT,False,145
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,883,True,False,DEFAULT,False,146
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение файлов,1,exec_command,изменение файлов,149,True,False,DEFAULT,False,147
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,148
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,False,149
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,True,150
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1375,True,False,DEFAULT,False,151
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,2840,True,False,DEFAULT,True,152
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,чтение файлов,1,exec_command,чтение файлов,186,True,False,DEFAULT,False,153
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,162,True,False,DEFAULT,False,154
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,220,True,False,DEFAULT,True,155
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,115,True,False,DEFAULT,False,156
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,854,True,False,DEFAULT,False,157
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,223,True,False,DEFAULT,False,158
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,159
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,True,160
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1532,True,False,DEFAULT,False,161
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,162
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1532,True,False,DEFAULT,True,163
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,164
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1436,True,False,DEFAULT,True,165
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1436,True,False,DEFAULT,True,166
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1436,True,False,DEFAULT,True,167
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,168
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1450,True,False,DEFAULT,True,169
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1500,True,False,DEFAULT,True,170
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,171
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1500,True,False,DEFAULT,True,172
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,173
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1500,True,False,DEFAULT,True,174
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,175
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,176
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,False,177
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,clock__curr_time,прочее,138,True,False,DEFAULT,False,178
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,179
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,True,180
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,181
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,182
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,clock__curr_time,прочее,138,True,False,DEFAULT,True,183
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,184
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,185
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,186
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1469,True,False,DEFAULT,True,187
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,2879,True,False,DEFAULT,False,188
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1469,True,False,DEFAULT,True,189
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,9397,True,False,DEFAULT,False,190
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,191
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1538,True,False,DEFAULT,True,192
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,clock__curr_time,прочее,138,True,False,DEFAULT,True,193
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,194
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1538,True,False,DEFAULT,True,195
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,196
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,False,197
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,198
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,11920,True,False,DEFAULT,False,199
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1191,True,False,DEFAULT,False,200
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,5708,True,False,DEFAULT,True,201
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1451,True,False,DEFAULT,True,202
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,203
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,9970,True,False,DEFAULT,False,204
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,2,exec_command|exec_command,получение данных GitHub,613,True,False,DEFAULT,False,205
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,mcp__codex_tui__read_thread|exec_command|exec_command,обработка данных|получение данных GitHub|прочее,4209,True,False,DEFAULT,False,206
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,обработка данных,1,exec_command,обработка данных,158,True,False,DEFAULT,False,207
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,263,True,False,DEFAULT,False,208
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,3450,True,False,DEFAULT,False,209
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,497,True,False,DEFAULT,False,210
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:decompose,прочее,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub|чтение файлов,40763,True,False,DEFAULT,False,211
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,35672,True,False,DEFAULT,False,212
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,exec_command|exec_command,обработка данных|поиск и навигация по репозиторию,2786,True,False,DEFAULT,False,213
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,write_stdin,выполнение команд,950,True,False,DEFAULT,False,214
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,1782,True,False,DEFAULT,False,215
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,2,mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_pr_comments,изменение данных GitHub,20807,True,False,DEFAULT,False,216
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,34091,True,False,DEFAULT,False,217
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,2,mcp__codex_apps__github_fetch_pr|mcp__codex_apps__github_fetch_issue_comments,изменение данных GitHub|получение данных GitHub,30993,True,False,DEFAULT,False,218
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_pr_comments|mcp__codex_apps__github_fetch_pr,изменение данных GitHub|получение данных GitHub,26174,True,False,DEFAULT,False,219
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,mcp__codex_apps__github_fetch_pr|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_pr_comments|mcp__codex_apps__github_fetch_issue_comments,изменение данных GitHub|получение данных GitHub,21715,True,False,DEFAULT,False,220
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,mcp__codex_apps__github_fetch_pr|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_issue_comments,изменение данных GitHub|получение данных GitHub,20381,True,False,DEFAULT,False,221
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,3,mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_pr_comments,изменение данных GitHub,1564,True,False,DEFAULT,False,222
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_get_pr_info,изменение данных GitHub|получение данных GitHub,8041,True,False,DEFAULT,False,223
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,3,mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_pr_comments|mcp__codex_apps__github_fetch_pr_comments,изменение данных GitHub,6857,True,False,DEFAULT,False,224
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,mcp__codex_apps__github_fetch_issue_comments,изменение данных GitHub,4282,True,False,DEFAULT,False,225
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch_commit_workflow_runs,получение данных GitHub,2879,True,False,DEFAULT,False,226
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,2043,True,False,DEFAULT,False,227
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch,получение данных GitHub,627,True,False,DEFAULT,False,228
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch,получение данных GitHub,28664,True,False,DEFAULT,False,229
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,mcp__codex_apps__github_fetch,получение данных GitHub,2915,True,False,DEFAULT,False,230
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,835,True,False,DEFAULT,False,231
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,278,True,False,DEFAULT,False,232
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,41392,True,False,DEFAULT,False,233
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,8740,True,False,DEFAULT,False,234
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,115,True,False,DEFAULT,False,235
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,37751,True,False,DEFAULT,False,236
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,skill:decompose,прочее,3,exec_command|exec_command|exec_command,поиск и навигация по репозиторию|чтение файлов,31744,True,False,DEFAULT,False,237
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,mcp__codex_apps__github_fetch_issue|mcp__codex_apps__github_fetch_issue_comments|mcp__codex_apps__github_fetch_issue_comments|exec_command,выполнение команд|изменение данных GitHub|получение данных GitHub,41282,True,False,DEFAULT,False,238
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,5,mcp__codex_apps__github_fetch_issue_comments|exec_command|exec_command|exec_command|exec_command,изменение данных GitHub|обработка данных|поиск и навигация по репозиторию|получение данных GitHub,40945,True,False,DEFAULT,False,239
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,4478,True,False,DEFAULT,False,240
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,305,True,False,DEFAULT,False,241
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,2,exec_command|exec_command,получение данных GitHub,5478,True,False,DEFAULT,False,242
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,283,True,False,DEFAULT,False,243
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,чтение файлов,3,exec_command|exec_command|exec_command,чтение файлов,8556,True,False,DEFAULT,False,244
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,197,True,False,DEFAULT,False,245
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,0,,,201,True,False,DEFAULT,False,246
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,192,True,False,DEFAULT,False,247
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,1335,True,False,DEFAULT,False,248
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,137,True,False,DEFAULT,False,249
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,148,True,False,DEFAULT,False,250
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,196,True,False,DEFAULT,False,251
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,4,exec_command|exec_command|exec_command|exec_command,получение данных GitHub,14226,True,False,DEFAULT,False,252
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,5,exec_command|exec_command|exec_command|exec_command|exec_command,изменение файлов|обработка данных|получение данных GitHub,5468,True,False,DEFAULT,False,253
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,212,True,False,DEFAULT,False,254
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,140,True,False,DEFAULT,False,255
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,3,exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,550,True,False,DEFAULT,False,256
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,изменение данных GitHub,1,exec_command,изменение данных GitHub,188,True,False,DEFAULT,False,257
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,140,True,False,DEFAULT,False,258
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,2,exec_command|exec_command,получение данных GitHub,607,True,False,DEFAULT,False,259
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,223,True,False,DEFAULT,False,260
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,265,True,False,DEFAULT,False,261
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,7591,True,False,DEFAULT,False,262
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,4298,True,False,DEFAULT,False,263
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,False,264
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,265
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1509,True,False,DEFAULT,False,266
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,267
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,268
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,1509,True,False,DEFAULT,False,269
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,False,270
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,271
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,False,272
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,273
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1451,True,False,DEFAULT,False,274
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,275
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,276
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1451,True,False,DEFAULT,False,277
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,False,278
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,279
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,280
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,281
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,282
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,283
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,True,284
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1463,True,False,DEFAULT,False,285
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,286
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,287
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,67,True,False,DEFAULT,False,288
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,wait,прочее,0,,,1462,True,False,DEFAULT,False,289
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,False,290
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,291
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,False,292
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,False,293
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,clock__curr_time,прочее,161,True,False,DEFAULT,False,294
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__send_message_to_thread,прочее,245,True,False,DEFAULT,False,295
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,12226,True,False,DEFAULT,False,296
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,1463,True,False,DEFAULT,True,297
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__read_thread,прочее,880,True,False,DEFAULT,True,298
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,1,mcp__codex_tui__wait_threads,прочее,3632,True,False,DEFAULT,True,299
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,обработка данных|получение данных GitHub,965,True,False,DEFAULT,False,300
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,1,exec_command,получение данных GitHub,3798,True,False,DEFAULT,False,301
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,212,True,False,DEFAULT,False,302
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,прочее,4,exec_command|exec_command|exec_command|exec_command,поиск и навигация по репозиторию|получение данных GitHub,3167,True,False,DEFAULT,False,303
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,выполнение команд,1,exec_command,выполнение команд,212,True,False,DEFAULT,False,304
+168,748165e4c8d2423f8819f57e4d0e25b9,high_tool_volume,01a1fee2-4bfe-7282-98d7-26381e04757f,exec,получение данных GitHub,3,exec_command|exec_command|exec_command,получение данных GitHub,1412,True,False,DEFAULT,False,305

@@ -1,0 +1,27 @@
+participant,metric,value,unit,source,confidence,limitations
+coordinator,session_id,01a204bf-15ef-7672-b613-aad3db796453,id,Codex session_meta,high,
+coordinator,agent_thread_id,01a204bf-15ef-7672-b613-aad3db796453,id,Codex session_meta,high,
+subagent,session_id,01a204bf-15ef-7672-b613-aad3db796453,id,Codex session_meta,high,Shared with parent; insufficient alone for participant attribution
+subagent,agent_thread_id,01a204c0-bf14-7022-8d63-50e200bd9d03,id,Codex session_meta,high,
+subagent,parent_thread_id,01a204bf-15ef-7672-b613-aad3db796453,id,Codex source.subagent.thread_spawn,high,
+coordinator,model,gpt-6-luna,slug,Codex thread_settings_applied,high,Display name GPT-6-Luna
+coordinator,reasoning_effort,medium,level,Codex thread_settings_applied,high,
+subagent,model,gpt-6-luna,slug,Codex thread_settings_applied,high,Display name GPT-6-Luna
+subagent,reasoning_effort,high,level,Codex thread_settings_applied,high,Did not match requested Medium
+coordinator,max_request_input_tokens,78097,tokens,Codex token_count.info.last_token_usage,high,Coordinator includes research and report preparation through journal cutoff
+subagent,max_request_input_tokens,62794,tokens,Codex token_count.info.last_token_usage,high,
+coordinator,input_tokens,1221827,tokens,Codex final info.total_token_usage at 2026-11-22T19:39:42.550Z,high,Cumulative thread snapshot; session remained active
+coordinator,cached_input_tokens,1146368,tokens,Codex final info.total_token_usage at 2026-11-22T19:39:42.550Z,high,Subset of input_tokens
+coordinator,output_tokens,19503,tokens,Codex final info.total_token_usage at 2026-11-22T19:39:42.550Z,high,Includes reasoning_output_tokens 13297
+coordinator,total_tokens,1241330,tokens,Codex final info.total_token_usage at 2026-11-22T19:39:42.550Z,high,Equals input_tokens plus output_tokens
+subagent,input_tokens,62794,tokens,Codex final info.total_token_usage at 2026-11-22T19:34:36.432Z,high,
+subagent,cached_input_tokens,6784,tokens,Codex final info.total_token_usage at 2026-11-22T19:34:36.432Z,high,Subset of input_tokens
+subagent,output_tokens,79,tokens,Codex final info.total_token_usage at 2026-11-22T19:34:36.432Z,high,Includes reasoning_output_tokens 70
+subagent,total_tokens,62873,tokens,Codex final info.total_token_usage at 2026-11-22T19:34:36.432Z,high,Equals input_tokens plus output_tokens
+coordinator,model_calls,24,calls,Codex event_msg.token_count count,high,Local usage event count; no Langfuse corroboration at cutoff
+subagent,model_calls,1,calls,Codex event_msg.token_count count,high,Local usage event count; no Langfuse corroboration at cutoff
+coordinator,tool_calls,24,calls,Codex response_item count,medium,22 exec plus spawn_agent and list_agents; nested operations inside exec not separately enumerated
+subagent,tool_calls,14,calls,Codex response_item count,medium,13 exec plus spawn_agent; no descendant journal found for that spawn event
+coordinator,elapsed_at_cutoff,420.961,seconds,Codex journal start to final record at 2026-11-22T19:39:42.550Z,medium,Not final; coordinator was still active
+subagent,duration,6.068,seconds,Codex journal 2026-11-22T19:34:30.429Z to 2026-11-22T19:34:36.497Z,medium,Completed thread duration
+coordinator,langfuse_observations,0,rows,Langfuse observations list filtered by exact session_id,low,Queried before current session Stop Hook; cannot infer export failure

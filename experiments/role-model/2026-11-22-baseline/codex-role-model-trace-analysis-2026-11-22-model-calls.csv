@@ -1,0 +1,668 @@
+issue_id,run_id,session_id,sequence,parent_session_id,agent_id,model,reasoning_effort,input_tokens_field,output_tokens_field,cached_input_tokens_field,output_reasoning_tokens_field,prompt_tokens_estimate_input_plus_cached,preceding_tool_count_since_previous_model,preceding_result_bytes_known_since_previous_model,preceding_result_size_unknown_count_since_previous_model,preceding_categories,cumulative_preceding_tool_count,cumulative_preceding_result_bytes_known,input_change_vs_previous_prompt_tokens,context_reduction_observed,compaction_signal_observed
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,1,Unknown,Unknown,gpt-6-luna,high,14500,232,6784,46,21284,0,0,0,,0,0,,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,2,Unknown,Unknown,gpt-6-luna,high,8721,261,21120,80,29841,1,40704,0,поиск и навигация по репозиторию,1,40704,8557,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,3,Unknown,Unknown,gpt-6-luna,high,8776,548,29696,99,38472,1,40723,0,получение данных GitHub,2,81427,8631,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,4,Unknown,Unknown,gpt-6-luna,high,936,175,38272,29,39208,1,398,0,получение данных GitHub,3,81825,736,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,5,Unknown,Unknown,gpt-6-luna,high,6748,364,39040,52,45788,1,35576,0,получение данных GitHub,4,117401,6580,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,6,Unknown,Unknown,gpt-6-luna,high,7341,118,45568,46,52909,1,33142,0,получение данных GitHub,5,150543,7121,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,7,Unknown,Unknown,gpt-6-luna,high,8451,81,52736,151,61187,1,31542,0,прочее,6,182085,8278,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,8,Unknown,Unknown,gpt-6-luna,high,8509,205,61056,60,69565,1,29352,0,прочее,7,211437,8378,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,9,Unknown,Unknown,gpt-6-luna,high,493,120,69376,21,69869,1,190,0,получение данных GitHub,8,211627,304,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,10,Unknown,Unknown,gpt-6-luna,high,594,206,69632,13,70226,1,1176,0,получение данных GitHub,9,212803,357,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,11,Unknown,Unknown,gpt-6-luna,high,6941,282,70016,995,76957,1,40384,0,получение данных GitHub,10,253187,6731,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,12,Unknown,Unknown,gpt-6-luna,high,1468,5361,76800,40,78268,1,165,0,поиск и навигация по репозиторию,11,253352,1311,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,13,Unknown,Unknown,gpt-6-luna,high,5613,146,78080,106,83693,1,117,0,изменение файлов,12,253469,5425,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,14,Unknown,Unknown,gpt-6-luna,high,528,186,83456,80,83984,1,162,0,получение данных GitHub,13,253631,291,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,15,Unknown,Unknown,gpt-6-luna,high,537,259,83840,27,84377,1,522,0,получение данных GitHub,14,254153,393,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,16,Unknown,Unknown,gpt-6-luna,high,463,157,84224,10,84687,1,117,0,изменение файлов,15,254270,310,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,17,Unknown,Unknown,gpt-6-luna,high,433,185,84480,47,84913,1,262,0,получение данных GitHub,16,254532,226,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,18,Unknown,Unknown,gpt-6-luna,high,636,485,84736,190,85372,1,730,0,поиск и навигация по репозиторию,17,255262,459,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,19,Unknown,Unknown,gpt-6-luna,high,839,240,85248,87,86087,1,160,0,изменение данных GitHub,18,255422,715,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,20,Unknown,Unknown,gpt-6-luna,high,731,232,85888,47,86619,1,791,0,получение данных GitHub,19,256213,532,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,21,Unknown,Unknown,gpt-6-luna,high,1329,232,86400,235,87729,1,3619,0,получение данных GitHub,20,259832,1110,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,22,Unknown,Unknown,gpt-6-luna,high,833,620,87552,102,88385,1,615,0,получение данных GitHub,21,260447,656,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,23,Unknown,Unknown,gpt-6-luna,high,987,132,88192,29,89179,1,322,0,изменение данных GitHub,22,260769,794,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,24,Unknown,Unknown,gpt-6-luna,high,1122,594,88960,164,90082,1,3208,0,получение данных GitHub,23,263977,903,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,25,Unknown,Unknown,gpt-6-luna,high,1554,215,89856,218,91410,1,2501,0,получение данных GitHub,24,266478,1328,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,26,Unknown,Unknown,gpt-6-luna,high,1586,81,91264,52,92850,1,4089,0,получение данных GitHub,25,270567,1440,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,27,Unknown,Unknown,gpt-6-luna,high,976,673,92672,221,93648,1,2165,0,получение данных GitHub,26,272732,798,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,28,Unknown,Unknown,gpt-6-luna,high,1525,116,93440,332,94965,1,1512,0,получение данных GitHub,27,274244,1317,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,29,Unknown,Unknown,gpt-6-luna,high,1714,346,94848,36,96562,1,3528,0,получение данных GitHub,28,277772,1597,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,30,Unknown,Unknown,gpt-6-luna,high,770,272,96384,158,97154,0,0,0,,28,277772,592,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,31,Unknown,Unknown,gpt-6-luna,high,2844,283,97024,1113,99868,1,10934,0,получение данных GitHub,29,288706,2714,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,32,Unknown,Unknown,gpt-6-luna,high,3292,2932,99712,855,103004,1,6080,0,получение данных GitHub,30,294786,3136,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,33,Unknown,Unknown,gpt-6-luna,high,4333,113,102784,14,107117,1,1910,0,изменение файлов,31,296696,4113,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,34,Unknown,Unknown,gpt-6-luna,high,3720,2692,106880,29,110600,1,22293,0,поиск и навигация по репозиторию,32,318989,3483,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,35,Unknown,Unknown,gpt-6-luna,high,2881,249,110464,1122,113345,1,117,0,изменение файлов,33,319106,2745,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,36,Unknown,Unknown,gpt-6-luna,high,3090,99,113152,36,116242,1,9049,0,поиск и навигация по репозиторию,34,328155,2897,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,37,Unknown,Unknown,gpt-6-luna,high,6016,457,116096,474,122112,1,30806,0,поиск и навигация по репозиторию,35,358961,5870,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,38,Unknown,Unknown,gpt-6-luna,high,1170,121,121984,69,123154,1,433,0,обработка данных,36,359394,1042,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,39,Unknown,Unknown,gpt-6-luna,high,485,209,123008,39,123493,1,420,0,поиск и навигация по репозиторию,37,359814,339,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,40,Unknown,Unknown,gpt-6-luna,high,716,884,123264,140,123980,1,843,0,получение данных GitHub,38,360657,487,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,41,Unknown,Unknown,gpt-6-luna,high,1609,768,123776,236,125385,1,1332,0,получение данных GitHub,39,361989,1405,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,42,Unknown,Unknown,gpt-6-luna,high,1462,169,125184,28,126646,1,897,0,получение данных GitHub,40,362886,1261,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,43,Unknown,Unknown,gpt-6-luna,high,1170,765,126464,81,127634,1,2537,0,получение данных GitHub,41,365423,988,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,44,Unknown,Unknown,gpt-6-luna,high,1279,468,127488,119,128767,1,995,0,получение данных GitHub,42,366418,1133,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,45,Unknown,Unknown,gpt-6-luna,high,992,244,128640,994,129632,0,0,0,,42,366418,865,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,46,Unknown,Unknown,gpt-6-luna,high,4882,2642,129408,758,134290,1,17029,0,поиск и навигация по репозиторию,43,383447,4658,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,47,Unknown,Unknown,gpt-6-luna,high,3570,395,134144,410,137714,1,117,0,изменение файлов,44,383564,3424,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,48,Unknown,Unknown,gpt-6-luna,high,1071,134,137472,8,138543,1,117,0,изменение файлов,45,383681,829,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,49,Unknown,Unknown,gpt-6-luna,high,4164,398,138368,265,142532,1,18285,0,поиск и навигация по репозиторию,46,401966,3989,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,50,Unknown,Unknown,gpt-6-luna,high,992,164,142336,114,143328,1,527,0,обработка данных,47,402493,796,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,51,Unknown,Unknown,gpt-6-luna,high,699,196,143104,399,143803,1,590,0,получение данных GitHub,48,403083,475,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,52,Unknown,Unknown,gpt-6-luna,high,1691,231,143616,121,145307,0,0,0,,48,403083,1504,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,53,Unknown,Unknown,gpt-6-luna,high,6929,1244,145152,5500,152081,1,40365,0,получение данных GitHub,49,443448,6774,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,54,Unknown,Unknown,gpt-6-luna,high,6913,82,151936,45,158849,1,117,0,изменение файлов,50,443565,6768,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,55,Unknown,Unknown,gpt-6-luna,high,3323,716,158720,1495,162043,1,16211,0,чтение файлов,51,459776,3194,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,56,Unknown,Unknown,gpt-6-luna,high,2358,1351,161920,92,164278,1,117,0,изменение файлов,52,459893,2235,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,57,Unknown,Unknown,gpt-6-luna,high,1649,82,164096,259,165745,1,117,0,изменение файлов,53,460010,1467,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,58,Unknown,Unknown,gpt-6-luna,high,1463,874,165504,516,166967,1,6202,0,чтение файлов,54,466212,1222,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,59,Unknown,Unknown,gpt-6-luna,high,1597,118,166784,1226,168381,1,117,0,изменение файлов,55,466329,1414,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,60,Unknown,Unknown,gpt-6-luna,high,5149,871,168192,830,173341,1,20258,0,поиск и навигация по репозиторию,56,486587,4960,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,61,Unknown,Unknown,gpt-6-luna,high,1882,751,173184,1001,175066,1,117,0,изменение файлов,57,486704,1725,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,62,Unknown,Unknown,gpt-6-luna,high,2110,100,174848,29,176958,1,603,0,изменение файлов,58,487307,1892,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,63,Unknown,Unknown,gpt-6-luna,high,733,752,176768,36,177501,1,2501,0,поиск и навигация по репозиторию,59,489808,543,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,64,Unknown,Unknown,gpt-6-luna,high,1189,85,177280,13,178469,1,1116,0,изменение файлов,60,490924,968,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,65,Unknown,Unknown,gpt-6-luna,high,1754,81,178304,38,180058,1,2227,0,чтение файлов,61,493151,1589,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,66,Unknown,Unknown,gpt-6-luna,high,473,750,179840,22,180313,1,955,0,чтение файлов,62,494106,255,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,67,Unknown,Unknown,gpt-6-luna,high,1129,357,180096,39,181225,1,603,0,изменение файлов,63,494709,912,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,68,Unknown,Unknown,gpt-6-luna,high,653,84,180992,41,181645,1,117,0,изменение файлов,64,494826,420,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,69,Unknown,Unknown,gpt-6-luna,high,744,220,181504,92,182248,1,2457,0,чтение файлов,65,497283,603,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,70,Unknown,Unknown,gpt-6-luna,high,568,343,182016,8,182584,1,117,0,изменение файлов,66,497400,336,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,71,Unknown,Unknown,gpt-6-luna,high,559,128,182400,365,182959,1,117,0,изменение файлов,67,497517,375,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,72,Unknown,Unknown,gpt-6-luna,high,6256,515,182784,1011,189040,1,33004,0,чтение файлов,68,530521,6081,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,73,Unknown,Unknown,gpt-6-luna,high,1790,620,188800,307,190590,1,117,0,изменение файлов,69,530638,1550,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,74,Unknown,Unknown,gpt-6-luna,high,1276,82,190464,30,191740,1,932,0,обработка данных,70,531570,1150,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,75,Unknown,Unknown,gpt-6-luna,high,1606,408,191616,355,193222,1,6080,0,чтение файлов,71,537650,1482,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,76,Unknown,Unknown,gpt-6-luna,high,985,760,193024,470,194009,1,117,0,изменение файлов,72,537767,787,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,77,Unknown,Unknown,gpt-6-luna,high,1725,82,193792,36,195517,1,1187,0,обработка данных,73,538954,1508,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,78,Unknown,Unknown,gpt-6-luna,high,972,760,195328,145,196300,1,3974,0,чтение файлов,74,542928,783,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,79,Unknown,Unknown,gpt-6-luna,high,1363,244,196096,434,197459,1,1093,0,обработка данных,75,544021,1159,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,80,Unknown,Unknown,gpt-6-luna,high,913,744,197248,820,198161,1,117,0,изменение файлов,76,544138,702,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,81,Unknown,Unknown,gpt-6-luna,high,1977,82,198016,42,199993,1,1155,0,обработка данных,77,545293,1832,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,82,Unknown,Unknown,gpt-6-luna,high,1329,729,199808,257,201137,1,4460,0,чтение файлов,78,549753,1144,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,83,Unknown,Unknown,gpt-6-luna,high,1431,166,200960,52,202391,1,1158,0,обработка данных,79,550911,1254,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,84,Unknown,Unknown,gpt-6-luna,high,445,730,202240,37,202685,1,260,0,обработка данных,80,551171,294,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,85,Unknown,Unknown,gpt-6-luna,high,1200,164,202496,61,203696,1,1064,0,обработка данных,81,552235,1011,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,86,Unknown,Unknown,gpt-6-luna,high,608,240,203520,251,204128,1,585,0,получение данных GitHub,82,552820,432,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,87,Unknown,Unknown,gpt-6-luna,high,1074,209,203904,67,204978,0,0,0,,82,552820,850,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,88,Unknown,Unknown,gpt-6-luna,high,308,289,208896,155,209204,1,19857,0,получение данных GitHub,83,572677,4226,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,89,Unknown,Unknown,gpt-6-luna,high,4465,764,209024,490,213489,1,21834,0,поиск и навигация по репозиторию,84,594511,4285,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,90,Unknown,Unknown,gpt-6-luna,high,1519,530,213248,280,214767,1,117,0,изменение файлов,85,594628,1278,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,91,Unknown,Unknown,gpt-6-luna,high,1240,165,214528,38,215768,1,786,0,обработка данных,86,595414,1001,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,92,Unknown,Unknown,gpt-6-luna,high,635,121,215552,164,216187,1,592,0,получение данных GitHub,87,596006,419,False,False
+153,db02fc391bb2432b870be9feedba5d63,01a1f974-533f-7a40-9fe0-092bfced4837,93,Unknown,Unknown,gpt-6-luna,high,545,214,216064,88,216609,1,386,0,получение данных GitHub,88,596392,422,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,1,Unknown,Unknown,gpt-6-luna,xhigh,12162,156,6784,210,18946,0,0,0,,0,0,,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,2,Unknown,Unknown,gpt-6-luna,xhigh,18473,187,6784,83,25257,1,28788,0,чтение файлов,1,28788,6311,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,3,Unknown,Unknown,gpt-6-luna,xhigh,16869,222,18816,291,35685,1,41391,0,поиск и навигация по репозиторию,2,70179,10428,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,4,Unknown,Unknown,gpt-6-luna,xhigh,7985,320,35456,453,43441,1,40780,0,выполнение команд,3,110959,7756,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,5,Unknown,Unknown,gpt-6-luna,xhigh,4783,468,43264,1361,48047,1,17400,0,получение данных GitHub,4,128359,4606,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,6,Unknown,Unknown,gpt-6-luna,xhigh,3136,272,47872,1476,51008,1,3990,0,выполнение команд,5,132349,2961,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,7,Unknown,Unknown,gpt-6-luna,xhigh,2566,760,50816,280,53382,1,2694,0,получение данных GitHub,6,135043,2374,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,8,Unknown,Unknown,gpt-6-luna,xhigh,1597,147,53248,1466,54845,1,1051,0,выполнение команд,7,136094,1463,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,9,Unknown,Unknown,gpt-6-luna,xhigh,1869,454,54656,1879,56525,1,220,0,поиск и навигация по репозиторию,8,136314,1680,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,10,Unknown,Unknown,gpt-6-luna,xhigh,2585,71,56320,43,58905,1,186,0,чтение файлов,9,136500,2380,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,11,Unknown,Unknown,gpt-6-luna,xhigh,302,113,58752,72,59054,1,159,0,обработка данных,10,136659,149,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,12,Unknown,Unknown,gpt-6-luna,xhigh,402,222,58880,71,59282,1,177,0,изменение данных GitHub,11,136836,228,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,13,Unknown,Unknown,gpt-6-luna,xhigh,506,254,59136,319,59642,1,240,0,получение данных GitHub,12,137076,360,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,14,Unknown,Unknown,gpt-6-luna,xhigh,736,240,59520,48,60256,1,185,0,получение данных GitHub,13,137261,614,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,15,Unknown,Unknown,gpt-6-luna,xhigh,574,150,60032,82,60606,1,299,0,выполнение команд,14,137560,350,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,16,Unknown,Unknown,gpt-6-luna,xhigh,551,219,60416,22,60967,1,462,0,получение данных GitHub,15,138022,361,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,17,Unknown,Unknown,gpt-6-luna,xhigh,515,375,60800,617,61315,1,360,0,получение данных GitHub,16,138382,348,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,18,Unknown,Unknown,gpt-6-luna,xhigh,10126,343,61184,791,71310,1,40715,0,выполнение команд,17,179097,9995,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,19,Unknown,Unknown,gpt-6-luna,xhigh,10375,351,71168,915,81543,1,40776,0,выполнение команд,18,219873,10233,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,20,Unknown,Unknown,gpt-6-luna,xhigh,7233,379,81408,2251,88641,1,26398,0,чтение файлов,19,246271,7098,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,21,Unknown,Unknown,gpt-6-luna,xhigh,12157,347,88448,1094,100605,1,40981,0,выполнение команд,20,287252,11964,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,22,Unknown,Unknown,gpt-6-luna,xhigh,11761,113,100480,2838,112241,1,41190,0,выполнение команд,21,328442,11636,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,23,Unknown,Unknown,gpt-6-luna,xhigh,6807,195,112000,2129,118807,1,14117,0,чтение файлов,22,342559,6566,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,24,Unknown,Unknown,gpt-6-luna,xhigh,6938,2559,118656,3565,125594,1,21771,0,поиск и навигация по репозиторию,23,364330,6787,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,25,Unknown,Unknown,gpt-6-luna,xhigh,6302,849,125440,1071,131742,1,117,0,изменение файлов,24,364447,6148,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,26,Unknown,Unknown,gpt-6-luna,xhigh,2102,137,131584,437,133686,1,117,0,изменение файлов,25,364564,1944,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,27,Unknown,Unknown,gpt-6-luna,xhigh,3234,133,133504,236,136738,1,9937,0,поиск и навигация по репозиторию,26,374501,3052,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,28,Unknown,Unknown,gpt-6-luna,xhigh,4289,840,136576,1820,140865,1,17033,0,поиск и навигация по репозиторию,27,391534,4127,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,29,Unknown,Unknown,gpt-6-luna,xhigh,2915,781,140672,30,143587,1,273,0,изменение файлов,28,391807,2722,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,30,Unknown,Unknown,gpt-6-luna,xhigh,1062,1115,143360,248,144422,1,117,0,изменение файлов,29,391924,835,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,31,Unknown,Unknown,gpt-6-luna,xhigh,1553,763,144256,474,145809,1,117,0,изменение файлов,30,392041,1387,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,32,Unknown,Unknown,gpt-6-luna,xhigh,1406,181,145664,711,147070,1,117,0,изменение файлов,31,392158,1261,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,33,Unknown,Unknown,gpt-6-luna,xhigh,9380,312,146944,1058,156324,1,35522,0,поиск и навигация по репозиторию,32,427680,9254,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,34,Unknown,Unknown,gpt-6-luna,xhigh,1558,259,156160,737,157718,1,117,0,изменение файлов,33,427797,1394,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,35,Unknown,Unknown,gpt-6-luna,xhigh,1448,48,157568,18,159016,1,1213,0,выполнение команд,34,429010,1298,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,36,Unknown,Unknown,gpt-6-luna,xhigh,413,102,158848,357,159261,1,602,0,выполнение команд,35,429612,245,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,37,Unknown,Unknown,gpt-6-luna,xhigh,712,254,159104,482,159816,1,388,0,выполнение команд,36,430000,555,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,38,Unknown,Unknown,gpt-6-luna,xhigh,1274,321,159616,851,160890,1,948,0,выполнение команд,37,430948,1074,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,39,Unknown,Unknown,gpt-6-luna,xhigh,1628,73,160768,601,162396,1,1149,0,чтение файлов,38,432097,1506,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,40,Unknown,Unknown,gpt-6-luna,xhigh,933,238,162176,43,163109,1,180,0,выполнение команд,39,432277,713,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,41,Unknown,Unknown,gpt-6-luna,xhigh,469,112,162944,8,163413,1,115,0,чтение файлов,40,432392,304,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,42,Unknown,Unknown,gpt-6-luna,xhigh,456,48,163200,6,163656,1,469,0,выполнение команд,41,432861,243,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,43,Unknown,Unknown,gpt-6-luna,xhigh,639,145,163456,393,164095,1,1890,0,выполнение команд,42,434751,439,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,44,Unknown,Unknown,gpt-6-luna,xhigh,782,48,163968,11,164750,1,419,0,выполнение команд,43,435170,655,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,45,Unknown,Unknown,gpt-6-luna,xhigh,291,48,164608,9,164899,1,461,0,выполнение команд,44,435631,149,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,46,Unknown,Unknown,gpt-6-luna,xhigh,327,48,164736,28,165063,1,525,0,выполнение команд,45,436156,164,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,47,Unknown,Unknown,gpt-6-luna,xhigh,398,48,164864,9,165262,1,587,0,выполнение команд,46,436743,199,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,48,Unknown,Unknown,gpt-6-luna,xhigh,295,48,165120,9,165415,1,438,0,выполнение команд,47,437181,153,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,49,Unknown,Unknown,gpt-6-luna,xhigh,369,48,165248,7,165617,1,686,0,выполнение команд,48,437867,202,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,50,Unknown,Unknown,gpt-6-luna,xhigh,405,48,165376,6,165781,1,486,0,выполнение команд,49,438353,164,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,51,Unknown,Unknown,gpt-6-luna,xhigh,894,48,165632,12,166526,1,3190,0,выполнение команд,50,441543,745,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,52,Unknown,Unknown,gpt-6-luna,xhigh,311,48,166400,9,166711,1,645,0,выполнение команд,51,442188,185,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,53,Unknown,Unknown,gpt-6-luna,xhigh,327,48,166528,7,166855,1,405,0,выполнение команд,52,442593,144,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,54,Unknown,Unknown,gpt-6-luna,xhigh,346,48,166656,28,167002,1,422,0,выполнение команд,53,443015,147,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,55,Unknown,Unknown,gpt-6-luna,xhigh,480,48,166784,6,167264,1,885,0,выполнение команд,54,443900,262,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,56,Unknown,Unknown,gpt-6-luna,xhigh,482,112,167040,22,167522,1,901,0,выполнение команд,55,444801,258,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,57,Unknown,Unknown,gpt-6-luna,xhigh,532,48,167296,9,167828,1,637,0,выполнение команд,56,445438,306,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,58,Unknown,Unknown,gpt-6-luna,xhigh,1553,291,167680,728,169233,1,5453,0,выполнение команд,57,450891,1405,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,59,Unknown,Unknown,gpt-6-luna,xhigh,1834,54,169088,129,170922,1,1840,0,выполнение команд,58,452731,1689,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,60,Unknown,Unknown,gpt-6-luna,xhigh,9636,211,170752,1760,180388,1,41312,0,выполнение команд,59,494043,9466,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,61,Unknown,Unknown,gpt-6-luna,xhigh,3166,90,180224,816,183390,1,3251,0,выполнение команд,60,497294,3002,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,62,Unknown,Unknown,gpt-6-luna,xhigh,1151,120,183168,18,184319,1,115,0,выполнение команд,61,497409,929,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,63,Unknown,Unknown,gpt-6-luna,xhigh,751,214,184192,140,184943,1,1302,0,выполнение команд,62,498711,624,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,64,Unknown,Unknown,gpt-6-luna,xhigh,657,72,184704,34,185361,1,242,0,обработка данных,63,498953,418,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,65,Unknown,Unknown,gpt-6-luna,xhigh,449,210,185216,24,185665,1,578,0,выполнение команд,64,499531,304,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,66,Unknown,Unknown,gpt-6-luna,xhigh,450,137,185472,96,185922,1,115,0,обработка данных,65,499646,257,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,67,Unknown,Unknown,gpt-6-luna,xhigh,598,48,185728,9,186326,1,636,0,выполнение команд,66,500282,404,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,68,Unknown,Unknown,gpt-6-luna,xhigh,655,121,186112,116,186767,1,1380,0,выполнение команд,67,501662,441,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,69,Unknown,Unknown,gpt-6-luna,xhigh,3881,100,186624,59,190505,1,12398,0,поиск и навигация по репозиторию,68,514060,3738,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,70,Unknown,Unknown,gpt-6-luna,xhigh,2231,107,190336,537,192567,1,6895,0,поиск и навигация по репозиторию,69,520955,2062,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,71,Unknown,Unknown,gpt-6-luna,xhigh,954,322,192384,67,193338,1,385,0,выполнение команд,70,521340,771,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,72,Unknown,Unknown,gpt-6-luna,xhigh,674,145,193152,414,193826,1,363,0,выполнение команд,71,521703,488,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,73,Unknown,Unknown,gpt-6-luna,xhigh,987,83,193664,680,194651,1,923,0,выполнение команд,72,522626,825,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,74,Unknown,Unknown,gpt-6-luna,xhigh,1231,48,194432,7,195663,1,790,0,выполнение команд,73,523416,1012,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,75,Unknown,Unknown,gpt-6-luna,xhigh,375,213,195456,35,195831,1,379,0,выполнение команд,74,523795,168,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,76,Unknown,Unknown,gpt-6-luna,xhigh,1261,197,195712,266,196973,1,3487,0,обработка данных,75,527282,1142,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,77,Unknown,Unknown,gpt-6-luna,xhigh,4273,400,196736,439,201009,1,12643,0,выполнение команд,76,539925,4036,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,78,Unknown,Unknown,gpt-6-luna,xhigh,1171,52,200832,241,202003,1,599,0,выполнение команд,77,540524,994,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,79,Unknown,Unknown,gpt-6-luna,xhigh,498,189,201856,9,202354,1,235,0,выполнение команд,78,540759,351,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,80,Unknown,Unknown,gpt-6-luna,xhigh,611,48,202112,6,202723,1,637,0,выполнение команд,79,541396,369,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,81,Unknown,Unknown,gpt-6-luna,xhigh,376,48,202496,20,202872,1,362,0,выполнение команд,80,541758,149,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,82,Unknown,Unknown,gpt-6-luna,xhigh,257,277,202752,374,203009,1,255,0,выполнение команд,81,542013,137,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,83,Unknown,Unknown,gpt-6-luna,xhigh,5055,543,202880,4645,207935,1,1186,0,прочее,82,543199,4926,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,84,Unknown,Unknown,gpt-6-luna,xhigh,5531,189,207616,556,213147,1,117,0,изменение файлов,83,543316,5212,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,85,Unknown,Unknown,gpt-6-luna,xhigh,897,48,213120,6,214017,1,469,0,выполнение команд,84,543785,870,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,86,Unknown,Unknown,gpt-6-luna,xhigh,337,190,213888,253,214225,1,549,0,выполнение команд,85,544334,208,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,87,Unknown,Unknown,gpt-6-luna,xhigh,7195,93,214144,470,221339,1,647,0,чтение файлов,86,544981,7114,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,88,Unknown,Unknown,gpt-6-luna,xhigh,7041,141,221184,496,228225,1,20297,0,поиск и навигация по репозиторию,87,565278,6886,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,89,Unknown,Unknown,gpt-6-luna,xhigh,790,101,228096,707,228886,1,117,0,изменение файлов,88,565395,661,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,90,Unknown,Unknown,gpt-6-luna,xhigh,3861,155,228736,1148,232597,1,12629,0,чтение файлов,89,578024,3711,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,91,Unknown,Unknown,gpt-6-luna,xhigh,5684,189,232448,246,238132,1,506,0,чтение файлов,90,578530,5535,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,92,Unknown,Unknown,gpt-6-luna,xhigh,788,48,237952,6,238740,1,635,0,выполнение команд,91,579165,608,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,93,Unknown,Unknown,gpt-6-luna,xhigh,307,62,238592,18,238899,1,381,0,выполнение команд,92,579546,159,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,94,Unknown,Unknown,gpt-6-luna,xhigh,1232,368,238848,2572,240080,1,224,0,чтение файлов,93,579770,1181,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,95,Unknown,Unknown,gpt-6-luna,xhigh,3300,81,239744,72,243044,1,117,0,изменение файлов,94,579887,2964,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,96,Unknown,Unknown,gpt-6-luna,xhigh,1492,189,242944,1472,244436,1,5114,0,чтение файлов,95,585001,1392,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,97,Unknown,Unknown,gpt-6-luna,xhigh,2793,154,18816,122,21609,1,468,0,выполнение команд,96,585469,-222827,True,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,98,Unknown,Unknown,gpt-6-luna,xhigh,831,202,21376,71,22207,1,1122,0,поиск и навигация по репозиторию,97,586591,598,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,99,Unknown,Unknown,gpt-6-luna,xhigh,842,86,22016,53,22858,1,1395,0,выполнение команд,98,587986,651,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,100,Unknown,Unknown,gpt-6-luna,xhigh,892,203,22656,49,23548,1,1796,0,чтение файлов,99,589782,690,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,101,Unknown,Unknown,gpt-6-luna,xhigh,553,293,23424,106,23977,1,650,0,выполнение команд,100,590432,429,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,102,Unknown,Unknown,gpt-6-luna,xhigh,951,102,23808,97,24759,1,1314,0,прочее,101,591746,782,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,103,Unknown,Unknown,gpt-6-luna,xhigh,21082,245,6784,346,27866,1,12465,0,чтение файлов,102,604211,3107,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,104,Unknown,Unknown,gpt-6-luna,xhigh,833,195,27648,69,28481,1,117,0,изменение файлов,103,604328,615,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,105,Unknown,Unknown,gpt-6-luna,xhigh,4735,168,24576,509,29311,1,1976,0,выполнение команд,104,606304,830,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,106,Unknown,Unknown,gpt-6-luna,xhigh,3155,104,29184,1404,32339,1,10183,0,поиск и навигация по репозиторию,105,616487,3028,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,107,Unknown,Unknown,gpt-6-luna,xhigh,3032,117,32128,33,35160,1,4244,0,поиск и навигация по репозиторию,106,620731,2821,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,108,Unknown,Unknown,gpt-6-luna,xhigh,2804,245,34944,636,37748,1,10022,0,поиск и навигация по репозиторию,107,630753,2588,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,109,Unknown,Unknown,gpt-6-luna,xhigh,10365,307,28288,120,38653,1,117,0,изменение файлов,108,630870,905,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,110,Unknown,Unknown,gpt-6-luna,xhigh,10783,236,38528,452,49311,1,41369,0,прочее,109,672239,10658,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,111,Unknown,Unknown,gpt-6-luna,xhigh,11369,151,49152,918,60521,1,40938,0,прочее,110,713177,11210,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,112,Unknown,Unknown,gpt-6-luna,xhigh,1593,91,60288,133,61881,1,952,0,поиск и навигация по репозиторию,111,714129,1360,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,113,Unknown,Unknown,gpt-6-luna,xhigh,762,99,61696,78,62458,1,1795,0,чтение файлов,112,715924,577,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,114,Unknown,Unknown,gpt-6-luna,xhigh,2493,41,62336,299,64829,1,7197,0,выполнение команд,113,723121,2371,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,115,Unknown,Unknown,gpt-6-luna,xhigh,10236,45,64640,68,74876,1,41047,0,выполнение команд,114,764168,10047,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,116,Unknown,Unknown,gpt-6-luna,xhigh,1407,154,74752,68,76159,1,4199,0,выполнение команд,115,768367,1283,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,117,Unknown,Unknown,gpt-6-luna,xhigh,680,141,76032,124,76712,1,1154,0,обработка данных,116,769521,553,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,118,Unknown,Unknown,gpt-6-luna,xhigh,2379,93,76544,50,78923,1,8142,0,выполнение команд,117,777663,2211,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,119,Unknown,Unknown,gpt-6-luna,xhigh,6021,85,78720,844,84741,1,26469,0,прочее,118,804132,5818,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,120,Unknown,Unknown,gpt-6-luna,xhigh,1124,83,84608,86,85732,1,253,0,поиск и навигация по репозиторию,119,804385,991,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,121,Unknown,Unknown,gpt-6-luna,xhigh,980,90,85504,144,86484,1,2633,0,поиск и навигация по репозиторию,120,807018,752,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,122,Unknown,Unknown,gpt-6-luna,xhigh,479,82,86272,22,86751,1,150,0,получение данных GitHub,121,807168,267,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,123,Unknown,Unknown,gpt-6-luna,xhigh,934,259,86528,215,87462,1,2166,0,поиск и навигация по репозиторию,122,809334,711,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,124,Unknown,Unknown,gpt-6-luna,xhigh,931,90,87296,31,88227,1,958,0,поиск и навигация по репозиторию,123,810292,765,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,125,Unknown,Unknown,gpt-6-luna,xhigh,396,92,88064,61,88460,1,421,0,выполнение команд,124,810713,233,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,126,Unknown,Unknown,gpt-6-luna,xhigh,452,78,88320,1447,88772,1,559,0,выполнение команд,125,811272,312,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,127,Unknown,Unknown,gpt-6-luna,xhigh,1767,703,88576,70,90343,1,157,0,поиск и навигация по репозиторию,126,811429,1571,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,128,Unknown,Unknown,gpt-6-luna,xhigh,1970,60,90112,77,92082,1,4226,0,изменение данных GitHub,127,815655,1739,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,129,Unknown,Unknown,gpt-6-luna,xhigh,338,89,91904,109,92242,1,115,0,выполнение команд,128,815770,160,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,130,Unknown,Unknown,gpt-6-luna,xhigh,4128,270,92032,166,96160,1,16382,0,поиск и навигация по репозиторию,129,832152,3918,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,131,Unknown,Unknown,gpt-6-luna,xhigh,877,81,96000,150,96877,1,977,0,получение данных GitHub,130,833129,717,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,132,Unknown,Unknown,gpt-6-luna,xhigh,523,132,96640,13,97163,1,194,0,получение данных GitHub,131,833323,286,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,133,Unknown,Unknown,gpt-6-luna,xhigh,349,137,97024,121,97373,1,239,0,получение данных GitHub,132,833562,210,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,134,Unknown,Unknown,gpt-6-luna,xhigh,549,133,97152,8,97701,1,238,0,получение данных GitHub,133,833800,328,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,135,Unknown,Unknown,gpt-6-luna,xhigh,329,148,97536,9,97865,1,115,0,получение данных GitHub,134,833915,164,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,136,Unknown,Unknown,gpt-6-luna,xhigh,451,242,97664,142,98115,1,320,0,получение данных GitHub,135,834235,250,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,137,Unknown,Unknown,gpt-6-luna,xhigh,1712,56,97920,167,99632,1,4865,0,получение данных GitHub,136,839100,1517,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,138,Unknown,Unknown,gpt-6-luna,xhigh,1811,21,99456,136,101267,1,6733,0,получение данных GitHub,137,845833,1635,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,139,Unknown,Unknown,gpt-6-luna,xhigh,327,177,101120,6,101447,1,43,0,прочее,138,845876,180,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,140,Unknown,Unknown,gpt-6-luna,xhigh,1942,21,101248,80,103190,1,7335,0,получение данных GitHub,139,853211,1743,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,141,Unknown,Unknown,gpt-6-luna,xhigh,274,56,103040,7,103314,1,43,0,прочее,140,853254,124,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,142,Unknown,Unknown,gpt-6-luna,xhigh,1621,39,103168,26,104789,1,6733,0,получение данных GitHub,141,859987,1475,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,143,Unknown,Unknown,gpt-6-luna,xhigh,505,57,104576,102,105081,1,972,0,выполнение команд,142,860959,292,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,144,Unknown,Unknown,gpt-6-luna,xhigh,613,91,104960,157,105573,1,1044,0,получение данных GitHub,143,862003,492,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,145,Unknown,Unknown,gpt-6-luna,xhigh,500,56,105344,7,105844,1,43,0,прочее,144,862046,271,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,146,Unknown,Unknown,gpt-6-luna,xhigh,1755,57,105728,21,107483,1,7559,0,получение данных GitHub,145,869605,1639,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,147,Unknown,Unknown,gpt-6-luna,xhigh,15499,201,107264,823,122763,1,40954,0,получение данных GitHub,146,910559,15280,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,148,Unknown,Unknown,gpt-6-luna,xhigh,1187,103,122624,1398,123811,1,117,0,изменение файлов,147,910676,1048,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,149,Unknown,Unknown,gpt-6-luna,xhigh,2787,94,123648,715,126435,1,4235,0,поиск и навигация по репозиторию,148,914911,2624,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,150,Unknown,Unknown,gpt-6-luna,xhigh,1377,119,126208,671,127585,1,1404,0,поиск и навигация по репозиторию,149,916315,1150,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,151,Unknown,Unknown,gpt-6-luna,xhigh,2857,78,127360,253,130217,1,7379,0,поиск и навигация по репозиторию,150,923694,2632,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,152,Unknown,Unknown,gpt-6-luna,xhigh,1280,78,130048,16,131328,1,3368,0,чтение файлов,151,927062,1111,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,153,Unknown,Unknown,gpt-6-luna,xhigh,1739,85,131200,545,132939,1,6452,0,чтение файлов,152,933514,1611,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,154,Unknown,Unknown,gpt-6-luna,xhigh,1164,88,132736,125,133900,1,1340,0,поиск и навигация по репозиторию,153,934854,961,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,155,Unknown,Unknown,gpt-6-luna,xhigh,417,62,133760,0,134177,1,259,0,выполнение команд,154,935113,277,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,156,Unknown,Unknown,gpt-6-luna,xhigh,297,162,134016,88,134313,1,245,0,выполнение команд,155,935358,136,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,157,Unknown,Unknown,gpt-6-luna,xhigh,1460,72,134144,145,135604,1,4549,0,получение данных GitHub,156,939907,1291,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,158,Unknown,Unknown,gpt-6-luna,xhigh,439,21,135424,8,135863,1,157,0,поиск и навигация по репозиторию,157,940064,259,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,159,Unknown,Unknown,gpt-6-luna,xhigh,235,115,135680,0,135915,1,43,0,прочее,158,940107,52,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,160,Unknown,Unknown,gpt-6-luna,xhigh,520,56,135680,11,136200,1,707,0,получение данных GitHub,159,940814,285,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,161,Unknown,Unknown,gpt-6-luna,xhigh,1598,21,136064,96,137662,1,6584,0,получение данных GitHub,160,947398,1462,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,162,Unknown,Unknown,gpt-6-luna,xhigh,330,56,137472,7,137802,1,43,0,прочее,161,947441,140,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,163,Unknown,Unknown,gpt-6-luna,xhigh,1677,21,137600,21,139277,1,6733,0,получение данных GitHub,162,954174,1475,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,164,Unknown,Unknown,gpt-6-luna,xhigh,206,56,139136,6,139342,1,43,0,прочее,163,954217,65,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,165,Unknown,Unknown,gpt-6-luna,xhigh,1680,21,139136,108,140816,1,6733,0,получение данных GitHub,164,960950,1474,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,166,Unknown,Unknown,gpt-6-luna,xhigh,296,56,140672,7,140968,1,43,0,прочее,165,960993,152,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,167,Unknown,Unknown,gpt-6-luna,xhigh,1807,79,140800,15,142607,1,7559,0,получение данных GitHub,166,968552,1639,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,168,Unknown,Unknown,gpt-6-luna,xhigh,3625,267,142464,615,146089,1,9419,0,получение данных GitHub,167,977971,3482,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,169,Unknown,Unknown,gpt-6-luna,xhigh,1075,106,145920,36,146995,1,117,0,изменение файлов,168,978088,906,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,170,Unknown,Unknown,gpt-6-luna,xhigh,1014,330,146816,1186,147830,1,3013,0,поиск и навигация по репозиторию,169,981101,835,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,171,Unknown,Unknown,gpt-6-luna,xhigh,5978,101,147712,2149,153690,1,21026,0,прочее,170,1002127,5860,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,172,Unknown,Unknown,gpt-6-luna,xhigh,3511,177,153472,132,156983,1,3610,0,выполнение команд,171,1005737,3293,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,173,Unknown,Unknown,gpt-6-luna,xhigh,1462,136,156800,762,158262,1,3571,0,выполнение команд,172,1009308,1279,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,174,Unknown,Unknown,gpt-6-luna,xhigh,1976,169,158080,230,160056,1,4130,0,поиск и навигация по репозиторию,173,1013438,1794,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,175,Unknown,Unknown,gpt-6-luna,xhigh,607,212,159872,70,160479,1,117,0,изменение файлов,174,1013555,423,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,176,Unknown,Unknown,gpt-6-luna,xhigh,1469,105,160256,401,161725,1,4158,0,прочее,175,1017713,1246,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,177,Unknown,Unknown,gpt-6-luna,xhigh,763,64,161536,20,162299,1,269,0,выполнение команд,176,1017982,574,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,178,Unknown,Unknown,gpt-6-luna,xhigh,280,78,162176,49,162456,1,245,0,выполнение команд,177,1018227,157,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,179,Unknown,Unknown,gpt-6-luna,xhigh,325,156,162304,18,162629,1,157,0,поиск и навигация по репозиторию,178,1018384,173,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,180,Unknown,Unknown,gpt-6-luna,xhigh,1508,97,162432,108,163940,1,4865,0,получение данных GitHub,179,1023249,1311,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,181,Unknown,Unknown,gpt-6-luna,xhigh,456,56,163712,8,164168,1,43,0,прочее,180,1023292,228,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,182,Unknown,Unknown,gpt-6-luna,xhigh,1659,21,163968,14,165627,1,6584,0,получение данных GitHub,181,1029876,1459,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,183,Unknown,Unknown,gpt-6-luna,xhigh,181,56,165504,6,165685,1,43,0,прочее,182,1029919,58,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,184,Unknown,Unknown,gpt-6-luna,xhigh,1655,21,165504,16,167159,1,6733,0,получение данных GitHub,183,1036652,1474,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,185,Unknown,Unknown,gpt-6-luna,xhigh,179,56,167040,6,167219,1,43,0,прочее,184,1036695,60,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,186,Unknown,Unknown,gpt-6-luna,xhigh,1799,70,167040,66,168839,1,7438,0,получение данных GitHub,185,1044133,1620,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,187,Unknown,Unknown,gpt-6-luna,xhigh,2013,161,168704,22,170717,1,4756,0,получение данных GitHub,186,1048889,1878,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,188,Unknown,Unknown,gpt-6-luna,xhigh,2125,891,170496,2478,172621,1,8166,0,получение данных GitHub,187,1057055,1904,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,189,Unknown,Unknown,gpt-6-luna,xhigh,4764,68,172416,725,177180,1,5032,0,изменение данных GitHub,188,1062087,4559,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,190,Unknown,Unknown,gpt-6-luna,xhigh,1398,163,177024,50,178422,1,1907,0,выполнение команд,189,1063994,1242,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,191,Unknown,Unknown,gpt-6-luna,xhigh,6132,420,178304,213,184436,1,26972,0,прочее,190,1090966,6014,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,192,Unknown,Unknown,gpt-6-luna,xhigh,802,377,184320,251,185122,1,241,0,изменение данных GitHub,191,1091207,686,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,193,Unknown,Unknown,gpt-6-luna,xhigh,822,369,184960,125,185782,1,160,0,прочее,192,1091367,660,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,194,Unknown,Unknown,gpt-6-luna,xhigh,2078,412,185600,1346,187678,1,5199,0,прочее,193,1096566,1896,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,195,Unknown,Unknown,gpt-6-luna,xhigh,3138,350,187520,468,190658,0,0,0,,193,1096566,2980,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,196,Unknown,Unknown,gpt-6-luna,xhigh,8797,362,190464,1133,199261,1,35444,0,прочее,194,1132010,8603,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,197,Unknown,Unknown,gpt-6-luna,xhigh,3991,39,199040,16,203031,1,8203,0,прочее,195,1140213,3770,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,198,Unknown,Unknown,gpt-6-luna,xhigh,410,94,202880,11,203290,1,927,0,выполнение команд,196,1141140,259,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,199,Unknown,Unknown,gpt-6-luna,xhigh,340,302,203136,2211,203476,1,395,0,получение данных GitHub,197,1141535,186,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,200,Unknown,Unknown,gpt-6-luna,xhigh,5955,472,203264,2955,209219,1,17589,0,прочее,198,1159124,5743,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,201,Unknown,Unknown,gpt-6-luna,xhigh,3646,232,209024,84,212670,1,117,0,изменение файлов,199,1159241,3451,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,202,Unknown,Unknown,gpt-6-luna,xhigh,1422,106,212480,1594,213902,1,4537,0,прочее,200,1163778,1232,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,203,Unknown,Unknown,gpt-6-luna,xhigh,1927,64,213760,6,215687,1,333,0,поиск и навигация по репозиторию,201,1164111,1785,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,204,Unknown,Unknown,gpt-6-luna,xhigh,278,94,215552,59,215830,1,245,0,выполнение команд,202,1164356,143,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,205,Unknown,Unknown,gpt-6-luna,xhigh,408,123,215680,14,216088,1,295,0,получение данных GitHub,203,1164651,258,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,206,Unknown,Unknown,gpt-6-luna,xhigh,458,122,215936,220,216394,1,702,0,получение данных GitHub,204,1165353,306,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,207,Unknown,Unknown,gpt-6-luna,xhigh,567,56,216192,6,216759,1,43,0,прочее,205,1165396,365,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,208,Unknown,Unknown,gpt-6-luna,xhigh,1640,21,216576,12,218216,1,6584,0,получение данных GitHub,206,1171980,1457,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,209,Unknown,Unknown,gpt-6-luna,xhigh,288,56,217984,6,218272,1,43,0,прочее,207,1172023,56,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,210,Unknown,Unknown,gpt-6-luna,xhigh,1618,21,218112,14,219730,1,6629,0,получение данных GitHub,208,1178652,1458,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,211,Unknown,Unknown,gpt-6-luna,xhigh,268,56,219520,6,219788,1,43,0,прочее,209,1178695,58,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,212,Unknown,Unknown,gpt-6-luna,xhigh,1614,21,219648,44,221262,1,6733,0,получение данных GitHub,210,1185428,1474,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,213,Unknown,Unknown,gpt-6-luna,xhigh,294,56,221056,6,221350,1,43,0,прочее,211,1185471,88,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,214,Unknown,Unknown,gpt-6-luna,xhigh,1802,821,221184,1487,222986,1,7559,0,получение данных GitHub,212,1193030,1636,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,215,Unknown,Unknown,gpt-6-luna,xhigh,3575,421,222848,1058,226423,1,4727,0,изменение данных GitHub,213,1197757,3437,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,216,Unknown,Unknown,gpt-6-luna,xhigh,1651,276,226304,238,227955,1,241,0,изменение данных GitHub,214,1197998,1532,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,217,Unknown,Unknown,gpt-6-luna,xhigh,1185,261,227840,164,229025,1,1999,0,прочее,215,1199997,1070,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,218,Unknown,Unknown,gpt-6-luna,xhigh,648,570,228864,550,229512,0,0,0,,215,1199997,487,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,219,Unknown,Unknown,gpt-6-luna,xhigh,9668,253,229376,1107,239044,1,40275,0,прочее,216,1240272,9532,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,220,Unknown,Unknown,gpt-6-luna,xhigh,2488,124,238848,2346,241336,1,3351,0,прочее,217,1243623,2292,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,221,Unknown,Unknown,gpt-6-luna,xhigh,2833,220,241152,1232,243985,1,665,0,получение данных GitHub,218,1244288,2649,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,222,Unknown,Unknown,gpt-6-luna,xhigh,13404,146,6784,68,20188,1,115,0,получение данных GitHub,219,1244403,-223797,True,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,223,Unknown,Unknown,gpt-6-luna,xhigh,4350,352,19968,139,24318,1,20643,0,получение данных GitHub,220,1265046,4130,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,224,Unknown,Unknown,gpt-6-luna,xhigh,1676,132,24192,655,25868,1,4426,0,получение данных GitHub,221,1269472,1550,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,225,Unknown,Unknown,gpt-6-luna,xhigh,2362,735,25728,1772,28090,1,6511,0,получение данных GitHub,222,1275983,2222,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,226,Unknown,Unknown,gpt-6-luna,xhigh,2778,470,27904,161,30682,1,432,0,прочее,223,1276415,2592,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,227,Unknown,Unknown,gpt-6-luna,xhigh,1252,106,30464,73,31716,1,2245,0,изменение файлов,224,1278660,1034,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,228,Unknown,Unknown,gpt-6-luna,xhigh,702,519,31488,208,32190,1,1237,0,поиск и навигация по репозиторию,225,1279897,474,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,229,Unknown,Unknown,gpt-6-luna,xhigh,992,581,32000,390,32992,1,360,0,прочее,226,1280257,802,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,230,Unknown,Unknown,gpt-6-luna,xhigh,1294,447,32768,128,34062,1,463,0,прочее,227,1280720,1070,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,231,Unknown,Unknown,gpt-6-luna,xhigh,1312,281,33920,419,35232,1,1905,0,получение данных GitHub,228,1282625,1170,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,232,Unknown,Unknown,gpt-6-luna,xhigh,1704,376,35072,178,36776,1,3287,0,прочее,229,1285912,1544,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,233,Unknown,Unknown,gpt-6-luna,xhigh,1132,126,36608,61,37740,1,1385,0,получение данных GitHub,230,1287297,964,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,234,Unknown,Unknown,gpt-6-luna,xhigh,729,137,37504,35,38233,1,1400,0,получение данных GitHub,231,1288697,493,False,False
+126,b4263d71cb3a4d50965d29dd35b8d249,01a1f919-4dc5-71b2-8717-3dbd4ce42cd5,235,Unknown,Unknown,gpt-6-luna,xhigh,688,224,38016,308,38704,1,906,0,получение данных GitHub,232,1289603,471,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,1,Unknown,Unknown,gpt-6-luna,xhigh,2503,571,190464,1565,192967,0,0,0,,0,0,,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,2,Unknown,Unknown,gpt-6-luna,xhigh,2558,804,192768,852,195326,1,680,0,обработка данных,1,680,2359,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,3,Unknown,Unknown,gpt-6-luna,xhigh,5138,598,195200,4587,200338,1,17156,0,получение данных GitHub,2,17836,5012,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,4,Unknown,Unknown,gpt-6-luna,xhigh,6769,583,200192,4112,206961,1,5436,0,прочее,3,23272,6623,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,5,Unknown,Unknown,gpt-6-luna,xhigh,7308,21,206720,2273,214028,1,9892,0,прочее,4,33164,7067,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,6,Unknown,Unknown,gpt-6-luna,xhigh,2475,469,213888,6427,216363,1,161,0,прочее,5,33325,2335,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,7,Unknown,Unknown,gpt-6-luna,xhigh,7707,398,216192,536,223899,1,2579,0,получение данных GitHub,6,35904,7536,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,8,Unknown,Unknown,gpt-6-luna,xhigh,1352,72,223744,3063,225096,1,337,0,выполнение команд,7,36241,1197,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,9,Unknown,Unknown,gpt-6-luna,xhigh,3403,116,224896,177,228299,1,291,0,обработка данных,8,36532,3203,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,10,Unknown,Unknown,gpt-6-luna,xhigh,569,47,228096,51,228665,1,289,0,изменение данных GitHub,9,36821,366,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,11,Unknown,Unknown,gpt-6-luna,xhigh,355,91,228480,197,228835,1,312,0,выполнение команд,10,37133,170,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,12,Unknown,Unknown,gpt-6-luna,xhigh,609,131,228608,85,229217,1,368,0,получение данных GitHub,11,37501,382,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,13,Unknown,Unknown,gpt-6-luna,xhigh,500,115,228992,24,229492,1,240,0,получение данных GitHub,12,37741,275,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,14,Unknown,Unknown,gpt-6-luna,xhigh,369,768,229376,1328,229745,1,424,0,получение данных GitHub,13,38165,253,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,15,Unknown,Unknown,gpt-6-luna,xhigh,2516,86,229504,260,232020,1,232,0,чтение файлов,14,38397,2275,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,16,Unknown,Unknown,gpt-6-luna,xhigh,638,162,231808,28,232446,1,306,0,изменение данных GitHub,15,38703,426,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,17,Unknown,Unknown,gpt-6-luna,xhigh,454,174,232320,741,232774,1,510,0,получение данных GitHub,16,39213,328,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,18,Unknown,Unknown,gpt-6-luna,xhigh,1246,1071,232576,559,233822,1,459,0,поиск и навигация по репозиторию,17,39672,1048,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,19,Unknown,Unknown,gpt-6-luna,xhigh,3454,21,233600,6475,237054,1,4793,0,обработка данных,18,44465,3232,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,20,Unknown,Unknown,gpt-6-luna,xhigh,6796,680,236928,4360,243724,1,161,0,прочее,19,44626,6670,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,21,Unknown,Unknown,gpt-6-luna,xhigh,15291,134,6784,122,22075,1,232,0,чтение файлов,20,44858,-221649,True,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,22,Unknown,Unknown,gpt-6-luna,xhigh,1287,48,21888,361,23175,1,2666,0,чтение файлов,21,47524,1100,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,23,Unknown,Unknown,gpt-6-luna,xhigh,9617,44,23040,52,32657,1,40909,0,выполнение команд,22,88433,9482,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,24,Unknown,Unknown,gpt-6-luna,xhigh,482,649,32512,393,32994,1,948,0,выполнение команд,23,89381,337,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,25,Unknown,Unknown,gpt-6-luna,xhigh,1321,76,32768,135,34089,1,241,0,изменение данных GitHub,24,89622,1095,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,26,Unknown,Unknown,gpt-6-luna,xhigh,1315,139,33920,41,35235,1,2942,0,получение данных GitHub,25,92564,1146,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,27,Unknown,Unknown,gpt-6-luna,xhigh,376,193,35072,361,35448,1,148,0,получение данных GitHub,26,92712,213,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,28,Unknown,Unknown,gpt-6-luna,xhigh,5328,107,35328,135,40656,1,24409,0,выполнение команд,27,117121,5208,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,29,Unknown,Unknown,gpt-6-luna,xhigh,483,125,40448,220,40931,1,148,0,получение данных GitHub,28,117269,275,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fec0-d859-7ef3-a3d5-b51dd9d7ece5,30,Unknown,Unknown,gpt-6-luna,xhigh,655,387,40704,392,41359,1,378,0,получение данных GitHub,29,117647,428,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,1,Unknown,Unknown,gpt-6-luna,xhigh,12224,269,6784,134,19008,0,0,0,,0,0,,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,2,Unknown,Unknown,gpt-6-luna,xhigh,6434,40,18816,75,25250,1,29233,0,чтение файлов,1,29233,6242,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,3,Unknown,Unknown,gpt-6-luna,xhigh,9166,73,25088,28,34254,1,40985,0,выполнение команд,2,70218,9004,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,4,Unknown,Unknown,gpt-6-luna,xhigh,7418,123,34048,86,41466,1,30387,0,выполнение команд,3,100605,7212,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,5,Unknown,Unknown,gpt-6-luna,xhigh,412,44,41344,46,41756,1,337,0,выполнение команд,4,100942,290,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,6,Unknown,Unknown,gpt-6-luna,xhigh,1416,221,41600,320,43016,1,4199,0,выполнение команд,5,105141,1260,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,7,Unknown,Unknown,gpt-6-luna,xhigh,9121,663,42880,1142,52001,1,41764,0,прочее,6,146905,8985,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,8,Unknown,Unknown,gpt-6-luna,xhigh,10570,911,51840,516,62410,1,41036,0,прочее,7,187941,10409,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,9,Unknown,Unknown,gpt-6-luna,xhigh,4189,618,62208,1291,66397,1,8140,0,прочее,8,196081,3987,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,10,Unknown,Unknown,gpt-6-luna,xhigh,10751,71,66176,647,76927,1,34894,0,прочее,9,230975,10530,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,11,Unknown,Unknown,gpt-6-luna,xhigh,4616,50,76800,96,81416,1,14783,0,прочее,10,245758,4489,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,12,Unknown,Unknown,gpt-6-luna,xhigh,6386,68,81280,62,87666,1,20868,0,прочее,11,266626,6250,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,13,Unknown,Unknown,gpt-6-luna,xhigh,4372,418,87424,922,91796,1,12973,0,прочее,12,279599,4130,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,14,Unknown,Unknown,gpt-6-luna,xhigh,3349,180,91648,2540,94997,1,7382,0,прочее,13,286981,3201,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,15,Unknown,Unknown,gpt-6-luna,xhigh,4479,577,94848,2661,99327,1,7579,0,чтение файлов,14,294560,4330,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,16,Unknown,Unknown,gpt-6-luna,xhigh,4450,50,99200,1288,103650,1,4157,0,получение данных GitHub,15,298717,4323,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,17,Unknown,Unknown,gpt-6-luna,xhigh,6433,94,103424,66,109857,1,17602,0,прочее,16,316319,6207,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,18,Unknown,Unknown,gpt-6-luna,xhigh,1215,196,109696,53,110911,1,3702,0,получение данных GitHub,17,320021,1054,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,19,Unknown,Unknown,gpt-6-luna,xhigh,569,154,110720,90,111289,1,429,0,получение данных GitHub,18,320450,378,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,20,Unknown,Unknown,gpt-6-luna,xhigh,488,90,111104,25,111592,1,225,0,получение данных GitHub,19,320675,303,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,21,Unknown,Unknown,gpt-6-luna,xhigh,400,140,111360,59,111760,1,199,0,получение данных GitHub,20,320874,168,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,22,Unknown,Unknown,gpt-6-luna,xhigh,491,102,111616,10,112107,1,583,0,получение данных GitHub,21,321457,347,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,23,Unknown,Unknown,gpt-6-luna,xhigh,444,133,111872,194,112316,1,416,0,получение данных GitHub,22,321873,209,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,24,Unknown,Unknown,gpt-6-luna,xhigh,946,136,112128,11,113074,1,2270,0,получение данных GitHub,23,324143,758,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,25,Unknown,Unknown,gpt-6-luna,xhigh,427,141,112896,10,113323,1,354,0,получение данных GitHub,24,324497,249,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,26,Unknown,Unknown,gpt-6-luna,xhigh,412,132,113152,0,113564,1,361,0,получение данных GitHub,25,324858,241,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,27,Unknown,Unknown,gpt-6-luna,xhigh,374,598,113408,87,113782,1,297,0,получение данных GitHub,26,325155,218,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,28,Unknown,Unknown,gpt-6-luna,xhigh,1106,142,113664,19,114770,1,1166,0,получение данных GitHub,27,326321,988,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,29,Unknown,Unknown,gpt-6-luna,xhigh,461,393,114560,704,115021,1,361,0,получение данных GitHub,28,326682,251,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,30,Unknown,Unknown,gpt-6-luna,xhigh,1465,299,114816,1953,116281,1,609,0,прочее,29,327291,1260,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,31,Unknown,Unknown,gpt-6-luna,xhigh,2552,158,116096,325,118648,1,501,0,прочее,30,327792,2367,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,32,Unknown,Unknown,gpt-6-luna,xhigh,647,258,118528,2610,119175,1,196,0,обработка данных,31,327988,527,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,33,Unknown,Unknown,gpt-6-luna,xhigh,5545,724,119040,6825,124585,1,11535,0,прочее,32,339523,5410,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,34,Unknown,Unknown,gpt-6-luna,xhigh,9913,80,124416,1765,134329,1,12175,0,прочее,33,351698,9744,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,35,Unknown,Unknown,gpt-6-luna,xhigh,2069,70,134144,4158,136213,1,167,0,обработка данных,34,351865,1884,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,36,Unknown,Unknown,gpt-6-luna,xhigh,4633,171,136064,229,140697,1,1070,0,изменение данных GitHub,35,352935,4484,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,37,Unknown,Unknown,gpt-6-luna,xhigh,597,1465,140544,3661,141141,1,191,0,прочее,36,353126,444,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,38,Unknown,Unknown,gpt-6-luna,xhigh,5372,1385,140928,657,146300,1,167,0,обработка данных,37,353293,5159,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,39,Unknown,Unknown,gpt-6-luna,xhigh,2217,320,146176,565,148393,1,194,0,выполнение команд,38,353487,2093,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,40,Unknown,Unknown,gpt-6-luna,xhigh,1271,348,148224,1121,149495,1,745,0,получение данных GitHub,39,354232,1102,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,41,Unknown,Unknown,gpt-6-luna,xhigh,1667,420,149376,1449,151043,1,271,0,обработка данных,40,354503,1548,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,42,Unknown,Unknown,gpt-6-luna,xhigh,2214,108,150912,516,153126,1,773,0,прочее,41,355276,2083,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,43,Unknown,Unknown,gpt-6-luna,xhigh,829,101,152960,18,153789,1,112,0,прочее,42,355388,663,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,44,Unknown,Unknown,gpt-6-luna,xhigh,339,91,153600,23,153939,1,80,0,прочее,43,355468,150,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,45,Unknown,Unknown,gpt-6-luna,xhigh,343,259,153728,885,154071,1,17,0,прочее,44,355485,132,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,46,Unknown,Unknown,gpt-6-luna,xhigh,1435,479,153856,887,155291,0,0,0,,44,355485,1220,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,47,Unknown,Unknown,gpt-6-luna,xhigh,2728,140,155136,942,157864,1,3259,0,прочее,45,358744,2573,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,48,Unknown,Unknown,gpt-6-luna,xhigh,1334,817,157696,342,159030,1,356,0,получение данных GitHub,46,359100,1166,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,49,Unknown,Unknown,gpt-6-luna,xhigh,1958,505,158848,1560,160806,1,1597,0,прочее,47,360697,1776,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,50,Unknown,Unknown,gpt-6-luna,xhigh,5661,330,160640,3526,166301,1,19613,0,прочее,48,380310,5495,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,51,Unknown,Unknown,gpt-6-luna,xhigh,4076,160,166144,338,170220,1,343,0,прочее,49,380653,3919,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,52,Unknown,Unknown,gpt-6-luna,xhigh,9073,76,169984,976,179057,1,40509,0,выполнение команд,50,421162,8837,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,53,Unknown,Unknown,gpt-6-luna,xhigh,3820,77,178816,310,182636,1,10477,0,прочее,51,431639,3579,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,54,Unknown,Unknown,gpt-6-luna,xhigh,673,77,182400,10,183073,1,215,0,прочее,52,431854,437,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,55,Unknown,Unknown,gpt-6-luna,xhigh,1036,76,182912,51,183948,1,3376,0,прочее,53,435230,875,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,56,Unknown,Unknown,gpt-6-luna,xhigh,32365,158,153600,1828,185965,1,3558,0,прочее,54,438788,2017,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,57,Unknown,Unknown,gpt-6-luna,xhigh,3715,485,185728,1851,189443,1,6869,0,прочее,55,445657,3478,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,58,Unknown,Unknown,gpt-6-luna,xhigh,2513,279,189312,436,191825,1,223,0,прочее,56,445880,2382,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,59,Unknown,Unknown,gpt-6-luna,xhigh,969,271,191616,50,192585,1,196,0,прочее,57,446076,760,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,60,Unknown,Unknown,gpt-6-luna,xhigh,594,70,192384,225,192978,1,286,0,прочее,58,446362,393,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,61,Unknown,Unknown,gpt-6-luna,xhigh,829,156,192768,212,193597,1,1191,0,прочее,59,447553,619,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,62,Unknown,Unknown,gpt-6-luna,xhigh,1505,70,193408,33,194913,1,4136,0,прочее,60,451689,1316,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,63,Unknown,Unknown,gpt-6-luna,xhigh,729,77,194688,22,195417,1,1451,0,прочее,61,453140,504,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,64,Unknown,Unknown,gpt-6-luna,xhigh,1259,142,195200,293,196459,1,4038,0,прочее,62,457178,1042,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,65,Unknown,Unknown,gpt-6-luna,xhigh,1082,77,196224,17,197306,1,1463,0,прочее,63,458641,847,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,66,Unknown,Unknown,gpt-6-luna,xhigh,1223,70,197120,327,198343,1,4038,0,прочее,64,462679,1037,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,67,Unknown,Unknown,gpt-6-luna,xhigh,1009,77,198144,7,199153,1,1463,0,прочее,65,464142,810,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,68,Unknown,Unknown,gpt-6-luna,xhigh,1268,70,198912,155,200180,1,4038,0,прочее,66,468180,1027,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,69,Unknown,Unknown,gpt-6-luna,xhigh,755,77,200064,15,200819,1,1463,0,прочее,67,469643,639,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,70,Unknown,Unknown,gpt-6-luna,xhigh,1043,319,200704,82,201747,1,3546,0,прочее,68,473189,928,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,71,Unknown,Unknown,gpt-6-luna,xhigh,950,126,201600,453,202550,1,1553,0,получение данных GitHub,69,474742,803,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,72,Unknown,Unknown,gpt-6-luna,xhigh,1177,77,202368,134,203545,1,1463,0,прочее,70,476205,995,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,73,Unknown,Unknown,gpt-6-luna,xhigh,1200,70,203392,193,204592,1,3546,0,прочее,71,479751,1047,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,74,Unknown,Unknown,gpt-6-luna,xhigh,851,77,204416,13,205267,1,1463,0,прочее,72,481214,675,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,75,Unknown,Unknown,gpt-6-luna,xhigh,1137,313,205056,85,206193,1,3546,0,прочее,73,484760,926,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,76,Unknown,Unknown,gpt-6-luna,xhigh,986,70,205952,504,206938,1,1313,0,получение данных GitHub,74,486073,745,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,77,Unknown,Unknown,gpt-6-luna,xhigh,1202,77,206720,108,207922,1,1463,0,прочее,75,487536,984,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,78,Unknown,Unknown,gpt-6-luna,xhigh,1199,273,207744,63,208943,1,3546,0,прочее,76,491082,1021,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,79,Unknown,Unknown,gpt-6-luna,xhigh,623,129,208768,624,209391,1,429,0,прочее,77,491511,448,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,80,Unknown,Unknown,gpt-6-luna,xhigh,1405,150,209152,547,210557,1,1463,0,прочее,78,492974,1166,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,81,Unknown,Unknown,gpt-6-luna,xhigh,891,70,210432,9,211323,1,245,0,прочее,79,493219,766,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,82,Unknown,Unknown,gpt-6-luna,xhigh,616,77,211200,15,211816,1,1463,0,прочее,80,494682,493,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,83,Unknown,Unknown,gpt-6-luna,xhigh,1160,265,211584,13,212744,1,3546,0,прочее,81,498228,928,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,84,Unknown,Unknown,gpt-6-luna,xhigh,517,70,212608,516,213125,1,408,0,прочее,82,498636,381,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,85,Unknown,Unknown,gpt-6-luna,xhigh,1133,77,212992,22,214125,1,1463,0,прочее,83,500099,1000,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,86,Unknown,Unknown,gpt-6-luna,xhigh,1172,265,213888,96,215060,1,3546,0,прочее,84,503645,935,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,87,Unknown,Unknown,gpt-6-luna,xhigh,615,113,214912,87,215527,1,419,0,прочее,85,504064,467,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,88,Unknown,Unknown,gpt-6-luna,xhigh,803,121,215296,305,216099,1,1425,0,получение данных GitHub,86,505489,572,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,89,Unknown,Unknown,gpt-6-luna,xhigh,658,70,215936,21,216594,1,245,0,прочее,87,505734,495,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,90,Unknown,Unknown,gpt-6-luna,xhigh,641,265,216448,26,217089,1,1450,0,прочее,88,507184,495,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,91,Unknown,Unknown,gpt-6-luna,xhigh,526,266,216960,211,217486,1,421,0,прочее,89,507605,397,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,92,Unknown,Unknown,gpt-6-luna,xhigh,963,152,217344,640,218307,1,1340,0,прочее,90,508945,821,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,93,Unknown,Unknown,gpt-6-luna,xhigh,1402,77,218112,28,219514,1,1463,0,прочее,91,510408,1207,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,94,Unknown,Unknown,gpt-6-luna,xhigh,1182,193,219392,200,220574,1,4167,0,прочее,92,514575,1060,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,95,Unknown,Unknown,gpt-6-luna,xhigh,1288,70,220416,409,221704,1,2804,0,прочее,93,517379,1130,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,96,Unknown,Unknown,gpt-6-luna,xhigh,1023,77,221568,13,222591,1,1463,0,прочее,94,518842,887,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,97,Unknown,Unknown,gpt-6-luna,xhigh,1172,70,222464,72,223636,1,4167,0,прочее,95,523009,1045,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,98,Unknown,Unknown,gpt-6-luna,xhigh,698,337,223488,87,224186,1,1463,0,прочее,96,524472,550,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,99,Unknown,Unknown,gpt-6-luna,xhigh,784,132,224000,205,224784,1,610,0,прочее,97,525082,598,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,100,Unknown,Unknown,gpt-6-luna,xhigh,550,70,224640,10,225190,1,245,0,прочее,98,525327,406,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,101,Unknown,Unknown,gpt-6-luna,xhigh,653,77,225024,16,225677,1,1463,0,прочее,99,526790,487,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,102,Unknown,Unknown,gpt-6-luna,xhigh,1070,70,225536,147,226606,1,3546,0,прочее,100,530336,929,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,103,Unknown,Unknown,gpt-6-luna,xhigh,714,72,226432,322,227146,1,1191,0,прочее,101,531527,540,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,104,Unknown,Unknown,gpt-6-luna,xhigh,633,124,226944,16,227577,1,137,0,выполнение команд,102,531664,431,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,105,Unknown,Unknown,gpt-6-luna,xhigh,330,352,227456,39,227786,1,245,0,прочее,103,531909,209,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,106,Unknown,Unknown,gpt-6-luna,xhigh,823,77,227584,77,228407,1,1006,0,прочее,104,532915,621,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,107,Unknown,Unknown,gpt-6-luna,xhigh,1173,70,228224,84,229397,1,3546,0,прочее,105,536461,990,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,108,Unknown,Unknown,gpt-6-luna,xhigh,725,77,229248,43,229973,1,1451,0,прочее,106,537912,576,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,109,Unknown,Unknown,gpt-6-luna,xhigh,1169,266,229760,16,230929,1,3546,0,прочее,107,541458,956,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,110,Unknown,Unknown,gpt-6-luna,xhigh,556,104,230784,689,231340,1,442,0,прочее,108,541900,411,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,111,Unknown,Unknown,gpt-6-luna,xhigh,1034,70,231168,44,232202,1,245,0,прочее,109,542145,862,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,112,Unknown,Unknown,gpt-6-luna,xhigh,671,77,232064,28,232735,1,1463,0,прочее,110,543608,533,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,113,Unknown,Unknown,gpt-6-luna,xhigh,1202,70,232576,83,233778,1,4008,0,прочее,111,547616,1043,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,114,Unknown,Unknown,gpt-6-luna,xhigh,748,285,233600,11,234348,1,1463,0,прочее,112,549079,570,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,115,Unknown,Unknown,gpt-6-luna,xhigh,918,78,234112,687,235030,1,1585,0,прочее,113,550664,682,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,116,Unknown,Unknown,gpt-6-luna,xhigh,1514,282,234880,2142,236394,1,2596,0,получение данных GitHub,114,553260,1364,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,117,Unknown,Unknown,gpt-6-luna,xhigh,2837,77,236160,582,238997,1,594,0,получение данных GitHub,115,553854,2603,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,118,Unknown,Unknown,gpt-6-luna,xhigh,2084,623,238848,3248,240932,1,5788,0,прочее,116,559642,1935,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,119,Unknown,Unknown,gpt-6-luna,xhigh,9829,111,11776,87,21605,1,1290,0,получение данных GitHub,117,560932,-219327,True,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,120,Unknown,Unknown,gpt-6-luna,xhigh,10561,64,21376,14,31937,1,41385,0,выполнение команд,118,602317,10332,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,121,Unknown,Unknown,gpt-6-luna,xhigh,2093,70,31744,17,33837,1,7395,0,выполнение команд,119,609712,1900,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,122,Unknown,Unknown,gpt-6-luna,xhigh,284,56,33664,40,33948,1,117,0,выполнение команд,120,609829,111,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,123,Unknown,Unknown,gpt-6-luna,xhigh,276,253,33792,48,34068,1,117,0,выполнение команд,121,609946,120,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,124,Unknown,Unknown,gpt-6-luna,xhigh,797,363,33920,61,34717,1,1347,0,получение данных GitHub,122,611293,649,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,125,Unknown,Unknown,gpt-6-luna,xhigh,1676,136,34560,1183,36236,1,4689,0,получение данных GitHub,123,615982,1519,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,126,Unknown,Unknown,gpt-6-luna,xhigh,1498,88,36096,23,37594,1,112,0,прочее,124,616094,1358,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,127,Unknown,Unknown,gpt-6-luna,xhigh,347,529,37376,380,37723,1,17,0,прочее,125,616111,129,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,128,Unknown,Unknown,gpt-6-luna,xhigh,1250,429,37504,208,38754,0,0,0,,125,616111,1031,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,129,Unknown,Unknown,gpt-6-luna,xhigh,9134,295,38528,708,47662,1,41095,0,прочее,126,657206,8908,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,130,Unknown,Unknown,gpt-6-luna,xhigh,7232,47,47488,97,54720,1,27219,0,прочее,127,684425,7058,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,131,Unknown,Unknown,gpt-6-luna,xhigh,1643,292,54528,1129,56171,1,5241,0,выполнение команд,128,689666,1451,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,132,Unknown,Unknown,gpt-6-luna,xhigh,6443,286,55936,1416,62379,1,19700,0,прочее,129,709366,6208,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,133,Unknown,Unknown,gpt-6-luna,xhigh,3431,75,62208,3389,65639,1,6878,0,прочее,130,716244,3260,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,134,Unknown,Unknown,gpt-6-luna,xhigh,3724,177,65408,1141,69132,1,122,0,изменение файлов,131,716366,3493,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,135,Unknown,Unknown,gpt-6-luna,xhigh,1621,82,68992,25,70613,1,725,0,получение данных GitHub,132,717091,1481,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,136,Unknown,Unknown,gpt-6-luna,xhigh,452,102,70400,106,70852,1,625,0,поиск и навигация по репозиторию,133,717716,239,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,137,Unknown,Unknown,gpt-6-luna,xhigh,484,92,70656,56,71140,1,401,0,получение данных GitHub,134,718117,288,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,138,Unknown,Unknown,gpt-6-luna,xhigh,3956,107,70912,67,74868,1,16328,0,чтение файлов,135,734445,3728,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,139,Unknown,Unknown,gpt-6-luna,xhigh,341,2793,74752,1600,75093,1,298,0,получение данных GitHub,136,734743,225,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,140,Unknown,Unknown,gpt-6-luna,xhigh,4668,171,74880,386,79548,1,267,0,обработка данных,137,735010,4455,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,141,Unknown,Unknown,gpt-6-luna,xhigh,858,90,79360,77,80218,1,449,0,прочее,138,735459,670,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,142,Unknown,Unknown,gpt-6-luna,xhigh,424,383,80000,215,80424,1,162,0,изменение данных GitHub,139,735621,206,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,143,Unknown,Unknown,gpt-6-luna,xhigh,1792,337,80256,105,82048,1,5404,0,получение данных GitHub,140,741025,1624,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,144,Unknown,Unknown,gpt-6-luna,xhigh,785,67,81920,533,82705,1,967,0,прочее,141,741992,657,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,145,Unknown,Unknown,gpt-6-luna,xhigh,1202,81,82560,85,83762,1,1867,0,изменение данных GitHub,142,743859,1057,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,146,Unknown,Unknown,gpt-6-luna,xhigh,383,113,83584,150,83967,1,162,0,изменение данных GitHub,143,744021,205,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,147,Unknown,Unknown,gpt-6-luna,xhigh,438,129,83840,9,84278,1,213,0,получение данных GitHub,144,744234,311,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,148,Unknown,Unknown,gpt-6-luna,xhigh,343,286,84096,145,84439,1,115,0,получение данных GitHub,145,744349,161,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,149,Unknown,Unknown,gpt-6-luna,xhigh,853,76,84224,3337,85077,1,883,0,прочее,146,745232,638,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,150,Unknown,Unknown,gpt-6-luna,xhigh,3668,240,84864,388,88532,1,149,0,изменение файлов,147,745381,3455,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,151,Unknown,Unknown,gpt-6-luna,xhigh,909,68,88320,675,89229,1,245,0,прочее,148,745626,697,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,152,Unknown,Unknown,gpt-6-luna,xhigh,1311,165,89088,133,90399,1,1463,0,прочее,149,747089,1170,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,153,Unknown,Unknown,gpt-6-luna,xhigh,870,75,90240,44,91110,1,1451,0,прочее,150,748540,711,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,154,Unknown,Unknown,gpt-6-luna,xhigh,686,68,90880,37,91566,1,1375,0,прочее,151,749915,456,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,155,Unknown,Unknown,gpt-6-luna,xhigh,1113,829,91392,747,92505,1,2840,0,прочее,152,752755,939,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,156,Unknown,Unknown,gpt-6-luna,xhigh,1840,81,92288,9,94128,1,186,0,чтение файлов,153,752941,1623,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,157,Unknown,Unknown,gpt-6-luna,xhigh,305,113,93952,14,94257,1,162,0,изменение данных GitHub,154,753103,129,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,158,Unknown,Unknown,gpt-6-luna,xhigh,355,129,94080,8,94435,1,220,0,получение данных GitHub,155,753323,178,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,159,Unknown,Unknown,gpt-6-luna,xhigh,387,291,94208,191,94595,1,115,0,получение данных GitHub,156,753438,160,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,160,Unknown,Unknown,gpt-6-luna,xhigh,821,358,94464,501,95285,1,854,0,прочее,157,754292,690,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,161,Unknown,Unknown,gpt-6-luna,xhigh,1086,301,95104,60,96190,1,223,0,прочее,158,754515,905,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,162,Unknown,Unknown,gpt-6-luna,xhigh,620,68,96000,130,96620,1,245,0,прочее,159,754760,430,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,163,Unknown,Unknown,gpt-6-luna,xhigh,823,75,96384,34,97207,1,1451,0,прочее,160,756211,587,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,164,Unknown,Unknown,gpt-6-luna,xhigh,655,130,97024,99,97679,1,1532,0,прочее,161,757743,472,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,165,Unknown,Unknown,gpt-6-luna,xhigh,782,75,97536,19,98318,1,1463,0,прочее,162,759206,639,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,166,Unknown,Unknown,gpt-6-luna,xhigh,599,68,98176,311,98775,1,1532,0,прочее,163,760738,457,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,167,Unknown,Unknown,gpt-6-luna,xhigh,1001,68,98560,179,99561,1,1463,0,прочее,164,762201,786,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,168,Unknown,Unknown,gpt-6-luna,xhigh,888,68,99328,409,100216,1,1436,0,прочее,165,763637,655,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,169,Unknown,Unknown,gpt-6-luna,xhigh,1005,133,100096,355,101101,1,1436,0,прочее,166,765073,885,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,170,Unknown,Unknown,gpt-6-luna,xhigh,1132,107,100864,220,101996,1,1436,0,прочее,167,766509,895,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,171,Unknown,Unknown,gpt-6-luna,xhigh,632,68,101760,29,102392,1,245,0,прочее,168,766754,396,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,172,Unknown,Unknown,gpt-6-luna,xhigh,625,75,102272,22,102897,1,1450,0,прочее,169,768204,505,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,173,Unknown,Unknown,gpt-6-luna,xhigh,709,154,102656,263,103365,1,1500,0,прочее,170,769704,468,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,174,Unknown,Unknown,gpt-6-luna,xhigh,1031,75,103168,10,104199,1,1463,0,прочее,171,771167,834,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,175,Unknown,Unknown,gpt-6-luna,xhigh,591,68,104064,131,104655,1,1500,0,прочее,172,772667,456,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,176,Unknown,Unknown,gpt-6-luna,xhigh,820,75,104448,22,105268,1,1463,0,прочее,173,774130,613,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,177,Unknown,Unknown,gpt-6-luna,xhigh,648,141,105088,127,105736,1,1500,0,прочее,174,775630,468,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,178,Unknown,Unknown,gpt-6-luna,xhigh,806,68,105600,39,106406,1,1463,0,прочее,175,777093,670,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,179,Unknown,Unknown,gpt-6-luna,xhigh,679,75,106240,227,106919,1,1463,0,прочее,176,778556,513,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,180,Unknown,Unknown,gpt-6-luna,xhigh,702,27,106752,137,107454,1,880,0,прочее,177,779436,535,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,181,Unknown,Unknown,gpt-6-luna,xhigh,390,68,107264,44,107654,1,138,0,прочее,178,779574,200,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,182,Unknown,Unknown,gpt-6-luna,xhigh,649,68,107520,495,108169,1,1463,0,прочее,179,781037,515,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,183,Unknown,Unknown,gpt-6-luna,xhigh,1116,75,108032,29,109148,1,1451,0,прочее,180,782488,979,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,184,Unknown,Unknown,gpt-6-luna,xhigh,557,101,108928,154,109485,1,880,0,прочее,181,783368,337,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,185,Unknown,Unknown,gpt-6-luna,xhigh,497,27,109312,69,109809,1,245,0,прочее,182,783613,324,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,186,Unknown,Unknown,gpt-6-luna,xhigh,373,68,109568,56,109941,1,138,0,прочее,183,783751,132,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,187,Unknown,Unknown,gpt-6-luna,xhigh,659,68,109824,47,110483,1,1463,0,прочее,184,785214,542,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,188,Unknown,Unknown,gpt-6-luna,xhigh,680,113,110336,206,111016,1,1463,0,прочее,185,786677,533,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,189,Unknown,Unknown,gpt-6-luna,xhigh,556,145,110848,200,111404,1,245,0,прочее,186,786922,388,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,190,Unknown,Unknown,gpt-6-luna,xhigh,933,75,111232,23,112165,1,1469,0,прочее,187,788391,761,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,191,Unknown,Unknown,gpt-6-luna,xhigh,998,68,112000,590,112998,1,2879,0,прочее,188,791270,833,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,192,Unknown,Unknown,gpt-6-luna,xhigh,1307,75,112768,19,114075,1,1469,0,прочее,189,792739,1077,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,193,Unknown,Unknown,gpt-6-luna,xhigh,2869,204,113920,913,116789,1,9397,0,прочее,190,802136,2714,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,194,Unknown,Unknown,gpt-6-luna,xhigh,1702,75,116608,10,118310,1,1463,0,прочее,191,803599,1521,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,195,Unknown,Unknown,gpt-6-luna,xhigh,634,27,118144,36,118778,1,1538,0,прочее,192,805137,468,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,196,Unknown,Unknown,gpt-6-luna,xhigh,221,118,118656,212,118877,1,138,0,прочее,193,805275,99,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,197,Unknown,Unknown,gpt-6-luna,xhigh,620,75,118656,146,119276,1,245,0,прочее,194,805520,399,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,198,Unknown,Unknown,gpt-6-luna,xhigh,840,68,119040,815,119880,1,1538,0,прочее,195,807058,604,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,199,Unknown,Unknown,gpt-6-luna,xhigh,1490,75,119680,21,121170,1,1463,0,прочее,196,808521,1290,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,200,Unknown,Unknown,gpt-6-luna,xhigh,539,68,120960,80,121499,1,880,0,прочее,197,809401,329,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,201,Unknown,Unknown,gpt-6-luna,xhigh,708,99,121344,157,122052,1,1463,0,прочее,198,810864,553,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,202,Unknown,Unknown,gpt-6-luna,xhigh,3560,68,121856,4236,125416,1,11920,0,получение данных GitHub,199,822784,3364,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,203,Unknown,Unknown,gpt-6-luna,xhigh,4856,75,125184,105,130040,1,1191,0,прочее,200,823975,4624,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,204,Unknown,Unknown,gpt-6-luna,xhigh,1961,68,129920,318,131881,1,5708,0,прочее,201,829683,1841,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,205,Unknown,Unknown,gpt-6-luna,xhigh,965,75,131712,23,132677,1,1451,0,прочее,202,831134,796,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,206,Unknown,Unknown,gpt-6-luna,xhigh,528,99,132480,74,133008,1,880,0,прочее,203,832014,331,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,207,Unknown,Unknown,gpt-6-luna,xhigh,3048,331,132864,1664,135912,1,9970,0,получение данных GitHub,204,841984,2904,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,208,Unknown,Unknown,gpt-6-luna,xhigh,2373,264,135680,87,138053,1,613,0,получение данных GitHub,205,842597,2141,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,209,Unknown,Unknown,gpt-6-luna,xhigh,1447,279,137856,1537,139303,1,4209,0,прочее,206,846806,1250,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,210,Unknown,Unknown,gpt-6-luna,xhigh,2013,106,139136,7,141149,1,158,0,обработка данных,207,846964,1846,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,211,Unknown,Unknown,gpt-6-luna,xhigh,409,319,140928,41,141337,1,263,0,получение данных GitHub,208,847227,188,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,212,Unknown,Unknown,gpt-6-luna,xhigh,1385,120,141184,240,142569,1,3450,0,получение данных GitHub,209,850677,1232,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,213,Unknown,Unknown,gpt-6-luna,xhigh,730,607,142336,1439,143066,1,497,0,получение данных GitHub,210,851174,497,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,214,Unknown,Unknown,gpt-6-luna,xhigh,56986,413,88320,275,145306,0,0,0,,210,851174,2240,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,215,Unknown,Unknown,gpt-6-luna,xhigh,8345,258,145152,4385,153497,1,40763,0,прочее,211,891937,8191,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,216,Unknown,Unknown,gpt-6-luna,xhigh,10912,725,153344,1185,164256,1,35672,0,выполнение команд,212,927609,10759,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,217,Unknown,Unknown,gpt-6-luna,xhigh,2559,44,164096,44,166655,1,2786,0,прочее,213,930395,2399,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,218,Unknown,Unknown,gpt-6-luna,xhigh,448,66,166528,410,166976,1,950,0,выполнение команд,214,931345,321,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,219,Unknown,Unknown,gpt-6-luna,xhigh,1113,102,166784,82,167897,1,1782,0,выполнение команд,215,933127,921,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,220,Unknown,Unknown,gpt-6-luna,xhigh,6068,69,167680,746,173748,1,20807,0,изменение данных GitHub,216,953934,5851,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,221,Unknown,Unknown,gpt-6-luna,xhigh,9462,332,173568,206,183030,1,34091,0,выполнение команд,217,988025,9282,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,222,Unknown,Unknown,gpt-6-luna,xhigh,6472,524,182912,1053,189384,1,30993,0,прочее,218,1019018,6354,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,223,Unknown,Unknown,gpt-6-luna,xhigh,7273,492,189184,2834,196457,1,26174,0,прочее,219,1045192,7073,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,224,Unknown,Unknown,gpt-6-luna,xhigh,7415,433,196224,1731,203639,1,21715,0,прочее,220,1066907,7182,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,225,Unknown,Unknown,gpt-6-luna,xhigh,5845,375,203520,288,209365,1,20381,0,прочее,221,1087288,5726,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,226,Unknown,Unknown,gpt-6-luna,xhigh,1260,391,209152,3436,210412,1,1564,0,изменение данных GitHub,222,1088852,1047,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,227,Unknown,Unknown,gpt-6-luna,xhigh,5830,320,210176,2438,216006,1,8041,0,прочее,223,1096893,5594,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,228,Unknown,Unknown,gpt-6-luna,xhigh,4545,87,215808,3155,220353,1,6857,0,изменение данных GitHub,224,1103750,4347,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,229,Unknown,Unknown,gpt-6-luna,xhigh,4596,331,220160,5145,224756,1,4282,0,изменение данных GitHub,225,1108032,4403,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,230,Unknown,Unknown,gpt-6-luna,xhigh,6315,42,224640,510,230955,1,2879,0,получение данных GitHub,226,1110911,6199,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,231,Unknown,Unknown,gpt-6-luna,xhigh,1145,316,230784,151,231929,1,2043,0,выполнение команд,227,1112954,974,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,232,Unknown,Unknown,gpt-6-luna,xhigh,685,55,231808,14,232493,1,627,0,получение данных GitHub,228,1113581,564,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,233,Unknown,Unknown,gpt-6-luna,xhigh,7420,300,232320,40,239740,1,28664,0,получение данных GitHub,229,1142245,7247,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,234,Unknown,Unknown,gpt-6-luna,xhigh,1359,285,239616,2626,240975,1,2915,0,получение данных GitHub,230,1145160,1235,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,235,Unknown,Unknown,gpt-6-luna,xhigh,3339,148,240768,2437,244107,1,835,0,получение данных GitHub,231,1145995,3132,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,236,Unknown,Unknown,gpt-6-luna,xhigh,12016,115,11776,79,23792,1,278,0,получение данных GitHub,232,1146273,-220315,True,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,237,Unknown,Unknown,gpt-6-luna,xhigh,10628,98,23552,25,34180,1,41392,0,выполнение команд,233,1187665,10388,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,238,Unknown,Unknown,gpt-6-luna,xhigh,2336,62,34048,10,36384,1,8740,0,выполнение команд,234,1196405,2204,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,239,Unknown,Unknown,gpt-6-luna,xhigh,255,54,36224,34,36479,1,115,0,выполнение команд,235,1196520,95,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,240,Unknown,Unknown,gpt-6-luna,xhigh,7963,204,36352,78,44315,1,37751,0,выполнение команд,236,1234271,7836,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,241,Unknown,Unknown,gpt-6-luna,xhigh,6974,182,44160,158,51134,1,31744,0,прочее,237,1266015,6819,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,242,Unknown,Unknown,gpt-6-luna,xhigh,9494,367,50944,220,60438,1,41282,0,прочее,238,1307297,9304,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,243,Unknown,Unknown,gpt-6-luna,xhigh,8503,265,60288,380,68791,1,40945,0,прочее,239,1348242,8353,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,244,Unknown,Unknown,gpt-6-luna,xhigh,2010,91,68608,22,70618,1,4478,0,получение данных GitHub,240,1352720,1827,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,245,Unknown,Unknown,gpt-6-luna,xhigh,404,195,70400,54,70804,1,305,0,получение данных GitHub,241,1353025,186,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,246,Unknown,Unknown,gpt-6-luna,xhigh,1529,120,70656,1204,72185,1,5478,0,получение данных GitHub,242,1358503,1381,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,247,Unknown,Unknown,gpt-6-luna,xhigh,1513,185,72064,188,73577,1,283,0,получение данных GitHub,243,1358786,1392,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,248,Unknown,Unknown,gpt-6-luna,xhigh,2552,2324,73344,4314,75896,1,8556,0,чтение файлов,244,1367342,2319,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,249,Unknown,Unknown,gpt-6-luna,xhigh,6803,37,75776,39,82579,1,197,0,выполнение команд,245,1367539,6683,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,250,Unknown,Unknown,gpt-6-luna,xhigh,262,2300,82432,368,82694,1,201,0,выполнение команд,246,1367740,115,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,251,Unknown,Unknown,gpt-6-luna,xhigh,2845,130,82560,262,85405,1,192,0,выполнение команд,247,1367932,2711,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,252,Unknown,Unknown,gpt-6-luna,xhigh,808,79,85248,58,86056,1,1335,0,получение данных GitHub,248,1369267,651,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,253,Unknown,Unknown,gpt-6-luna,xhigh,340,138,85888,10,86228,1,137,0,получение данных GitHub,249,1369404,172,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,254,Unknown,Unknown,gpt-6-luna,xhigh,391,106,86016,39,86407,1,148,0,получение данных GitHub,250,1369552,179,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,255,Unknown,Unknown,gpt-6-luna,xhigh,328,494,86272,644,86600,1,196,0,изменение данных GitHub,251,1369748,193,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,256,Unknown,Unknown,gpt-6-luna,xhigh,3915,512,86400,1337,90315,1,14226,0,получение данных GitHub,252,1383974,3715,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,257,Unknown,Unknown,gpt-6-luna,xhigh,3251,698,90112,1410,93363,1,5468,0,прочее,253,1389442,3048,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,258,Unknown,Unknown,gpt-6-luna,xhigh,2342,138,93184,25,95526,1,212,0,выполнение команд,254,1389654,2163,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,259,Unknown,Unknown,gpt-6-luna,xhigh,359,271,95360,36,95719,1,140,0,получение данных GitHub,255,1389794,193,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,260,Unknown,Unknown,gpt-6-luna,xhigh,666,90,95488,202,96154,1,550,0,прочее,256,1390344,435,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,261,Unknown,Unknown,gpt-6-luna,xhigh,493,138,96000,8,96493,1,188,0,изменение данных GitHub,257,1390532,339,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,262,Unknown,Unknown,gpt-6-luna,xhigh,413,287,96256,587,96669,1,140,0,получение данных GitHub,258,1390672,176,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,263,Unknown,Unknown,gpt-6-luna,xhigh,1184,340,96512,573,97696,1,607,0,получение данных GitHub,259,1391279,1027,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,264,Unknown,Unknown,gpt-6-luna,xhigh,1119,295,97536,130,98655,1,223,0,прочее,260,1391502,959,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,265,Unknown,Unknown,gpt-6-luna,xhigh,723,75,98432,265,99155,1,265,0,прочее,261,1391767,500,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,266,Unknown,Unknown,gpt-6-luna,xhigh,2208,75,98944,1009,101152,1,7591,0,прочее,262,1399358,1997,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,267,Unknown,Unknown,gpt-6-luna,xhigh,2164,68,100992,155,103156,1,4298,0,прочее,263,1403656,2004,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,268,Unknown,Unknown,gpt-6-luna,xhigh,369,36,103040,13,103409,1,67,0,прочее,264,1403723,253,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,269,Unknown,Unknown,gpt-6-luna,xhigh,714,75,103168,27,103882,1,1463,0,прочее,265,1405186,473,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,270,Unknown,Unknown,gpt-6-luna,xhigh,667,132,103680,88,104347,1,1509,0,прочее,266,1406695,465,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,271,Unknown,Unknown,gpt-6-luna,xhigh,405,34,104192,0,104597,1,67,0,прочее,267,1406762,250,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,272,Unknown,Unknown,gpt-6-luna,xhigh,597,75,104448,13,105045,1,1463,0,прочее,268,1408225,448,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,273,Unknown,Unknown,gpt-6-luna,xhigh,664,68,104832,161,105496,1,1509,0,прочее,269,1409734,451,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,274,Unknown,Unknown,gpt-6-luna,xhigh,411,36,105344,17,105755,1,67,0,прочее,270,1409801,259,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,275,Unknown,Unknown,gpt-6-luna,xhigh,638,75,105600,13,106238,1,1463,0,прочее,271,1411264,483,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,276,Unknown,Unknown,gpt-6-luna,xhigh,450,138,106112,208,106562,1,880,0,прочее,272,1412144,324,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,277,Unknown,Unknown,gpt-6-luna,xhigh,570,34,106368,0,106938,1,67,0,прочее,273,1412211,376,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,278,Unknown,Unknown,gpt-6-luna,xhigh,633,75,106752,55,107385,1,1451,0,прочее,274,1413662,447,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,279,Unknown,Unknown,gpt-6-luna,xhigh,487,68,107264,37,107751,1,880,0,прочее,275,1414542,366,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,280,Unknown,Unknown,gpt-6-luna,xhigh,366,34,107520,0,107886,1,67,0,прочее,276,1414609,135,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,281,Unknown,Unknown,gpt-6-luna,xhigh,703,139,107648,124,108351,1,1451,0,прочее,277,1416060,465,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,282,Unknown,Unknown,gpt-6-luna,xhigh,690,68,108160,111,108850,1,880,0,прочее,278,1416940,499,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,283,Unknown,Unknown,gpt-6-luna,xhigh,387,34,108672,0,109059,1,67,0,прочее,279,1417007,209,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,284,Unknown,Unknown,gpt-6-luna,xhigh,597,75,108928,19,109525,1,1463,0,прочее,280,1418470,466,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,285,Unknown,Unknown,gpt-6-luna,xhigh,543,68,109312,40,109855,1,880,0,прочее,281,1419350,330,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,286,Unknown,Unknown,gpt-6-luna,xhigh,297,34,109696,0,109993,1,67,0,прочее,282,1419417,138,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,287,Unknown,Unknown,gpt-6-luna,xhigh,637,121,109824,311,110461,1,1463,0,прочее,283,1420880,468,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,288,Unknown,Unknown,gpt-6-luna,xhigh,587,34,110336,0,110923,1,67,0,прочее,284,1420947,462,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,289,Unknown,Unknown,gpt-6-luna,xhigh,668,129,110720,265,111388,1,1463,0,прочее,285,1422410,465,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,290,Unknown,Unknown,gpt-6-luna,xhigh,619,75,111232,26,111851,1,245,0,прочее,286,1422655,463,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,291,Unknown,Unknown,gpt-6-luna,xhigh,572,68,111616,22,112188,1,880,0,прочее,287,1423535,337,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,292,Unknown,Unknown,gpt-6-luna,xhigh,308,34,112000,0,112308,1,67,0,прочее,288,1423602,120,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,293,Unknown,Unknown,gpt-6-luna,xhigh,625,136,112128,94,112753,1,1462,0,прочее,289,1425064,445,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,294,Unknown,Unknown,gpt-6-luna,xhigh,879,75,112512,25,113391,1,1463,0,прочее,290,1426527,638,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,295,Unknown,Unknown,gpt-6-luna,xhigh,575,68,113152,25,113727,1,880,0,прочее,291,1427407,336,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,296,Unknown,Unknown,gpt-6-luna,xhigh,700,75,113536,83,114236,1,1463,0,прочее,292,1428870,509,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,297,Unknown,Unknown,gpt-6-luna,xhigh,582,25,114048,85,114630,1,880,0,прочее,293,1429750,394,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,298,Unknown,Unknown,gpt-6-luna,xhigh,349,118,114432,103,114781,1,161,0,прочее,294,1429911,151,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,299,Unknown,Unknown,gpt-6-luna,xhigh,511,93,114560,215,115071,1,245,0,прочее,295,1430156,290,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,300,Unknown,Unknown,gpt-6-luna,xhigh,3403,68,114944,39,118347,1,12226,0,получение данных GitHub,296,1442382,3276,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,301,Unknown,Unknown,gpt-6-luna,xhigh,729,75,118144,15,118873,1,1463,0,прочее,297,1443845,526,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,302,Unknown,Unknown,gpt-6-luna,xhigh,543,68,118656,478,119199,1,880,0,прочее,298,1444725,326,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,303,Unknown,Unknown,gpt-6-luna,xhigh,1615,352,119040,487,120655,1,3632,0,прочее,299,1448357,1456,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,304,Unknown,Unknown,gpt-6-luna,xhigh,1282,96,120448,53,121730,1,965,0,прочее,300,1449322,1075,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,305,Unknown,Unknown,gpt-6-luna,xhigh,1282,1018,121600,2897,122882,1,3798,0,получение данных GitHub,301,1453120,1152,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,306,Unknown,Unknown,gpt-6-luna,xhigh,4100,358,122752,61,126852,1,212,0,выполнение команд,302,1453332,3970,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,307,Unknown,Unknown,gpt-6-luna,xhigh,1546,328,126720,1198,128266,1,3167,0,прочее,303,1456499,1414,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,308,Unknown,Unknown,gpt-6-luna,xhigh,1719,274,128128,72,129847,1,212,0,выполнение команд,304,1456711,1581,False,False
+168,748165e4c8d2423f8819f57e4d0e25b9,01a1fee2-4bfe-7282-98d7-26381e04757f,309,Unknown,Unknown,gpt-6-luna,xhigh,874,490,129664,516,130538,1,1412,0,получение данных GitHub,305,1458123,691,False,False
